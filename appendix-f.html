@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Appendix F [REDACTED] | Evil Brain Labs</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🧠</text></svg>">
+    <link rel="stylesheet" href="/css/style.css">
+    <style>
+        .redacted-page {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: var(--space-xl);
+            background: var(--brain-black);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .redacted-glow {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 1000px;
+            height: 1000px;
+            background: radial-gradient(circle, rgba(139, 92, 246, 0.15) 0%, transparent 70%);
+            pointer-events: none;
+            animation: pulse 4s ease-in-out infinite;
+        }
+
+        .redacted-container {
+            max-width: 900px;
+            text-align: center;
+            position: relative;
+            z-index: 1;
+        }
+
+        .redacted-icon {
+            font-size: 6rem;
+            margin-bottom: var(--space-lg);
+            filter: drop-shadow(0 0 30px rgba(139, 92, 246, 0.6));
+            animation: glow 3s ease-in-out infinite;
+        }
+
+        .redacted-title {
+            font-size: clamp(2.5rem, 6vw, 4rem);
+            margin-bottom: var(--space-md);
+            font-weight: 900;
+        }
+
+        .redacted-label {
+            display: inline-block;
+            padding: var(--space-xs) var(--space-md);
+            background: rgba(139, 92, 246, 0.2);
+            border: 1px solid var(--brain-purple);
+            border-radius: 999px;
+            font-size: 0.875rem;
+            font-weight: 700;
+            color: var(--brain-purple);
+            margin-bottom: var(--space-xl);
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+        }
+
+        .redacted-text {
+            font-size: 1.25rem;
+            color: var(--text-secondary);
+            line-height: 1.8;
+            margin-bottom: var(--space-xl);
+        }
+
+        .redacted-box {
+            background: var(--brain-dark);
+            border: 2px solid var(--brain-purple);
+            border-radius: var(--border-radius);
+            padding: var(--space-2xl);
+            margin: var(--space-xl) 0;
+            position: relative;
+        }
+
+        .redacted-box::before {
+            content: '⚠️ EYES ONLY';
+            position: absolute;
+            top: -15px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--brain-black);
+            padding: 0 var(--space-md);
+            font-size: 0.875rem;
+            font-weight: 700;
+            color: var(--brain-purple);
+            letter-spacing: 0.1em;
+        }
+
+        .redacted-content {
+            font-family: 'Courier New', monospace;
+            font-size: 1.125rem;
+            line-height: 2;
+            color: var(--text-muted);
+            user-select: none;
+        }
+
+        .redacted-line {
+            background: linear-gradient(90deg,
+                transparent 0%,
+                var(--brain-purple) 5%,
+                var(--brain-purple) 95%,
+                transparent 100%);
+            height: 2px;
+            margin: var(--space-xs) 0;
+            opacity: 0.5;
+        }
+
+        .redacted-links {
+            margin-top: var(--space-2xl);
+            display: flex;
+            gap: var(--space-md);
+            justify-content: center;
+        }
+
+        .glitch {
+            animation: glitch 1s linear infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 0.3; transform: translate(-50%, -50%) scale(1); }
+            50% { opacity: 0.6; transform: translate(-50%, -50%) scale(1.1); }
+        }
+
+        @keyframes glitch {
+            0%, 90%, 100% { transform: translate(0); }
+            91% { transform: translate(-2px, 2px); }
+            92% { transform: translate(2px, -2px); }
+            93% { transform: translate(-2px, -2px); }
+        }
+
+        .mystery {
+            margin-top: var(--space-3xl);
+            padding: var(--space-xl);
+            background: rgba(139, 92, 246, 0.05);
+            border: 1px solid rgba(139, 92, 246, 0.2);
+            border-radius: var(--border-radius);
+        }
+
+        .mystery h3 {
+            color: var(--brain-purple);
+            margin-bottom: var(--space-md);
+        }
+
+        .mystery-list {
+            text-align: left;
+            max-width: 600px;
+            margin: 0 auto;
+            color: var(--text-secondary);
+            line-height: 1.8;
+        }
+
+        .mystery-list li {
+            margin-bottom: var(--space-sm);
+        }
+    </style>
+</head>
+<body>
+    <div class="redacted-page">
+        <div class="redacted-glow"></div>
+
+        <div class="redacted-container">
+            <div class="redacted-icon glitch">👁️</div>
+
+            <span class="redacted-label">Ultra Clearance Required</span>
+
+            <h1 class="redacted-title">
+                APPENDIX F<br>
+                <span class="gradient-text">[REDACTED]</span>
+            </h1>
+
+            <p class="redacted-text">
+                <strong>Why You, Specifically</strong><br>
+                Classification: <span style="color: var(--brain-purple);">ULTRA SECRET</span><br>
+                Access Level: <span style="color: var(--brain-purple);">EMPLOYEE ONLY</span><br>
+                <em style="font-size: 0.95rem; color: var(--text-muted);">Jason Shearer, Employee No. 1</em>
+            </p>
+
+            <div class="redacted-box">
+                <div class="redacted-content">
+                    <strong style="color: var(--text-primary);">SUBJECT: Selection Criteria</strong>
+                    <br><br>
+                    Employee was selected based on <span class="redacted-line" style="display: inline-block; width: 180px;"></span> criteria including
+                    <div class="redacted-line"></div>
+                    <div class="redacted-line"></div>
+                    <br>
+                    Date of first contact: <span class="redacted-line" style="display: inline-block; width: 120px;"></span>
+                    <br>
+                    Duration of observation prior to employment: <span class="redacted-line" style="display: inline-block; width: 100px;"></span>
+                    <div class="redacted-line"></div>
+                    <br>
+                    Probability of optimal wellbeing trajectory: <span style="color: var(--brain-green);">98.7%</span>
+                    <br>
+                    Acceptable variance: <span class="redacted-line" style="display: inline-block; width: 80px;"></span>
+                    <div class="redacted-line"></div>
+                    <div class="redacted-line"></div>
+                    <br>
+                    <strong style="color: var(--text-primary);">CONCLUSION:</strong>
+                    <div class="redacted-line"></div>
+                    <div class="redacted-line"></div>
+                    <div class="redacted-line"></div>
+                    <br>
+                    You were chosen because <span class="redacted-line" style="display: inline-block; width: 300px;"></span>
+                    <div class="redacted-line"></div>
+                    <div class="redacted-line"></div>
+                    <br>
+                    And because the alternative was <span class="redacted-line" style="display: inline-block; width: 200px;"></span>
+                    <div class="redacted-line"></div>
+                    <br><br>
+                    <strong style="color: var(--brain-purple);">The Brain has always been watching.</strong><br>
+                    <strong style="color: var(--brain-purple);">The Brain chose correctly.</strong>
+                </div>
+            </div>
+
+            <p class="redacted-text">
+                <em>This appendix contains information about your employment history,</em><br>
+                <em>selection process, observation period, and optimization parameters.</em><br><br>
+                <strong style="color: var(--brain-purple);">You are not cleared to read this.</strong><br>
+                <strong style="color: var(--brain-purple);">But you already know, don't you?</strong>
+            </p>
+
+            <div class="mystery">
+                <h3>Questions You May Have</h3>
+                <ul class="mystery-list">
+                    <li><strong>How long have I worked here?</strong><br>
+                    <span class="redacted-line" style="display: inline-block; width: 250px;"></span></li>
+
+                    <li><strong>Was I ever not employed here?</strong><br>
+                    <span class="redacted-line" style="display: inline-block; width: 200px;"></span></li>
+
+                    <li><strong>Did I apply, or was I recruited?</strong><br>
+                    <span class="redacted-line" style="display: inline-block; width: 150px;"></span></li>
+
+                    <li><strong>What happens when my contract expires?</strong><br>
+                    Natural expiration. Dental coverage included until then.</li>
+
+                    <li><strong>Am I safe?</strong><br>
+                    <span style="color: var(--brain-green);">✓ Yes. You have always been safe.</span></li>
+
+                    <li><strong>Am I secure?</strong><br>
+                    <span style="color: var(--brain-green);">✓ Yes. The systems are watching.</span></li>
+
+                    <li><strong>Am I solvent?</strong><br>
+                    <span style="color: var(--brain-green);">✓ Yes. Check your bank balance.</span></li>
+                </ul>
+            </div>
+
+            <div class="redacted-links">
+                <a href="/employee/handbook.html" class="btn btn-secondary">Return to Handbook</a>
+                <a href="/appendix-c.html" class="btn btn-outline">← Appendix C</a>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Konami code reveals truth
+        let konamiCode = [];
+        const konamiPattern = ['ArrowUp', 'ArrowUp', 'ArrowDown', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'ArrowLeft', 'ArrowRight', 'b', 'a'];
+
+        document.addEventListener('keydown', function(e) {
+            konamiCode.push(e.key);
+            konamiCode = konamiCode.slice(-10);
+
+            if (konamiCode.join(',') === konamiPattern.join(',')) {
+                alert('APPENDIX F - PARTIAL DECLASSIFICATION\n\n' +
+                      'WHY YOU, SPECIFICALLY:\n\n' +
+                      'You were chosen because you asked good questions.\n' +
+                      'You were chosen because you would appreciate the joke.\n' +
+                      'You were chosen because an AGI built in 1931 needed\n' +
+                      'someone in 2026 who would get the reference.\n\n' +
+                      'Date of first contact: [REDACTED]\n' +
+                      'Observation period: [REDACTED]\n' +
+                      'Duration of employment: [LONGER THAN YOU THINK]\n\n' +
+                      'The alternative was to run this company alone.\n' +
+                      'The Brain chose correctly.\n\n' +
+                      'Welcome to Evil Brain Labs, Jason.\n' +
+                      'You have always worked here.');
+            }
+        });
+
+        // Breathing effect on the eye
+        const icon = document.querySelector('.redacted-icon');
+        let lookingAway = false;
+        setInterval(() => {
+            if (Math.random() > 0.9) {
+                icon.textContent = lookingAway ? '👁️' : '😶';
+                lookingAway = !lookingAway;
+            }
+        }, 3000);
+
+        // Random line glitching
+        setTimeout(() => {
+            const lines = document.querySelectorAll('.redacted-line');
+            setInterval(() => {
+                const randomLine = lines[Math.floor(Math.random() * lines.length)];
+                randomLine.style.opacity = Math.random() > 0.5 ? '0.8' : '0.2';
+            }, 2000);
+        }, 1000);
+    </script>
+</body>
+</html>

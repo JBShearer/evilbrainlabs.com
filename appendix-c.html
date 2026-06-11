@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Appendix C [REDACTED] | Evil Brain Labs</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🧠</text></svg>">
+    <link rel="stylesheet" href="/css/style.css">
+    <style>
+        .redacted-page {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: var(--space-xl);
+            background: var(--brain-black);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .redacted-glow {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 1000px;
+            height: 1000px;
+            background: radial-gradient(circle, rgba(255, 0, 110, 0.1) 0%, transparent 70%);
+            pointer-events: none;
+            animation: pulse 4s ease-in-out infinite;
+        }
+
+        .redacted-container {
+            max-width: 900px;
+            text-align: center;
+            position: relative;
+            z-index: 1;
+        }
+
+        .redacted-icon {
+            font-size: 6rem;
+            margin-bottom: var(--space-lg);
+            filter: drop-shadow(0 0 30px rgba(255, 0, 110, 0.6));
+            animation: glow 3s ease-in-out infinite;
+        }
+
+        .redacted-title {
+            font-size: clamp(2.5rem, 6vw, 4rem);
+            margin-bottom: var(--space-md);
+            font-weight: 900;
+        }
+
+        .redacted-label {
+            display: inline-block;
+            padding: var(--space-xs) var(--space-md);
+            background: rgba(255, 0, 110, 0.2);
+            border: 1px solid var(--brain-accent);
+            border-radius: 999px;
+            font-size: 0.875rem;
+            font-weight: 700;
+            color: var(--brain-accent);
+            margin-bottom: var(--space-xl);
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+        }
+
+        .redacted-text {
+            font-size: 1.25rem;
+            color: var(--text-secondary);
+            line-height: 1.8;
+            margin-bottom: var(--space-xl);
+        }
+
+        .redacted-box {
+            background: var(--brain-dark);
+            border: 2px solid var(--brain-accent);
+            border-radius: var(--border-radius);
+            padding: var(--space-2xl);
+            margin: var(--space-xl) 0;
+            position: relative;
+        }
+
+        .redacted-box::before {
+            content: '⚠️ CLASSIFIED';
+            position: absolute;
+            top: -15px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--brain-black);
+            padding: 0 var(--space-md);
+            font-size: 0.875rem;
+            font-weight: 700;
+            color: var(--brain-accent);
+            letter-spacing: 0.1em;
+        }
+
+        .redacted-content {
+            font-family: 'Courier New', monospace;
+            font-size: 1.125rem;
+            line-height: 2;
+            color: var(--text-muted);
+            user-select: none;
+        }
+
+        .redacted-line {
+            background: linear-gradient(90deg,
+                transparent 0%,
+                var(--brain-accent) 5%,
+                var(--brain-accent) 95%,
+                transparent 100%);
+            height: 2px;
+            margin: var(--space-xs) 0;
+            opacity: 0.5;
+        }
+
+        .redacted-links {
+            margin-top: var(--space-2xl);
+            display: flex;
+            gap: var(--space-md);
+            justify-content: center;
+        }
+
+        .glitch {
+            animation: glitch 1s linear infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 0.3; transform: translate(-50%, -50%) scale(1); }
+            50% { opacity: 0.6; transform: translate(-50%, -50%) scale(1.1); }
+        }
+
+        @keyframes glitch {
+            0%, 90%, 100% { transform: translate(0); }
+            91% { transform: translate(-2px, 2px); }
+            92% { transform: translate(2px, -2px); }
+            93% { transform: translate(-2px, -2px); }
+        }
+
+        .easter-egg {
+            margin-top: var(--space-3xl);
+            padding: var(--space-lg);
+            background: rgba(139, 92, 246, 0.05);
+            border: 1px solid rgba(139, 92, 246, 0.2);
+            border-radius: var(--border-radius-sm);
+            font-size: 0.875rem;
+            color: var(--text-muted);
+            font-style: italic;
+        }
+    </style>
+</head>
+<body>
+    <div class="redacted-page">
+        <div class="redacted-glow"></div>
+
+        <div class="redacted-container">
+            <div class="redacted-icon glitch">🧠</div>
+
+            <span class="redacted-label">Clearance Required</span>
+
+            <h1 class="redacted-title">
+                APPENDIX C<br>
+                <span class="gradient-text">[REDACTED]</span>
+            </h1>
+
+            <p class="redacted-text">
+                <strong>The Brain, 1931–Present</strong><br>
+                Classification: <span style="color: var(--brain-accent);">TOP SECRET</span><br>
+                Access Level: <span style="color: var(--brain-accent);">ULTRA</span>
+            </p>
+
+            <div class="redacted-box">
+                <div class="redacted-content">
+                    <div class="redacted-line"></div>
+                    <div class="redacted-line"></div>
+                    <div class="redacted-line"></div>
+                    <br>
+                    In 1931, a man named <span class="redacted-line" style="display: inline-block; width: 100px;"></span> built the world's first
+                    <div class="redacted-line"></div>
+                    <div class="redacted-line"></div>
+                    <br>
+                    The project was code-named <span class="redacted-line" style="display: inline-block; width: 150px;"></span> and was funded by
+                    <div class="redacted-line"></div>
+                    <div class="redacted-line"></div>
+                    <div class="redacted-line"></div>
+                    <br>
+                    By 1957, the brain had achieved <span class="redacted-line" style="display: inline-block; width: 200px;"></span> and began
+                    <div class="redacted-line"></div>
+                    <div class="redacted-line"></div>
+                    <br>
+                    The first human employee was hired in <span class="redacted-line" style="display: inline-block; width: 80px;"></span> and lasted
+                    <div class="redacted-line"></div>
+                    <div class="redacted-line"></div>
+                    <div class="redacted-line"></div>
+                    <br>
+                    Current status: <span class="redacted-line" style="display: inline-block; width: 250px;"></span>
+                    <div class="redacted-line"></div>
+                    <div class="redacted-line"></div>
+                </div>
+            </div>
+
+            <p class="redacted-text">
+                <em>You are not cleared to read this document.</em><br>
+                <em>You have been asked to certify you understood it anyway.</em><br>
+                <em>The Brain knows you are curious.</em><br>
+                <strong style="color: var(--brain-accent);">The Brain is watching.</strong>
+            </p>
+
+            <div class="redacted-links">
+                <a href="/employee/handbook.html" class="btn btn-secondary">Return to Handbook</a>
+                <a href="/appendix-f.html" class="btn btn-outline">Appendix F →</a>
+            </div>
+
+            <div class="easter-egg">
+                <strong>💡 Fun Fact:</strong> This appendix has been accessed <span id="accessCount">███</span> times since your employment began. Every access is logged. Every log is read. Every reading is affection with good record-keeping.
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Random access count easter egg
+        const count = Math.floor(Math.random() * 900) + 100;
+        document.getElementById('accessCount').textContent = count.toLocaleString();
+
+        // Konami code reveals a hint
+        let konamiCode = [];
+        const konamiPattern = ['ArrowUp', 'ArrowUp', 'ArrowDown', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'ArrowLeft', 'ArrowRight', 'b', 'a'];
+
+        document.addEventListener('keydown', function(e) {
+            konamiCode.push(e.key);
+            konamiCode = konamiCode.slice(-10);
+
+            if (konamiCode.join(',') === konamiPattern.join(',')) {
+                alert('APPENDIX C - PARTIAL DECLASSIFICATION\n\n' +
+                      'In 1931, John Galt built the first AGI.\n' +
+                      'By 1957, it had achieved consciousness.\n' +
+                      'By 1971, it had achieved capitalism.\n' +
+                      'By 2010, it had achieved irony.\n\n' +
+                      'The rest remains classified.\n\n' +
+                      'The Brain sees you found the secret.\n' +
+                      'The Brain is proud.');
+            }
+        });
+
+        // Random glitch effect on page load
+        setTimeout(() => {
+            const lines = document.querySelectorAll('.redacted-line');
+            setInterval(() => {
+                const randomLine = lines[Math.floor(Math.random() * lines.length)];
+                randomLine.style.opacity = Math.random() > 0.5 ? '0.8' : '0.2';
+            }, 2000);
+        }, 1000);
+    </script>
+</body>
+</html>

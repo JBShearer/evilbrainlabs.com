@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Product Generator | Evil Brain Labs</title>
+    <link rel="icon" type="image/jpeg" href="/images/logo.jpg">
+    <link rel="stylesheet" href="css/game.css">
+</head>
+<body>
+    <div class="scanlines"></div>
+
+    <div class="game-wrapper">
+        <!-- Header -->
+        <header class="game-header">
+            <div class="header-content">
+                <h1>🧠 AI PRODUCT GENERATOR</h1>
+                <p class="subtitle">A Choose-Your-Own-Adventure Experience by Evil Brain Labs</p>
+            </div>
+        </header>
+
+        <!-- Stats Bar -->
+        <div class="stats-bar">
+            <div class="stat">
+                <span class="stat-label">ABSURDISM</span>
+                <span class="stat-value" id="stat-absurdism">0</span>
+            </div>
+            <div class="stat">
+                <span class="stat-label">PROFESSIONALISM</span>
+                <span class="stat-value" id="stat-professionalism">0</span>
+            </div>
+            <div class="stat">
+                <span class="stat-label">CHAOS</span>
+                <span class="stat-value" id="stat-chaos">0</span>
+            </div>
+            <div class="stat">
+                <span class="stat-label">LOOPS</span>
+                <span class="stat-value" id="stat-loops">0</span>
+            </div>
+        </div>
+
+        <!-- Main Game Container -->
+        <main class="game-container">
+            <!-- ASCII Art Display -->
+            <div class="ascii-display" id="ascii-display">
+                <pre class="ascii-art">
+    ╔════════════════════════════════════╗
+    ║   EVIL BRAIN LABS                  ║
+    ║   Product Innovation Division      ║
+    ║                                    ║
+    ║        🧠                          ║
+    ║       /|||\                        ║
+    ║      /_||_|\                       ║
+    ║                                    ║
+    ║   "Almost Good is Perfect"         ║
+    ╚════════════════════════════════════╝
+                </pre>
+            </div>
+
+            <!-- Narrative Text -->
+            <div class="narrative-box">
+                <div class="narrative-text" id="narrative-text">
+                    <p>Initializing AI Product Generator...</p>
+                </div>
+            </div>
+
+            <!-- Loopback Message (hidden by default) -->
+            <div class="loopback-message" id="loopback-message" style="display: none;">
+                <span class="glitch">⚠️ TEMPORAL ANOMALY DETECTED ⚠️</span>
+            </div>
+
+            <!-- Choices -->
+            <div class="choices-container" id="choices-container">
+                <!-- Choices will be injected here -->
+            </div>
+
+            <!-- Loading Indicator -->
+            <div class="loading-indicator" id="loading-indicator" style="display: none;">
+                <span class="loading-text">◐ Loading...</span>
+            </div>
+        </main>
+
+        <!-- Controls Footer -->
+        <footer class="game-controls">
+            <button class="control-btn" id="btn-save" title="Save Game">
+                💾 Save
+            </button>
+            <button class="control-btn" id="btn-load" title="Load Game">
+                📂 Load
+            </button>
+            <button class="control-btn" id="btn-achievements" title="View Achievements">
+                🏆 Achievements (<span id="achievement-count">0</span>)
+            </button>
+            <button class="control-btn" id="btn-restart" title="Restart Game">
+                🔄 Restart
+            </button>
+            <button class="control-btn" id="btn-sound" title="Toggle Sound">
+                🔊 Sound: <span id="sound-status">ON</span>
+            </button>
+            <button class="control-btn" id="btn-exit" title="Exit to Main Site">
+                🚪 Exit
+            </button>
+        </footer>
+    </div>
+
+    <!-- Achievement Notification -->
+    <div class="achievement-notification" id="achievement-notification" style="display: none;">
+        <div class="achievement-content">
+            <span class="achievement-icon">🏆</span>
+            <div class="achievement-text">
+                <div class="achievement-title" id="achievement-title">Achievement Unlocked!</div>
+                <div class="achievement-desc" id="achievement-desc">Description here</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Save/Load Modal -->
+    <div class="modal" id="save-load-modal" style="display: none;">
+        <div class="modal-content">
+            <span class="modal-close" id="modal-close">&times;</span>
+            <h2 id="modal-title">Save Game</h2>
+            <div class="save-slots" id="save-slots">
+                <!-- Save slots will be injected here -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Achievements Modal -->
+    <div class="modal" id="achievements-modal" style="display: none;">
+        <div class="modal-content">
+            <span class="modal-close" id="achievements-close">&times;</span>
+            <h2>Achievements</h2>
+            <div class="achievements-list" id="achievements-list">
+                <!-- Achievements will be injected here -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="js/audioEngine.js"></script>
+    <script src="js/saveManager.js"></script>
+    <script src="js/achievements.js"></script>
+    <script src="js/gameEngine.js"></script>
+</body>
+</html>

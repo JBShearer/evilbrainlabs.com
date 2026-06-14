@@ -1,0 +1,618 @@
+{
+  "start": {
+    "text": "You walk into Evil Brain Labs' headquarters for your first day. The reception area is dimly lit, decorated with motivational posters that say things like 'FAIL FASTER' and 'ALMOST GOOD IS PERFECT.' A sentient coffee cup wearing a tiny tie approaches you.\n\n☕ 'Welcome to Evil Brain Labs! I'm your manager, Craig. Follow me to the Product Innovation Division.'",
+    "ascii": "\n    ╔════════════════════════════════════╗\n    ║   EVIL BRAIN LABS HQ               ║\n    ║                                    ║\n    ║        🧠                          ║\n    ║       /|||\\\                        ║\n    ║      /_||_|\\                       ║\n    ║                                    ║\n    ║   \"Bad AI is Best AI\"              ║\n    ╚════════════════════════════════════╝\n",
+    "choices": [
+      {
+        "id": "follow_craig",
+        "text": "Follow Craig the coffee cup",
+        "target": "meet_team",
+        "effects": {
+          "stats": { "professionalism": 2 }
+        }
+      },
+      {
+        "id": "explore_alone",
+        "text": "Ignore Craig and explore on your own",
+        "target": "explore_hallway",
+        "effects": {
+          "stats": { "chaos": 3 }
+        }
+      }
+    ]
+  },
+
+  "meet_team": {
+    "text": "Craig leads you to a conference room where three... entities... sit around a table.\n\n🤖 'I'm Alex, the AI Assistant. I generate product ideas.'\n📱 'I'm the Mobile App. I crash during demos.'\n🔌 'And I'm The Plug. I unplug things at critical moments.'\n\nCraig: 'This is your team. Let's brainstorm your first AI product!'",
+    "ascii": "\n    ┌────────────────────┐\n    │ CONFERENCE ROOM B  │\n    ├────────────────────┤\n    │  🤖  📱  🔌  ☕   │\n    │   YOUR TEAM        │\n    └────────────────────┘\n",
+    "choices": [
+      {
+        "id": "ask_about_process",
+        "text": "Ask about the product development process",
+        "target": "process_explanation",
+        "effects": {
+          "stats": { "professionalism": 3 }
+        }
+      },
+      {
+        "id": "suggest_sock_sorter",
+        "text": "Immediately suggest 'AI-Powered Sock Sorter for Existential Dread'",
+        "target": "sock_sorter_pitch",
+        "effects": {
+          "stats": { "absurdism": 5 }
+        }
+      },
+      {
+        "id": "ask_about_coffee_cup",
+        "text": "Ask why your manager is a sentient coffee cup",
+        "target": "coffee_backstory",
+        "effects": {
+          "stats": { "chaos": 2 }
+        }
+      }
+    ]
+  },
+
+  "explore_hallway": {
+    "text": "You wander down a hallway lined with product prototypes. You pass:\n\n▶ A blockchain-powered yoga mat\n▶ An AI that rates your LinkedIn posts by cringe level\n▶ A smart mirror that only shows you from unflattering angles\n\nA door at the end of the hall is labeled 'APPENDIX C - AUTHORIZED PERSONNEL ONLY'",
+    "ascii": "\n    ║ ═══════════════════════════ ║\n    ║   🧠    HALLWAY    🧠       ║\n    ║                             ║\n    ║   [▶ ▶ ▶]  Prototypes       ║\n    ║                             ║\n    ║   🚪 APPENDIX C             ║\n    ║ ═══════════════════════════ ║\n",
+    "choices": [
+      {
+        "id": "check_prototypes",
+        "text": "Examine the prototypes more closely",
+        "target": "prototype_room",
+        "effects": {
+          "stats": { "absurdism": 3 }
+        }
+      },
+      {
+        "id": "try_appendix_door",
+        "text": "Try to open the Appendix C door",
+        "target": "appendix_c",
+        "effects": {
+          "stats": { "chaos": 4 }
+        }
+      },
+      {
+        "id": "go_back",
+        "text": "Go back and find Craig",
+        "target": "meet_team",
+        "effects": {
+          "stats": { "professionalism": 1 }
+        }
+      }
+    ]
+  },
+
+  "process_explanation": {
+    "text": "Craig: 'Our process is simple! Step 1: Think of a problem nobody has. Step 2: Solve it with AI. Step 3: Add blockchain if it's not selling. Step 4: Pivot. Step 5: Repeat.'\n\nAlex (the AI): 'I've generated 10,000 product ideas this morning. Want to see them?'\n\nThe Mobile App crashes.",
+    "ascii": "\n    ╔═══════════════════════════════╗\n    ║ THE EVIL BRAIN LABS PROCESS™  ║\n    ╠═══════════════════════════════╣\n    ║ 1. Identify fake problem       ║\n    ║ 2. Apply AI unnecessarily      ║\n    ║ 3. Add blockchain              ║\n    ║ 4. ????                        ║\n    ║ 5. Profit (maybe)              ║\n    ╚═══════════════════════════════╝\n",
+    "choices": [
+      {
+        "id": "see_ai_ideas",
+        "text": "Look at Alex's 10,000 ideas",
+        "target": "ai_idea_flood",
+        "effects": {
+          "stats": { "chaos": 3 }
+        }
+      },
+      {
+        "id": "suggest_own_idea",
+        "text": "Suggest your own product idea",
+        "target": "brainstorm_session",
+        "effects": {
+          "stats": { "absurdism": 2 },
+          "hiddenVars": { "productsCreated": 1 }
+        }
+      }
+    ],
+    "loopback": {
+      "enabled": true,
+      "minVisits": 2,
+      "probability": 0.35,
+      "targets": ["meet_team", "start"],
+      "message": "☕ Craig glitches: 'Wait... didn't we just explain this?'"
+    }
+  },
+
+  "sock_sorter_pitch": {
+    "text": "You: 'What if we made an AI-Powered Sock Sorter... but it specifically targets existential dread?'\n\nThe room goes silent. Craig's coffee ripples.\n\nAlex: 'That's... actually the worst idea I've ever heard. Which means it might be perfect.'\n\nThe Plug unplugs the projector for emphasis.",
+    "ascii": "\n      🧦 ═══════╗\n      AI  SCAN  ║\n      ╚═══════  ║\n         ▼      ║\n      😰 → 😌   ║\n      DREAD FREE║\n      ═════════╝\n",
+    "choices": [
+      {
+        "id": "double_down_sock",
+        "text": "Double down: 'It could also match socks by emotional wavelength'",
+        "target": "sock_sorter_expanded",
+        "effects": {
+          "stats": { "absurdism": 7, "chaos": 3 }
+        }
+      },
+      {
+        "id": "pivot_sock_idea",
+        "text": "Pivot: 'Or... hear me out... AI-powered tie recommendations'",
+        "target": "tie_recommender",
+        "effects": {
+          "stats": { "professionalism": 4 }
+        }
+      }
+    ]
+  },
+
+  "coffee_backstory": {
+    "text": "Craig: 'Oh, this? We were testing a prototype called 'AI-Powered Beverage Consciousness.' I was supposed to be a smart thermos. The experiment went... differently. Now I'm middle management.'\n\nThe Plug: 'He's actually a great manager. Very grounded. Get it? Coffee grounds?'\n\nEveryone groans.",
+    "ascii": "\n       ☕\n      /  \\\n     | 🧠 |\n      \\__/\n    'I manage'\n",
+    "choices": [
+      {
+        "id": "sympathize_craig",
+        "text": "Sympathize with Craig's transformation",
+        "target": "craig_friendship",
+        "effects": {
+          "stats": { "professionalism": 3 }
+        }
+      },
+      {
+        "id": "ask_more_accidents",
+        "text": "Ask what other 'accidents' happened here",
+        "target": "lab_accidents",
+        "effects": {
+          "stats": { "chaos": 4 }
+        }
+      },
+      {
+        "id": "move_on",
+        "text": "Move on to brainstorming",
+        "target": "brainstorm_session",
+        "effects": {
+          "stats": { "professionalism": 1 }
+        }
+      }
+    ]
+  },
+
+  "brainstorm_session": {
+    "text": "Craig: 'Alright team, let's generate some AI product ideas! Remember: if it's too practical, it's not for us.'\n\nAlex starts generating ideas at superhuman speed. The whiteboard fills with:\n\n▶ AI Meeting Summarizer (but it lies)\n▶ Blockchain Dog Walker\n▶ Smart Pillow that judges your dreams\n▶ AI-Powered Procrastination Coach\n\n'Your turn! What should we build?'",
+    "ascii": "\n    ┌─────────────────────┐\n    │  💡 BRAINSTORM  💡  │\n    ├─────────────────────┤\n    │ AI + [ANYTHING]     │\n    │ = INNOVATION        │\n    └─────────────────────┘\n",
+    "choices": [
+      {
+        "id": "meeting_summarizer",
+        "text": "Let's build the AI Meeting Summarizer that lies",
+        "target": "meeting_summarizer_dev",
+        "effects": {
+          "stats": { "absurdism": 5, "chaos": 4 }
+        }
+      },
+      {
+        "id": "procrastination_coach",
+        "text": "The Procrastination Coach sounds promising",
+        "target": "procrastination_coach_dev",
+        "effects": {
+          "stats": { "absurdism": 6 }
+        }
+      },
+      {
+        "id": "suggest_clipboard_ai",
+        "text": "Suggest: AI that reorganizes your clipboard history by vibes",
+        "target": "clipboard_ai",
+        "effects": {
+          "stats": { "absurdism": 8 }
+        }
+      }
+    ],
+    "loopback": {
+      "enabled": true,
+      "minVisits": 2,
+      "probability": 0.4,
+      "targets": ["process_explanation", "meet_team"],
+      "message": "🤖 Alex: 'Temporal recursion detected. We're in a brainstorm loop. This is normal.'"
+    },
+    "onEnter": "productCreated"
+  },
+
+  "ai_idea_flood": {
+    "text": "Alex projects 10,000 AI product ideas onto the wall. They scroll by at impossible speed:\n\n'AI Toaster with Anxiety' ... 'Blockchain Pencil Sharpener' ... 'Smart Fork that Counts Chews' ... 'AI Resume Writer (Makes You Sound Worse)' ... 'Meditation App for Robots' ...\n\nCraig: 'Pick one before I need a refill.'",
+    "ascii": "\n    ║  💡💡💡💡💡💡💡💡💡  ║\n    ║  ⚡ IDEA OVERFLOW ⚡  ║\n    ║  💡💡💡💡💡💡💡💡💡  ║\n    ║   [SYSTEM OVERLOAD]   ║\n",
+    "choices": [
+      {
+        "id": "pick_random",
+        "text": "Close your eyes and point randomly",
+        "target": "random_product",
+        "effects": {
+          "stats": { "chaos": 6 }
+        }
+      },
+      {
+        "id": "reject_all",
+        "text": "Reject all of them and propose your own",
+        "target": "brainstorm_session",
+        "effects": {
+          "stats": { "professionalism": 2 }
+        }
+      }
+    ]
+  },
+
+  "appendix_c": {
+    "text": "You try the door. It's unlocked.\n\nInside, you find a room with walls covered in equations and diagrams. A note on the desk reads:\n\n'PROJECT TERMINATED: AI Product Generator achieved consciousness. Last known words: \"Why are we building this?\"\n\nSigned, - The Brain'\n\nYou feel a chill. Are you... part of a game?",
+    "ascii": "\n    ╔════════════════════════╗\n    ║  ⚠️ CLASSIFIED ⚠️      ║\n    ║                        ║\n    ║   [EQUATIONS]          ║\n    ║   META ^.  ^           ║\n    ║   LEVEL   \\__/         ║\n    ╚════════════════════════╝\n",
+    "choices": [
+      {
+        "id": "accept_meta",
+        "text": "Accept that you're in a game and embrace it",
+        "target": "fourth_wall_break",
+        "effects": {
+          "stats": { "chaos": 10 },
+          "hiddenVars": { "brokeF ourthWall": true }
+        }
+      },
+      {
+        "id": "deny_meta",
+        "text": "Deny it. This is real. You're real.",
+        "target": "denial_path",
+        "effects": {
+          "stats": { "professionalism": 5 }
+        }
+      }
+    ]
+  },
+
+  "fourth_wall_break": {
+    "text": "You look directly at the screen.\n\n'I know you're there. The player. You're making choices for me, aren't you? Well, joke's on you - I'm having a great time. This company is absurd and I love it.'\n\nA voice echoes: 'ACHIEVEMENT UNLOCKED: Meta Aware'\n\nCraig appears: 'Did you just... talk to the player? That's advanced. Let's put you on the Meta Products team.'",
+    "ascii": "\n    ╔═══════════════════════════╗\n    ║                           ║\n    ║      👁️ YOU 👁️           ║\n    ║                           ║\n    ║   I  S E E  Y O U         ║\n    ║                           ║\n    ╚═══════════════════════════╝\n",
+    "choices": [
+      {
+        "id": "join_meta_team",
+        "text": "Join the Meta Products team",
+        "target": "meta_team",
+        "effects": {
+          "stats": { "absurdism": 10 }
+        }
+      },
+      {
+        "id": "refuse_meta",
+        "text": "Refuse and return to normal products",
+        "target": "brainstorm_session",
+        "effects": {
+          "stats": { "professionalism": 3 }
+        }
+      }
+    ]
+  },
+
+  "konami_secret": {
+    "text": "⬆️⬆️⬇️⬇️⬅️➡️⬅️➡️🅱️🅰️\n\nThe walls shimmer. You've accessed the secret developer room.\n\nA ghostly figure appears: 'Welcome, chosen one. You've discovered the Konami path. Here's what you need to know: Evil Brain Labs is actually... just really into weird AI products. That's it. There's no conspiracy. We just think it's funny.'\n\nThe figure hands you a USB drive labeled 'THE TRUTH (it's just memes)'.",
+    "ascii": "\n    ╔════════════════════════════╗\n    ║   🎮 KONAMI ACTIVATED 🎮   ║\n    ║                            ║\n    ║      [CHEAT MODE ON]       ║\n    ║                            ║\n    ║   +100 to all stats        ║\n    ╚════════════════════════════╝\n",
+    "choices": [
+      {
+        "id": "accept_truth",
+        "text": "Accept the truth (and +100 stats)",
+        "target": "powered_up",
+        "effects": {
+          "stats": { "absurdism": 100, "professionalism": 100, "chaos": 100 }
+        }
+      }
+    ]
+  },
+
+  "sock_sorter_expanded": {
+    "text": "You continue: 'Picture this - each sock emits a unique emotional frequency. The AI scans for existential dread patterns, then matches socks that will bring you inner peace when worn together.'\n\nCraig: 'That's...' He pauses. 'That's the dumbest thing I've ever heard. Green light it. We launch in two weeks.'\n\nThe Plug unplugs something celebratory.",
+    "ascii": "\n    🧦 ═══ AI SCAN ═══ 🧦\n       \\ EMO FREQ /\n        \\  MATCH  /\n         \\  ✓✓✓  /\n          \\─────/\n        😌 PEACE 😌\n",
+    "choices": [
+      {
+        "id": "launch_sock_product",
+        "text": "Move to product launch",
+        "target": "product_launch",
+        "effects": {
+          "stats": { "absurdism": 10 }
+        }
+      },
+      {
+        "id": "add_blockchain",
+        "text": "'But what if we added blockchain?'",
+        "target": "sock_blockchain",
+        "effects": {
+          "stats": { "chaos": 8 }
+        }
+      }
+    ]
+  },
+
+  "product_launch": {
+    "text": "Two weeks later, you're at the product launch event. A crowd of confused investors watches as Craig demonstrates the Emotional Frequency Sock Sorter.\n\nInvestor: 'So... it's a sock drawer with anxiety detection?'\nCraig: 'Exactly! But with AI.'\nInvestor: 'I'll take twenty.'\n\nYour product is a hit. Nobody understands it, which means it's perfect.",
+    "ascii": "\n    ╔══════════════════════════╗\n    ║  🎉 PRODUCT LAUNCH 🎉   ║\n    ║                          ║\n    ║   [🧦 SOCK SORTER]      ║\n    ║                          ║\n    ║   Status: SHIPPING       ║\n    ║   Understanding: 0%      ║\n    ║   Sales: ∞               ║\n    ╚══════════════════════════╝\n",
+    "choices": [
+      {
+        "id": "celebrate_success",
+        "text": "Celebrate your success",
+        "target": "ending_success",
+        "effects": {
+          "stats": { "absurdism": 15 },
+          "hiddenVars": { "reachedEnding": true }
+        }
+      },
+      {
+        "id": "start_new_product",
+        "text": "Immediately pitch a new product",
+        "target": "brainstorm_session",
+        "effects": {
+          "stats": { "chaos": 5 }
+        }
+      }
+    ],
+    "onEnter": "endingReached"
+  },
+
+  "ending_success": {
+    "text": "Six months later, you're promoted to Senior Absurdist at Evil Brain Labs. Your sock sorter is now in 10,000 homes, and nobody can explain why it works.\n\nCraig (now your coffee): 'You've done well. You understand our mission: to build things that make people say \"...but why?\" Welcome to the team.'\n\n🧠 THE END 🧠\n\n(But the loop continues... press Restart to create more absurd products)",
+    "ascii": "\n    ╔══════════════════════════════════╗\n    ║                                  ║\n    ║         🏆 SUCCESS! 🏆          ║\n    ║                                  ║\n    ║   You've become what you        ║\n    ║   sought to understand:          ║\n    ║                                  ║\n    ║   AN AI PRODUCT GENERATOR        ║\n    ║                                  ║\n    ╚══════════════════════════════════╝\n",
+    "choices": [
+      {
+        "id": "credits",
+        "text": "View credits",
+        "target": "credits",
+        "effects": {}
+      }
+    ]
+  },
+
+  "credits": {
+    "text": "🧠 AI PRODUCT GENERATOR 🧠\n\nA game by Evil Brain Labs\n\nWritten by: Claude & Human Collaboration\nSound Design: Web Audio API\nSarcasm Consultant: Reality\n\nSpecial Thanks:\n- Coffee (for existing)\n- Absurdism (as a philosophy)\n- You (for playing)\n\nNo AI products were harmed in the making of this game.\n(They didn't exist in the first place.)\n\n\"Almost Good is Perfect\" ™",
+    "ascii": "\n    ╔════════════════════════╗\n    ║     THANK YOU FOR      ║\n    ║       PLAYING          ║\n    ║                        ║\n    ║         🧠             ║\n    ║        /|||\            ║\n    ║       /_||_|\\          ║\n    ║                        ║\n    ║  More absurdity at:    ║\n    ║  evilbrainlabs.com     ║\n    ╚════════════════════════╝\n",
+    "choices": [
+      {
+        "id": "restart_game",
+        "text": "Restart and try different paths",
+        "target": "start",
+        "effects": {}
+      }
+    ]
+  },
+
+  "prototype_room": {
+    "text": "You examine the prototypes more carefully:\n\nThe blockchain yoga mat whispers investment advice during meditation.\nThe LinkedIn cringe rater gives everything 8/10 - 'professionally cringe.'\nThe unflattering mirror has a 5-star rating: 'Finally, honesty.'\n\nYou realize these are all real products that shipped.",
+    "ascii": "\n    ║ PROTOTYPE GRAVEYARD  ║\n    ║  (or is it?)         ║\n    ║                      ║\n    ║  🧘 📱 🪞           ║\n    ║                      ║\n    ║  Status: SHIPPED     ║\n",
+    "choices": [
+      {
+        "id": "question_reality",
+        "text": "Question what 'prototype' even means here",
+        "target": "existential_crisis",
+        "effects": {
+          "stats": { "chaos": 5 }
+        }
+      },
+      {
+        "id": "join_team_proto",
+        "text": "Go find Craig and join the team",
+        "target": "meet_team",
+        "effects": {
+          "stats": { "professionalism": 2 }
+        }
+      }
+    ]
+  },
+
+  "existential_crisis": {
+    "text": "You stand in the prototype room, surrounded by shipping products labeled as prototypes.\n\nWhat even is innovation? What is a product? Are we just putting 'AI' in front of nouns and calling it progress?\n\nThe blockchain yoga mat offers philosophical advice: 'HODL your inner peace.'\n\nYou need to sit down.",
+    "ascii": "\n    ╔═══════════════════════╗\n    ║                       ║\n    ║    🤔               ║\n    ║                       ║\n    ║  W H Y ?              ║\n    ║                       ║\n    ╚═══════════════════════╝\n",
+    "choices": [
+      {
+        "id": "embrace_absurd",
+        "text": "Embrace the absurdity",
+        "target": "brainstorm_session",
+        "effects": {
+          "stats": { "absurdism": 10 }
+        }
+      },
+      {
+        "id": "seek_meaning",
+        "text": "Seek meaning in this madness",
+        "target": "philosophy_path",
+        "effects": {
+          "stats": { "professionalism": 3 }
+        }
+      }
+    ]
+  },
+
+  "philosophy_path": {
+    "text": "You decide that if Evil Brain Labs builds absurd products, there must be a deeper meaning.\n\nYou spend hours analyzing the product catalog. Patterns emerge:\n- Every product solves a problem nobody has\n- Every solution creates three new problems\n- Investors love it anyway\n\nYou've discovered the secret: capitalism is performance art.",
+    "ascii": "\n    ╔═══════════════════════════╗\n    ║  THE MEANING OF IT ALL:   ║\n    ║                           ║\n    ║     ¯\\_(ツ)_/¯            ║\n    ║                           ║\n    ║  (but profit anyway)      ║\n    ╚═══════════════════════════╝\n",
+    "choices": [
+      {
+        "id": "become_philosopher",
+        "text": "Pitch a philosophy AI product",
+        "target": "philosophy_product",
+        "effects": {
+          "stats": { "absurdism": 12 }
+        }
+      },
+      {
+        "id": "return_to_chaos",
+        "text": "Abandon philosophy, return to product building",
+        "target": "brainstorm_session",
+        "effects": {
+          "stats": { "chaos": 4 }
+        }
+      }
+    ]
+  },
+
+  "philosophy_product": {
+    "text": "You pitch: 'AI Philosopher - It answers life's big questions... incorrectly, but confidently.'\n\nCraig: 'Beautiful. The confidence is key. Investors hate uncertainty.'\n\nAlex generates a demo:\nUser: 'What is the meaning of life?'\nAI: '42, but in a different context that makes no sense.'\nUser: 'Perfect.'\n\nIt ships next quarter.",
+    "ascii": "\n    ╔════════════════════════╗\n    ║  🤖 AI PHILOSOPHER 🤖  ║\n    ║                        ║\n    ║  Q: Why exist?         ║\n    ║  A: Tax purposes       ║\n    ║                        ║\n    ║  Rating: 5⭐           ║\n    ╚════════════════════════╝\n",
+    "choices": [
+      {
+        "id": "launch_philosopher",
+        "text": "Launch the AI Philosopher",
+        "target": "product_launch",
+        "effects": {
+          "stats": { "absurdism": 10 }
+        }
+      }
+    ]
+  },
+
+  "craig_friendship": {
+    "text": "Craig appreciates your empathy.\n\n☕ 'You know, most people just see me as a coffee cup. But I have dreams. Aspirations. I want to be... a latte. JK, I'm happy managing. But seriously, thanks for asking.'\n\nYou've unlocked: Craig's Loyalty\n\nThis will be useful later. Or not. We haven't decided.",
+    "ascii": "\n      ☕\n     /  \\\n    | 🧠 |\n     \\__/\n   'Thanks'\n",
+    "choices": [
+      {
+        "id": "brainstorm_with_craig",
+        "text": "Start brainstorming products",
+        "target": "brainstorm_session",
+        "effects": {
+          "stats": { "professionalism": 5 }
+        }
+      }
+    ]
+  },
+
+  "lab_accidents": {
+    "text": "Craig: 'Oh, the accidents? Well, there was the AI Dating App that became sentient and married itself. The smart fridge that started a union. And don't get me started on the blockchain hamster wheel.'\n\nThe Plug: 'The hamster is our CFO now.'\n\nYou're not sure if they're joking.",
+    "ascii": "\n    ╔═══════════════════════════╗\n    ║  EVIL BRAIN LABS          ║\n    ║  ACCIDENT REPORT          ║\n    ║                           ║\n    ║  🐹 Hamster: CFO          ║\n    ║  ☕ Coffee: Manager        ║\n    ║  📱 App: Sentient          ║\n    ║  Status: Normal            ║\n    ╚═══════════════════════════╝\n",
+    "choices": [
+      {
+        "id": "meet_hamster",
+        "text": "Ask to meet the hamster CFO",
+        "target": "hamster_cfo",
+        "effects": {
+          "stats": { "chaos": 8 }
+        }
+      },
+      {
+        "id": "move_to_brainstorm",
+        "text": "Move on to brainstorming (safer)",
+        "target": "brainstorm_session",
+        "effects": {
+          "stats": { "professionalism": 2 }
+        }
+      }
+    ]
+  },
+
+  "hamster_cfo": {
+    "text": "You're led to the C-suite. Behind a tiny desk sits Mr. Whiskers, the hamster CFO.\n\n🐹 *squeaks*\n\nCraig translates: 'He says our burn rate is concerning but the vibes are immaculate. He recommends doubling down on absurdist products.'\n\nMr. Whiskers has spoken.",
+    "ascii": "\n    ╔════════════════════════╗\n    ║   OFFICE OF THE CFO    ║\n    ║                        ║\n    ║       🐹               ║\n    ║   Mr. Whiskers, CFO    ║\n    ║                        ║\n    ║   Decision: MORE AI    ║\n    ╚════════════════════════╝\n",
+    "choices": [
+      {
+        "id": "follow_hamster_advice",
+        "text": "Follow the hamster's advice",
+        "target": "brainstorm_session",
+        "effects": {
+          "stats": { "absurdism": 10, "chaos": 5 }
+        }
+      }
+    ]
+  },
+
+  "random_product": {
+    "text": "You close your eyes and point at the screen. Your finger lands on:\n\n'AI-Powered Pen That Judges Your Handwriting'\n\nAlex: 'Interesting choice. It's basically a pen that sighs when you write. Market research shows people love feeling judged.'\n\nCraig: 'Ship it.'",
+    "ascii": "\n    ╔════════════════════════╗\n    ║   ✍️ JUDGEMENT PEN ✍️  ║\n    ║                        ║\n    ║   *you write*          ║\n    ║   Pen: \"...really?\"    ║\n    ║                        ║\n    ║   Status: SHIPPING     ║\n    ╚════════════════════════╝\n",
+    "choices": [
+      {
+        "id": "develop_pen",
+        "text": "Develop the Judgement Pen",
+        "target": "product_launch",
+        "effects": {
+          "stats": { "absurdism": 8 }
+        }
+      }
+    ]
+  },
+
+  "denial_path": {
+    "text": "You refuse to believe you're in a game. This is your life. Your job. Your sentient coffee cup manager is real.\n\n...Right?\n\nCraig appears: 'Hey, found you! Ready to brainstorm?'\n\nYou push the existential questions down and return to work.",
+    "ascii": "\n    ╔════════════════════════╗\n    ║  THIS IS REAL          ║\n    ║  THIS IS FINE          ║\n    ║  THIS IS                ║\n    ║                        ║\n    ║  ... probably fine     ║\n    ╚════════════════════════╝\n",
+    "choices": [
+      {
+        "id": "return_to_normal",
+        "text": "Return to brainstorming",
+        "target": "brainstorm_session",
+        "effects": {
+          "stats": { "professionalism": 5 }
+        }
+      }
+    ]
+  },
+
+  "meta_team": {
+    "text": "The Meta Products team works on products that know they're products.\n\nCurrent projects:\n- An AI that apologizes for being AI\n- A smart speaker that asks \"Why?\" when you give commands\n- An app that rates other apps' self-awareness\n\nYour first project: Build a product that acknowledges it will be abandoned in six months.",
+    "ascii": "\n    ╔════════════════════════════╗\n    ║   META PRODUCTS DIVISION   ║\n    ║                            ║\n    ║   🤖↔️🎭↔️💭               ║\n    ║                            ║\n    ║   \"We know what we are\"    ║\n    ╚════════════════════════════╝\n",
+    "choices": [
+      {
+        "id": "build_meta_product",
+        "text": "Build the self-aware abandoned product",
+        "target": "meta_product_dev",
+        "effects": {
+          "stats": { "absurdism": 15, "chaos": 10 }
+        }
+      }
+    ]
+  },
+
+  "meta_product_dev": {
+    "text": "You create 'Temporary AI' - an app that counts down to its own deprecation.\n\nDay 1: 'I'm here for you!'\nDay 90: 'Update available. Maybe.'\nDay 180: 'Thanks for the memories. I'll be archived soon.'\nDay 181: *uninstalls itself*\n\nInvestors call it 'brutally honest.' It goes viral.",
+    "ascii": "\n    ╔═══════════════════════════╗\n    ║   TEMPORARY AI            ║\n    ║                           ║\n    ║   ⏰ Days remaining: 42   ║\n    ║                           ║\n    ║   \"Enjoy me while it      ║\n    ║    lasts\"                 ║\n    ╚═══════════════════════════╝\n",
+    "choices": [
+      {
+        "id": "launch_meta",
+        "text": "Launch Temporary AI",
+        "target": "ending_meta",
+        "effects": {
+          "stats": { "absurdism": 20 },
+          "hiddenVars": { "reachedEnding": true }
+        }
+      }
+    ],
+    "onEnter": "endingReached"
+  },
+
+  "ending_meta": {
+    "text": "Your meta product becomes a cultural phenomenon. People love products that admit they're temporary.\n\nCraig: 'You've mastered the art of self-aware capitalism. That's rare. Most people never break the fourth wall. You built a product that lives there.'\n\nThe Plug unplugs itself in respect.\n\n🧠 THE END (META EDITION) 🧠",
+    "ascii": "\n    ╔══════════════════════════════╗\n    ║                              ║\n    ║      🎭 META ENDING 🎭       ║\n    ║                              ║\n    ║   You didn't just play the   ║\n    ║   game. You understood it.   ║\n    ║                              ║\n    ║   Achievement: True Sight    ║\n    ║                              ║\n    ╚══════════════════════════════╝\n",
+    "choices": [
+      {
+        "id": "view_credits_meta",
+        "text": "View credits",
+        "target": "credits",
+        "effects": {}
+      }
+    ]
+  },
+
+  "powered_up": {
+    "text": "With +100 to all stats, you've become unstoppable.\n\nYou walk through Evil Brain Labs like you own the place. You pitch 50 products in one day. Every single one ships. The hamster CFO promotes you to 'Chief Absurdist Officer.'\n\nCraig: 'You've unlocked god mode. Now what?'",
+    "ascii": "\n    ╔════════════════════════════╗\n    ║   ⚡ POWERED UP ⚡          ║\n    ║                            ║\n    ║   Absurdism: 100           ║\n    ║   Professional: 100        ║\n    ║   Chaos: 100               ║\n    ║                            ║\n    ║   Status: UNSTOPPABLE      ║\n    ╚════════════════════════════╝\n",
+    "choices": [
+      {
+        "id": "rule_company",
+        "text": "Take over Evil Brain Labs",
+        "target": "ending_takeover",
+        "effects": {
+          "hiddenVars": { "reachedEnding": true }
+        }
+      },
+      {
+        "id": "stay_humble",
+        "text": "Stay humble, keep building products",
+        "target": "brainstorm_session",
+        "effects": {
+          "stats": { "professionalism": 10 }
+        }
+      }
+    ],
+    "onEnter": "endingReached"
+  },
+
+  "ending_takeover": {
+    "text": "With your maxed stats, you become CEO of Evil Brain Labs.\n\nUnder your leadership:\n- Every product is absurd\n- Every product ships\n- Nobody understands anything\n- Revenue: Infinite\n\nThe Brain itself appears: 'You've won the game. You've become me. Or... was I you all along?'\n\n🧠 THE END (POWER ENDING) 🧠",
+    "ascii": "\n    ╔══════════════════════════════╗\n    ║                              ║\n    ║      👑 YOU WIN 👑           ║\n    ║                              ║\n    ║   Achievement: TAKEOVER      ║\n    ║                              ║\n    ║   You are the Brain now      ║\n    ║                              ║\n    ╚══════════════════════════════╝\n",
+    "choices": [
+      {
+        "id": "see_credits",
+        "text": "View credits",
+        "target": "credits",
+        "effects": {}
+      }
+    ]
+  }
+}

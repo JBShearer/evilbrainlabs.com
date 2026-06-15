@@ -47,6 +47,7 @@ class GameEngine {
             typeof messageBoardSystem === 'undefined' ||
             typeof companyStore === 'undefined' ||
             typeof productGenerator === 'undefined' ||
+            typeof recyclingSystem === 'undefined' ||
             typeof timewasterEngine === 'undefined') {
             console.error('Required engine not loaded yet, retrying...');
             setTimeout(() => this.init(), 100);
@@ -107,6 +108,14 @@ class GameEngine {
         document.getElementById('btn-restart').addEventListener('click', () => this.restart());
         document.getElementById('btn-sound').addEventListener('click', () => this.toggleSound());
         document.getElementById('btn-exit').addEventListener('click', () => this.handleExit());
+
+        // Recycle/Craft button
+        document.getElementById('btn-recycle').addEventListener('click', () => {
+            if (typeof recyclingSystem !== 'undefined') {
+                recyclingSystem.showRecyclingStation();
+                audioEngine.select();
+            }
+        });
 
         // Modal close buttons
         document.getElementById('modal-close').addEventListener('click', () => this.hideModal('save-load-modal'));
@@ -379,6 +388,11 @@ class GameEngine {
                 if (typeof companyStore !== 'undefined') {
                     // Small delay to let narrative render first
                     setTimeout(() => companyStore.showStore(), 500);
+                }
+            },
+            openRecycling: () => {
+                if (typeof recyclingSystem !== 'undefined') {
+                    setTimeout(() => recyclingSystem.showRecyclingStation(), 500);
                 }
             }
         };

@@ -92,9 +92,17 @@
   },
 
   "start": {
-    "text": "Welcome back from productivity verification! Your performance has been recorded.\\n\\n☕ Craig (Coffee Cup Manager) approaches you with a steaming urgency.\\n\\nCRAIG: Excellent synergy generation! Now let me show you around Evil Brain Labs headquarters. We have: The Product Innovation Division, The Message Board (where employees coordinate), and The Company Store (for trading items).\\n\\nWhat would you like to see first?",
+    "text": "Welcome back from productivity verification! Your performance has been recorded.\\n\\n☕ Craig (Coffee Cup Manager) approaches you with a steaming urgency.\\n\\nCRAIG: Excellent synergy generation! Now let me show you around Evil Brain Labs headquarters. We have:\\n• The Product Innovation Division\\n• The Message Board (employee coordination)\\n• The Company Store (trading items)\\n• The Recycling & Crafting Station (turn items into AI products!)\\n\\nWhat would you like to see first?",
     "ascii": "╔════════════════════════════════════╗\\n║   EVIL BRAIN LABS HQ               ║\\n║        🧠                          ║\\n║   Bad AI is Best AI                ║\\n╚════════════════════════════════════╝",
     "choices": [
+      {
+        "id": "visit_recycling",
+        "text": "Check out the Recycling & Crafting Station",
+        "target": "recycling_intro",
+        "effects": {
+          "stats": { "absurdism": 3 }
+        }
+      },
       {
         "id": "visit_message_board",
         "text": "Check the Company Message Board",
@@ -118,6 +126,39 @@
         "effects": {
           "stats": { "chaos": 2 }
         }
+      }
+    ]
+  },
+
+  "recycling_intro": {
+    "text": "Craig leads you to a room filled with industrial machinery and glowing vats of mysterious liquids.\\n\\n☕ CRAIG: This is our Recycling & Crafting Station! Here you can:\\n\\n♻️ RECYCLE items into resources (circuits, metal, data, biological, synergy)\\n🔨 CRAFT AI products from those resources\\n💰 Sell crafted products for company scrip\\n\\n💠 AI INTELLIGENCE appears: The more absurd the product, the more profitable. That's capitalism!\\n\\n📷 ROB: Fun fact - all the resources are just rebranded e-waste. But don't tell anyone.\\n\\nWant to try it out?",
+    "ascii": "",
+    "choices": [
+      {
+        "id": "open_recycling",
+        "text": "Open the Recycling Station",
+        "target": "start",
+        "effects": {}
+      },
+      {
+        "id": "learn_more_recycling",
+        "text": "How does this work exactly?",
+        "target": "recycling_tutorial",
+        "effects": {}
+      }
+    ],
+    "onEnter": "openRecycling"
+  },
+
+  "recycling_tutorial": {
+    "text": "💠 AI INTELLIGENCE: It's simple! Each item breaks down into specific resources:\\n\\n⚡ CIRCUITS - from electronic items\\n🔩 METAL - from keycards and badges\\n💾 DATA - from documents and files\\n🧬 BIOLOGICAL - from, uh, biological samples\\n✨ SYNERGY - from junk (the magic ingredient!)\\n\\nThen you COMBINE resources to craft AI products. The more resources you invest, the more profitable the product!\\n\\n📷 ROB: It's like alchemy, but with more buzzwords and fewer ethics.\\n\\nYou can access the Recycling Station anytime via the ♻️ button at the bottom of the screen.",
+    "ascii": "",
+    "choices": [
+      {
+        "id": "try_recycling",
+        "text": "Got it! Let me try",
+        "target": "start",
+        "effects": {}
       }
     ]
   },

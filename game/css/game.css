@@ -1278,6 +1278,196 @@ body {
     text-align: center;
 }
 
+/* ============================================
+   RECYCLING & CRAFTING STATION
+   ============================================ */
+
+.recycling-panel {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 95%;
+    max-width: 900px;
+    max-height: 85vh;
+    background: rgba(0, 0, 0, 0.95);
+    border: 3px solid var(--terminal-purple);
+    border-radius: 8px;
+    padding: 1.5rem;
+    z-index: 2000;
+    box-shadow: 0 0 30px rgba(139, 92, 246, 0.5);
+    overflow-y: auto;
+}
+
+.recycling-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+    padding-bottom: 1rem;
+    border-bottom: 2px solid var(--terminal-purple);
+}
+
+.recycling-header h3 {
+    color: var(--terminal-purple);
+    font-size: 1.5rem;
+    text-shadow: 0 0 10px rgba(139, 92, 246, 0.5);
+}
+
+.recycling-content {
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+}
+
+.resources-section h4,
+.recycling-section h4,
+.crafting-section h4 {
+    color: var(--terminal-cyan);
+    margin-bottom: 1rem;
+    font-size: 1.1rem;
+}
+
+.resource-display {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 0.75rem;
+    padding: 1rem;
+    background: rgba(139, 92, 246, 0.1);
+    border: 1px solid var(--terminal-purple);
+    border-radius: 4px;
+}
+
+.resource-item {
+    color: var(--terminal-text);
+    font-size: 1rem;
+    font-weight: bold;
+}
+
+.recyclable-items {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    gap: 1rem;
+}
+
+.recyclable-item {
+    background: rgba(0, 0, 0, 0.5);
+    border: 2px solid;
+    border-radius: 8px;
+    padding: 1rem;
+    transition: all 0.2s;
+}
+
+.recyclable-item:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 5px 15px rgba(139, 92, 246, 0.3);
+}
+
+.recyclable-name {
+    font-weight: bold;
+    margin-bottom: 0.5rem;
+    color: var(--terminal-text);
+}
+
+.recyclable-value {
+    color: var(--terminal-cyan);
+    font-size: 0.85rem;
+    margin-bottom: 0.75rem;
+}
+
+.recycle-btn {
+    width: 100%;
+    padding: 0.5rem;
+    background: var(--terminal-purple);
+    border: none;
+    border-radius: 4px;
+    color: #000;
+    font-weight: bold;
+    font-family: 'Courier New', monospace;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.recycle-btn:hover {
+    background: var(--terminal-accent);
+    box-shadow: 0 0 10px rgba(255, 0, 110, 0.5);
+}
+
+.craftable-products {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 1rem;
+}
+
+.craftable-product {
+    background: rgba(0, 0, 0, 0.5);
+    border: 2px solid rgba(255, 255, 255, 0.2);
+    border-radius: 8px;
+    padding: 1rem;
+    transition: all 0.2s;
+}
+
+.craftable-product.can-craft {
+    border-color: var(--terminal-cyan);
+    box-shadow: 0 0 10px rgba(6, 182, 212, 0.3);
+}
+
+.craftable-product:hover {
+    transform: translateY(-3px);
+}
+
+.product-name {
+    font-weight: bold;
+    font-size: 1.1rem;
+    margin-bottom: 0.5rem;
+    color: var(--terminal-accent);
+}
+
+.product-description {
+    color: var(--terminal-text);
+    font-size: 0.85rem;
+    margin-bottom: 0.75rem;
+    font-style: italic;
+}
+
+.product-cost {
+    color: var(--terminal-orange);
+    font-size: 0.8rem;
+    margin-bottom: 0.5rem;
+}
+
+.product-reward {
+    color: var(--terminal-cyan);
+    font-size: 0.8rem;
+    margin-bottom: 0.75rem;
+    font-weight: bold;
+}
+
+.craft-btn {
+    width: 100%;
+    padding: 0.5rem;
+    background: var(--terminal-cyan);
+    border: none;
+    border-radius: 4px;
+    color: #000;
+    font-weight: bold;
+    font-family: 'Courier New', monospace;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.craft-btn:hover:not(:disabled) {
+    background: var(--terminal-accent);
+    box-shadow: 0 0 10px var(--terminal-glow);
+    transform: scale(1.02);
+}
+
+.craft-btn:disabled {
+    background: #555;
+    color: #999;
+    cursor: not-allowed;
+}
+
 /* Responsive Design */
 @media (max-width: 768px) {
     .game-header h1 {

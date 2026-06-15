@@ -38,6 +38,19 @@ class GameEngine {
     }
 
     async init() {
+        // Wait for all global instances to be ready
+        if (typeof graphicsEngine === 'undefined' ||
+            typeof audioEngine === 'undefined' ||
+            typeof saveManager === 'undefined' ||
+            typeof achievementTracker === 'undefined' ||
+            typeof inventorySystem === 'undefined' ||
+            typeof messageBoardSystem === 'undefined' ||
+            typeof timewasterEngine === 'undefined') {
+            console.error('Required engine not loaded yet, retrying...');
+            setTimeout(() => this.init(), 100);
+            return;
+        }
+
         // Initialize graphics engine
         const canvas = graphicsEngine.init();
         document.getElementById('graphics-display').appendChild(canvas);

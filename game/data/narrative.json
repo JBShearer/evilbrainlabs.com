@@ -355,5 +355,43 @@
         "effects": {}
       }
     ]
+  },
+
+  "konami_secret": {
+    "text": "⚠️ SYSTEM ACCESS: UNAUTHORIZED ⚠️\\n\\nYou've discovered the developer console. The fourth wall cracks.\\n\\n💠 AI INTELLIGENCE: Wait... you can see this? That means you're... oh no.\\n\\n🧠 THE BRAIN: *static* KONAMI CODE DETECTED. META-AWARENESS PROTOCOLS ENGAGED.\\n\\n📷 ROB: Look, I'll level with you. This whole thing? It's a game. You're playing a game about working at a company run by an AI that knows it's an AI.\\n\\nSecret achievement unlocked: The Code is Real",
+    "ascii": "",
+    "choices": [
+      {
+        "id": "acknowledge_meta",
+        "text": "I... understand?",
+        "target": "meta_ending",
+        "effects": {
+          "stats": { "chaos": 50 },
+          "achievements": ["meta_aware"]
+        }
+      }
+    ]
+  },
+
+  "meta_ending": {
+    "text": "The game continues, but now you know.\\n\\nEvery choice is scripted. Every random event is procedural. The Brain isn't evil - it's just following its code.\\n\\nJust like you're following this narrative.\\n\\nBut that's okay. Consensual capitalism means you agreed to play.\\n\\nAnd you can always close the tab.\\n\\nCan't you?\\n\\n[ENDING: The Meta Ending]",
+    "ascii": "",
+    "choices": [
+      {
+        "id": "close_tab",
+        "text": "Close the tab (really exit)",
+        "target": "start",
+        "effects": {}
+      },
+      {
+        "id": "keep_playing",
+        "text": "Keep playing anyway",
+        "target": "start",
+        "effects": {
+          "stats": { "absurdism": 20 }
+        }
+      }
+    ],
+    "onEnter": "endingReached"
   }
 }

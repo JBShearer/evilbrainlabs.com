@@ -369,6 +369,9 @@ class GraphicsEngine {
         ctx.lineTo(x + 20, y + 70);
         ctx.stroke();
     }
+
+    // Draw credits screen
+    drawCredits() {
         this.clear();
         const ctx = this.ctx;
 

@@ -335,14 +335,14 @@ class EmployeeEvaluator {
                 </p>
 
                 <div class="evaluation-list">
-                    ${this.evaluations.map(eval => `
+                    ${this.evaluations.map(evaluation => `
                         <div class="evaluation-card">
-                            <h4>${eval.name}</h4>
-                            <p>${eval.description}</p>
+                            <h4>${evaluation.name}</h4>
+                            <p>${evaluation.description}</p>
                             <div class="eval-meta">
-                                ${eval.questions.length} questions • 5 minutes
+                                ${evaluation.questions.length} questions • 5 minutes
                             </div>
-                            <button class="eval-start-btn" data-id="${eval.id}">
+                            <button class="eval-start-btn" data-id="${evaluation.id}">
                                 Start Evaluation
                             </button>
                         </div>

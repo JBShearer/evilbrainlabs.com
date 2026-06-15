@@ -188,12 +188,12 @@
   },
 
   "company_store_intro": {
-    "text": "You enter the COMPANY STORE. It's a small kiosk run by a vending machine that achieved sentience and unionized.\\n\\n🏪 VENDING MACHINE: Welcome, Employee. I accept Company Scrip for items. You can also SELL items you don't want.\\n\\nCurrent Scrip: ${gameState.companyScrip || 0}\\n\\nAvailable for purchase:\\n- Coffee Voucher (10 scrip)\\n- Green Keycard (50 scrip)\\n- Blue Keycard (150 scrip)\\n- Purple Keycard (500 scrip)\\n- Random Mystery Box (25 scrip)\\n\\nWhat would you like to do?",
+    "text": "You enter the COMPANY STORE. It's a small kiosk run by a vending machine that achieved sentience and unionized.\\n\\n🏪 VENDING MACHINE: Welcome, Employee. I accept Company Scrip for items. You can also SELL items you don't want.\\n\\nYou currently have items from productivity verification. Trade them for scrip, or save them - some unlock special story paths.\\n\\nWant to browse the store?",
     "ascii": "",
     "choices": [
       {
-        "id": "browse_store",
-        "text": "Browse items (not yet implemented)",
+        "id": "open_store",
+        "text": "Browse the Company Store",
         "target": "start",
         "effects": {}
       },
@@ -203,7 +203,8 @@
         "target": "start",
         "effects": {}
       }
-    ]
+    ],
+    "onEnter": "openStore"
   },
 
   "first_post": {

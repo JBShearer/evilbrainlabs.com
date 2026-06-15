@@ -1121,6 +1121,163 @@ body {
     font-style: italic;
 }
 
+/* ============================================
+   COMPANY STORE PANEL
+   ============================================ */
+
+.company-store-panel {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 90%;
+    max-width: 700px;
+    max-height: 80vh;
+    background: rgba(0, 0, 0, 0.95);
+    border: 3px solid var(--terminal-accent);
+    border-radius: 8px;
+    padding: 1.5rem;
+    z-index: 2000;
+    box-shadow: 0 0 30px rgba(255, 0, 110, 0.5);
+    overflow-y: auto;
+}
+
+.store-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+    padding-bottom: 1rem;
+    border-bottom: 2px solid var(--terminal-accent);
+}
+
+.store-header h3 {
+    color: var(--terminal-accent);
+    font-size: 1.5rem;
+    text-shadow: 0 0 10px var(--terminal-glow);
+}
+
+.player-scrip-display {
+    color: var(--terminal-orange);
+    font-size: 1.2rem;
+    font-weight: bold;
+}
+
+.store-close-btn {
+    background: var(--terminal-accent);
+    border: none;
+    color: #000;
+    font-size: 1.5rem;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    cursor: pointer;
+    font-family: 'Courier New', monospace;
+    font-weight: bold;
+    transition: all 0.2s;
+}
+
+.store-close-btn:hover {
+    transform: scale(1.1);
+    box-shadow: 0 0 15px var(--terminal-glow);
+}
+
+.store-content {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.store-inventory h4, .store-sell h4 {
+    color: var(--terminal-cyan);
+    margin-bottom: 1rem;
+    font-size: 1.1rem;
+}
+
+.store-items {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 1rem;
+}
+
+.store-item {
+    background: rgba(0, 0, 0, 0.5);
+    border: 2px solid;
+    border-radius: 8px;
+    padding: 1rem;
+    text-align: center;
+    transition: all 0.2s;
+}
+
+.store-item.rarity-gray {
+    border-color: #888888;
+}
+
+.store-item.rarity-green {
+    border-color: #00ff00;
+}
+
+.store-item.rarity-blue {
+    border-color: #00aaff;
+}
+
+.store-item.rarity-purple {
+    border-color: #aa00ff;
+}
+
+.store-item.rarity-gold {
+    border-color: #ffaa00;
+    box-shadow: 0 0 15px rgba(255, 170, 0, 0.3);
+}
+
+.store-item:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 5px 15px rgba(255, 0, 110, 0.3);
+}
+
+.store-item-name {
+    font-weight: bold;
+    margin-bottom: 0.5rem;
+    color: var(--terminal-text);
+}
+
+.store-item-price {
+    color: var(--terminal-orange);
+    margin-bottom: 0.75rem;
+    font-size: 0.9rem;
+}
+
+.store-buy-btn {
+    width: 100%;
+    padding: 0.5rem;
+    background: var(--terminal-cyan);
+    border: none;
+    border-radius: 4px;
+    color: #000;
+    font-weight: bold;
+    font-family: 'Courier New', monospace;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.store-buy-btn:hover:not(:disabled) {
+    background: var(--terminal-accent);
+    box-shadow: 0 0 10px var(--terminal-glow);
+}
+
+.store-buy-btn:disabled {
+    background: #555;
+    color: #999;
+    cursor: not-allowed;
+}
+
+.store-hint {
+    color: rgba(255, 255, 255, 0.6);
+    font-size: 0.9rem;
+    font-style: italic;
+    text-align: center;
+}
+
 /* Responsive Design */
 @media (max-width: 768px) {
     .game-header h1 {

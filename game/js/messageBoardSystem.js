@@ -127,6 +127,22 @@ class MessageBoardSystem {
         document.getElementById('message-input').addEventListener('keypress', (e) => {
             if (e.key === 'Enter') this.postMessage();
         });
+
+        // Setup like button listeners
+        document.querySelectorAll('.like-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                const msgId = e.currentTarget.dataset.id;
+                this.likeMessage(msgId);
+            });
+        });
+
+        // Setup trade button listeners
+        document.querySelectorAll('.trade-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                const msgId = e.currentTarget.dataset.id;
+                this.initiateTrade(msgId);
+            });
+        });
     }
 
     renderMessages() {
@@ -270,6 +286,25 @@ class MessageBoardSystem {
 
         if (document.getElementById('message-board-panel')) {
             this.renderBoard();
+        }
+    }
+
+    // Like a message
+    likeMessage(msgId) {
+        const message = this.messages.find(m => m.id === msgId);
+        if (message && message.type !== 'corporate') {
+            message.likes = (message.likes || 0) + 1;
+            audioEngine.select();
+            this.renderBoard();
+        }
+    }
+
+    // Initiate trade
+    initiateTrade(msgId) {
+        const message = this.messages.find(m => m.id === msgId);
+        if (message) {
+            alert(`Trade initiated with ${message.author}. Check your inventory for trade requests. (Full trading system coming soon!)`);
+            audioEngine.notification();
         }
     }
 

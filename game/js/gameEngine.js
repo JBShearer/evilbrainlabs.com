@@ -45,6 +45,8 @@ class GameEngine {
             typeof achievementTracker === 'undefined' ||
             typeof inventorySystem === 'undefined' ||
             typeof messageBoardSystem === 'undefined' ||
+            typeof companyStore === 'undefined' ||
+            typeof productGenerator === 'undefined' ||
             typeof timewasterEngine === 'undefined') {
             console.error('Required engine not loaded yet, retrying...');
             setTimeout(() => this.init(), 100);
@@ -206,6 +208,24 @@ class GameEngine {
         this.gameState.nodeHistory.push(nodeId);
         this.gameState.currentNodeId = nodeId;
 
+        // Generate procedural products for brainstorm scenes
+        if (nodeId === 'brainstorm_session' && typeof productGenerator !== 'undefined') {
+            const products = productGenerator.generateBatch(3);
+            this.gameState.currentProducts = products;
+
+            // Create dynamic product list
+            const productList = products.map(p => `${p.name} (${p.problem})`).join(', ');
+
+            // Store original text and create modified version
+            if (!node.originalText) {
+                node.originalText = node.text;
+            }
+            node.text = node.originalText.replace(
+                'AI Meeting Summarizer (but it lies), Blockchain Dog Walker, Smart Pillow that judges your dreams, AI-Powered Procrastination Coach',
+                productList
+            );
+        }
+
         // Apply state effects
         if (node.effects) {
             this.applyEffects(node.effects);
@@ -354,6 +374,12 @@ class GameEngine {
             },
             startTimewaster: (gameType) => {
                 this.startTimewaster(gameType || 'meeting_clicker');
+            },
+            openStore: () => {
+                if (typeof companyStore !== 'undefined') {
+                    // Small delay to let narrative render first
+                    setTimeout(() => companyStore.showStore(), 500);
+                }
             }
         };
 
@@ -511,8 +537,9 @@ class GameEngine {
 
     restart() {
         if (confirm('Are you sure you want to restart? All progress will be lost.')) {
+            // Reset game state
             this.gameState = {
-                currentNodeId: 'start',
+                currentNodeId: 'certification',
                 nodeHistory: [],
                 visitedNodes: new Map(),
                 playerChoices: new Set(),
@@ -522,7 +549,8 @@ class GameEngine {
                     konamiActivated: false,
                     brokeFourthWall: false,
                     productsCreated: 0,
-                    reachedEnding: false
+                    reachedEnding: false,
+                    claimedHuman: false
                 },
                 achievements: new Set(),
                 playTime: 0,
@@ -530,7 +558,17 @@ class GameEngine {
                 startTime: Date.now()
             };
 
-            this.goToNode('start');
+            // Clear inventory
+            if (this.inventory) {
+                this.inventory.items = [];
+                this.inventory.updateDisplay();
+            }
+
+            // Update stats display
+            this.updateStatsDisplay();
+
+            // Go to certification screen
+            this.goToNode('certification');
             audioEngine.click();
         }
     }

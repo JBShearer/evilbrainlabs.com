@@ -36,6 +36,11 @@ class GameEngine {
     }
 
     async init() {
+        // Initialize graphics engine
+        const canvas = graphicsEngine.init();
+        document.getElementById('graphics-display').appendChild(canvas);
+        graphicsEngine.drawBrainLogo();
+
         // Load narrative data
         await this.loadNarrative();
 
@@ -209,11 +214,8 @@ class GameEngine {
     }
 
     renderNode(node) {
-        // Update ASCII art
-        const asciiDisplay = document.getElementById('ascii-display');
-        if (node.ascii) {
-            asciiDisplay.innerHTML = `<pre class="ascii-art">${node.ascii}</pre>`;
-        }
+        // Update graphics
+        graphicsEngine.drawScene(this.gameState.currentNodeId);
 
         // Update narrative text
         const narrativeText = document.getElementById('narrative-text');

@@ -41,20 +41,9 @@
 
         <!-- Main Game Container -->
         <main class="game-container">
-            <!-- ASCII Art Display -->
-            <div class="ascii-display" id="ascii-display">
-                <pre class="ascii-art">
-    ╔════════════════════════════════════╗
-    ║   EVIL BRAIN LABS                  ║
-    ║   Product Innovation Division      ║
-    ║                                    ║
-    ║        🧠                          ║
-    ║       /|||\                        ║
-    ║      /_||_|\                       ║
-    ║                                    ║
-    ║   "Almost Good is Perfect"         ║
-    ╚════════════════════════════════════╝
-                </pre>
+            <!-- Graphics Display (Canvas) -->
+            <div class="graphics-display" id="graphics-display">
+                <!-- Canvas will be injected here -->
             </div>
 
             <!-- Narrative Text -->
@@ -137,6 +126,7 @@
     </div>
 
     <!-- Scripts -->
+    <script src="js/graphicsEngine.js"></script>
     <script src="js/audioEngine.js"></script>
     <script src="js/saveManager.js"></script>
     <script src="js/achievements.js"></script>

@@ -50,6 +50,7 @@ class GameEngine {
             typeof vendingMachine === 'undefined' ||
             typeof productGenerator === 'undefined' ||
             typeof recyclingSystem === 'undefined' ||
+            typeof employeeEvaluator === 'undefined' ||
             typeof timewasterEngine === 'undefined') {
             console.error('Required engine not loaded yet, retrying...');
             setTimeout(() => this.init(), 100);
@@ -105,11 +106,17 @@ class GameEngine {
     setupEventListeners() {
         // Control buttons
         document.getElementById('btn-save').addEventListener('click', () => this.showSaveModal());
-        document.getElementById('btn-load').addEventListener('click', () => this.showLoadModal());
         document.getElementById('btn-achievements').addEventListener('click', () => this.showAchievementsModal());
         document.getElementById('btn-restart').addEventListener('click', () => this.restart());
         document.getElementById('btn-sound').addEventListener('click', () => this.toggleSound());
-        document.getElementById('btn-exit').addEventListener('click', () => this.handleExit());
+
+        // Evaluation button
+        document.getElementById('btn-eval').addEventListener('click', () => {
+            if (typeof employeeEvaluator !== 'undefined') {
+                employeeEvaluator.showEvaluationMenu();
+                audioEngine.select();
+            }
+        });
 
         // Vending machine button
         document.getElementById('btn-vending').addEventListener('click', () => {
@@ -139,7 +146,6 @@ class GameEngine {
                 }
             });
         });
-    }
     }
 
     setupKonamiCode() {

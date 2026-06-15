@@ -106,8 +106,16 @@
             <!-- Vending machine will be rendered here -->
         </div>
 
+        <!-- Employee Evaluation Panel (hidden by default) -->
+        <div class="evaluation-panel" id="evaluation-panel" style="display: none;">
+            <!-- Evaluations will be rendered here -->
+        </div>
+
         <!-- Controls Footer -->
         <footer class="game-controls">
+            <button class="control-btn" id="btn-eval" title="Employee Evaluations">
+                📋 Tests
+            </button>
             <button class="control-btn" id="btn-vending" title="Vending Machine">
                 🏪 Vending
             </button>
@@ -117,9 +125,6 @@
             <button class="control-btn" id="btn-save" title="Save Game">
                 💾 Save
             </button>
-            <button class="control-btn" id="btn-load" title="Load Game">
-                📂 Load
-            </button>
             <button class="control-btn" id="btn-achievements" title="View Achievements">
                 🏆 Achievements (<span id="achievement-count">0</span>)
             </button>
@@ -128,9 +133,6 @@
             </button>
             <button class="control-btn" id="btn-sound" title="Toggle Sound">
                 🔊 Sound: <span id="sound-status">ON</span>
-            </button>
-            <button class="control-btn" id="btn-exit" title="Exit to Main Site">
-                🚪 Exit
             </button>
         </footer>
     </div>
@@ -180,6 +182,7 @@
     <script src="js/companyStore.js"></script>
     <script src="js/vendingMachine.js"></script>
     <script src="js/recyclingSystem.js"></script>
+    <script src="js/employeeEvaluator.js"></script>
     <script src="js/timewasterEngine.js"></script>
     <script src="js/gameEngine.js"></script>
 </body>

@@ -51,6 +51,11 @@ class TimewasterEngine {
             clearInterval(this.bingoCallInterval);
         }
 
+        // Award productivity score for job title progression
+        if (typeof jobTitleSystem !== 'undefined') {
+            jobTitleSystem.addScore(this.score);
+        }
+
         // Calculate items earned
         const items = this.rollForItems();
 

@@ -85,6 +85,21 @@ body {
     letter-spacing: 2px;
 }
 
+.job-title {
+    color: var(--terminal-orange);
+    font-size: 1rem;
+    margin-top: 0.5rem;
+    font-weight: bold;
+    text-shadow: 0 0 5px rgba(245, 158, 11, 0.5);
+    transition: all 0.3s ease;
+}
+
+.job-title.title-update {
+    transform: scale(1.1);
+    color: var(--terminal-accent);
+    text-shadow: 0 0 15px var(--terminal-glow);
+}
+
 /* Stats Bar */
 .stats-bar {
     display: grid;

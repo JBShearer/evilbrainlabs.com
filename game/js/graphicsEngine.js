@@ -6,8 +6,8 @@ class GraphicsEngine {
     constructor() {
         this.canvas = null;
         this.ctx = null;
-        this.width = 400;
-        this.height = 300;
+        this.width = 800;  // Double size for better mobile visibility
+        this.height = 600;
     }
 
     init() {
@@ -18,15 +18,27 @@ class GraphicsEngine {
             this.canvas.height = this.height;
             this.canvas.style.imageRendering = 'pixelated';
             this.canvas.style.width = '100%';
+            this.canvas.style.maxWidth = '800px';
             this.canvas.style.height = 'auto';
             this.ctx = this.canvas.getContext('2d');
+            // Scale everything 2x so old 400x300 coords work
+            this.ctx.scale(2, 2);
         }
         return this.canvas;
     }
 
     clear() {
+        // Save/restore to handle scaling
+        this.ctx.save();
+        this.ctx.setTransform(1, 0, 0, 1, 0, 0);
         this.ctx.fillStyle = '#0a0a0a';
         this.ctx.fillRect(0, 0, this.width, this.height);
+        this.ctx.restore();
+    }
+
+    // Scale helper - not needed now with context scaling
+    s(value) {
+        return value * 2;
     }
 
     // Draw Evil Brain Labs logo

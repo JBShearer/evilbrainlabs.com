@@ -101,16 +101,24 @@
             <!-- Recycling station will be rendered here -->
         </div>
 
+        <!-- Vending Machine Panel (hidden by default) -->
+        <div class="vending-machine-panel" id="vending-machine-panel" style="display: none;">
+            <!-- Vending machine will be rendered here -->
+        </div>
+
         <!-- Controls Footer -->
         <footer class="game-controls">
+            <button class="control-btn" id="btn-vending" title="Vending Machine">
+                🏪 Vending
+            </button>
+            <button class="control-btn" id="btn-recycle" title="Recycling & Crafting">
+                ♻️ Recycle
+            </button>
             <button class="control-btn" id="btn-save" title="Save Game">
                 💾 Save
             </button>
             <button class="control-btn" id="btn-load" title="Load Game">
                 📂 Load
-            </button>
-            <button class="control-btn" id="btn-recycle" title="Recycling & Crafting">
-                ♻️ Recycle/Craft
             </button>
             <button class="control-btn" id="btn-achievements" title="View Achievements">
                 🏆 Achievements (<span id="achievement-count">0</span>)
@@ -170,6 +178,7 @@
     <script src="js/messageBoardSystem.js"></script>
     <script src="js/productGenerator.js"></script>
     <script src="js/companyStore.js"></script>
+    <script src="js/vendingMachine.js"></script>
     <script src="js/recyclingSystem.js"></script>
     <script src="js/timewasterEngine.js"></script>
     <script src="js/gameEngine.js"></script>

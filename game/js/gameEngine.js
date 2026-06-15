@@ -43,9 +43,11 @@ class GameEngine {
             typeof audioEngine === 'undefined' ||
             typeof saveManager === 'undefined' ||
             typeof achievementTracker === 'undefined' ||
+            typeof jobTitleSystem === 'undefined' ||
             typeof inventorySystem === 'undefined' ||
             typeof messageBoardSystem === 'undefined' ||
             typeof companyStore === 'undefined' ||
+            typeof vendingMachine === 'undefined' ||
             typeof productGenerator === 'undefined' ||
             typeof recyclingSystem === 'undefined' ||
             typeof timewasterEngine === 'undefined') {
@@ -109,6 +111,14 @@ class GameEngine {
         document.getElementById('btn-sound').addEventListener('click', () => this.toggleSound());
         document.getElementById('btn-exit').addEventListener('click', () => this.handleExit());
 
+        // Vending machine button
+        document.getElementById('btn-vending').addEventListener('click', () => {
+            if (typeof vendingMachine !== 'undefined') {
+                vendingMachine.showVendingMachine();
+                audioEngine.select();
+            }
+        });
+
         // Recycle/Craft button
         document.getElementById('btn-recycle').addEventListener('click', () => {
             if (typeof recyclingSystem !== 'undefined') {
@@ -129,6 +139,7 @@ class GameEngine {
                 }
             });
         });
+    }
     }
 
     setupKonamiCode() {

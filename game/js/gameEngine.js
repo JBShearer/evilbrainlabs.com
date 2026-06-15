@@ -62,10 +62,15 @@ class GameEngine {
 
     async loadNarrative() {
         try {
-            const response = await fetch('data/narrative.json');
+            const response = await fetch('/game/data/narrative.json');
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
             this.narrative = await response.json();
+            console.log('Narrative loaded successfully:', Object.keys(this.narrative).length, 'nodes');
         } catch (error) {
             console.error('Failed to load narrative:', error);
+            alert('Failed to load game data. Please refresh the page.');
         }
     }
 
@@ -127,6 +132,13 @@ class GameEngine {
     async goToNode(nodeId, fromChoice = false) {
         // Show loading
         this.showLoading(true);
+
+        // Check if narrative is loaded
+        if (!this.narrative) {
+            console.error('Narrative not loaded yet');
+            this.showLoading(false);
+            return;
+        }
 
         // Get node data
         const node = this.narrative[nodeId];

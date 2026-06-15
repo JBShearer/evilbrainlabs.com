@@ -478,7 +478,7 @@ class GameEngine {
                 hiddenVariables: {
                     exitClicks: 0,
                     konamiActivated: false,
-                    brokeF ourthWall: false,
+                    brokeFourthWall: false,
                     productsCreated: 0,
                     reachedEnding: false
                 },

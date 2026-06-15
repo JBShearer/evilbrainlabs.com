@@ -112,7 +112,7 @@ const ACHIEVEMENTS = {
         title: 'Meta Aware',
         description: 'Break the fourth wall',
         icon: '🎭',
-        condition: (state) => state.hiddenVariables.brokeF ourthWall
+        condition: (state) => state.hiddenVariables.brokeFourthWall
     }
 };
 

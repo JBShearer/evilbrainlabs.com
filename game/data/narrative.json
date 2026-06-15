@@ -241,7 +241,7 @@
         "target": "fourth_wall_break",
         "effects": {
           "stats": { "chaos": 10 },
-          "hiddenVars": { "brokeF ourthWall": true }
+          "hiddenVars": { "brokeFourthWall": true }
         }
       },
       {

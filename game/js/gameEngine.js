@@ -603,7 +603,6 @@ class GameEngine {
 }
 
 // Initialize game when DOM is ready
-let gameEngine;
 document.addEventListener('DOMContentLoaded', () => {
-    gameEngine = new GameEngine();
+    window.gameEngine = new GameEngine();
 });

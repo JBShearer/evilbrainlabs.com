@@ -268,22 +268,33 @@ class TimewasterEngine {
         `;
 
         // Add items to inventory
-        console.log('TimewasterEngine: Adding items to inventory', items);
-        console.log('window.gameEngine exists?', !!window.gameEngine);
-        console.log('gameEngine.inventory exists?', window.gameEngine?.inventory);
+        console.log('[Timewaster] Adding items to inventory:', items);
+        console.log('[Timewaster] window.gameEngine:', window.gameEngine);
 
+        if (!window.gameEngine) {
+            console.error('[Timewaster] ERROR: window.gameEngine is not defined!');
+            alert('Error: Game engine not found. Items cannot be added. Please refresh the page.');
+            return;
+        }
+
+        if (!window.gameEngine.inventory) {
+            console.error('[Timewaster] ERROR: gameEngine.inventory is not defined!');
+            alert('Error: Inventory system not found. Items cannot be added. Please refresh the page.');
+            return;
+        }
+
+        let addedCount = 0;
         items.forEach(item => {
-            if (window.gameEngine && window.gameEngine.inventory) {
-                console.log('Adding item:', item.name);
-                const success = window.gameEngine.inventory.addItem(item);
-                console.log('Add item result:', success);
-            } else {
-                console.error('Cannot add item - inventory not available');
-            }
+            console.log('[Timewaster] Attempting to add:', item.name, item);
+            const success = window.gameEngine.inventory.addItem(item);
+            console.log('[Timewaster] Add result:', success);
+            if (success) addedCount++;
         });
 
+        console.log(`[Timewaster] Successfully added ${addedCount}/${items.length} items`);
+
         // Play success sound
-        if (items.length > 0) {
+        if (addedCount > 0) {
             audioEngine.achievement();
         }
     }

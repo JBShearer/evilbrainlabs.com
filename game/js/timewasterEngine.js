@@ -268,9 +268,17 @@ class TimewasterEngine {
         `;
 
         // Add items to inventory
+        console.log('TimewasterEngine: Adding items to inventory', items);
+        console.log('window.gameEngine exists?', !!window.gameEngine);
+        console.log('gameEngine.inventory exists?', window.gameEngine?.inventory);
+
         items.forEach(item => {
             if (window.gameEngine && window.gameEngine.inventory) {
-                window.gameEngine.inventory.addItem(item);
+                console.log('Adding item:', item.name);
+                const success = window.gameEngine.inventory.addItem(item);
+                console.log('Add item result:', success);
+            } else {
+                console.error('Cannot add item - inventory not available');
             }
         });
 

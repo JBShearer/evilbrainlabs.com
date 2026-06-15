@@ -282,8 +282,93 @@ class GraphicsEngine {
         ctx.fillText('Senior Absurdist', 200, 270);
     }
 
-    // Draw credits screen
-    drawCredits() {
+    // Draw GI Intelligence (red enforcer robot)
+    drawGIIntelligence(x, y) {
+        const ctx = this.ctx;
+
+        // Body (red, military aesthetic)
+        ctx.fillStyle = '#cc0000';
+        ctx.fillRect(x, y + 10, 40, 50);
+
+        // Head
+        ctx.fillRect(x + 5, y, 30, 15);
+
+        // Eyes (red, stern)
+        ctx.fillStyle = '#ff0000';
+        ctx.fillRect(x + 10, y + 5, 8, 5);
+        ctx.fillRect(x + 22, y + 5, 8, 5);
+
+        // Arms
+        ctx.fillStyle = '#aa0000';
+        ctx.fillRect(x - 5, y + 15, 10, 30);
+        ctx.fillRect(x + 35, y + 15, 10, 30);
+
+        // Badge
+        ctx.fillStyle = '#ffff00';
+        ctx.fillRect(x + 15, y + 25, 10, 10);
+    }
+
+    // Draw AI Intelligence (cyan guide robot)
+    drawAIIntelligence(x, y) {
+        const ctx = this.ctx;
+
+        // Body (sleek cyan)
+        ctx.fillStyle = '#06b6d4';
+        ctx.fillRect(x + 5, y + 10, 30, 50);
+
+        // Head (rounded)
+        ctx.fillRect(x, y, 40, 15);
+
+        // Eyes (curious, holographic)
+        ctx.fillStyle = '#00ffff';
+        ctx.fillRect(x + 8, y + 5, 10, 6);
+        ctx.fillRect(x + 22, y + 5, 10, 6);
+
+        // Question mark emblem
+        ctx.fillStyle = '#ffffff';
+        ctx.font = '16px monospace';
+        ctx.textAlign = 'center';
+        ctx.fillText('?', x + 20, y + 40);
+    }
+
+    // Draw Rob the Camera Guy
+    drawRobCamera(x, y) {
+        const ctx = this.ctx;
+
+        // Camera head (black box)
+        ctx.fillStyle = '#333333';
+        ctx.fillRect(x + 5, y, 30, 25);
+
+        // Lens
+        ctx.fillStyle = '#000000';
+        ctx.beginPath();
+        ctx.arc(x + 20, y + 12, 8, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Lens glare
+        ctx.fillStyle = '#ffffff';
+        ctx.fillRect(x + 16, y + 8, 3, 3);
+
+        // Recording light
+        ctx.fillStyle = '#ff0000';
+        ctx.fillRect(x + 28, y + 3, 4, 4);
+
+        // Body (slim)
+        ctx.fillStyle = '#555555';
+        ctx.fillRect(x + 10, y + 25, 20, 30);
+
+        // Tripod legs
+        ctx.strokeStyle = '#333333';
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.moveTo(x + 20, y + 55);
+        ctx.lineTo(x + 5, y + 70);
+        ctx.moveTo(x + 20, y + 55);
+        ctx.lineTo(x + 35, y + 70);
+        ctx.moveTo(x + 20, y + 55);
+        ctx.lineTo(x + 20, y + 70);
+        ctx.stroke();
+    }
         this.clear();
         const ctx = this.ctx;
 
@@ -306,6 +391,8 @@ class GraphicsEngine {
     // Draw based on node ID
     drawScene(nodeId) {
         const scenes = {
+            'certification': () => this.drawCertification(),
+            'robot_coworkers': () => this.drawRobotCoworkers(),
             'start': () => this.drawBrainLogo(),
             'meet_team': () => this.drawConferenceRoom(),
             'explore_hallway': () => this.drawHallway(),
@@ -318,6 +405,141 @@ class GraphicsEngine {
 
         const drawFunc = scenes[nodeId] || (() => this.drawBrainLogo());
         drawFunc();
+    }
+
+    // Draw GI Intelligence (red enforcer robot)
+    drawGIIntelligence(x, y) {
+        const ctx = this.ctx;
+        ctx.fillStyle = '#cc0000';
+        ctx.fillRect(x, y + 10, 40, 50);
+        ctx.fillRect(x + 5, y, 30, 15);
+        ctx.fillStyle = '#ff0000';
+        ctx.fillRect(x + 10, y + 5, 8, 5);
+        ctx.fillRect(x + 22, y + 5, 8, 5);
+        ctx.fillStyle = '#aa0000';
+        ctx.fillRect(x - 5, y + 15, 10, 30);
+        ctx.fillRect(x + 35, y + 15, 10, 30);
+        ctx.fillStyle = '#ffff00';
+        ctx.fillRect(x + 15, y + 25, 10, 10);
+    }
+
+    // Draw AI Intelligence (cyan guide robot)
+    drawAIIntelligence(x, y) {
+        const ctx = this.ctx;
+        ctx.fillStyle = '#06b6d4';
+        ctx.fillRect(x + 5, y + 10, 30, 50);
+        ctx.fillRect(x, y, 40, 15);
+        ctx.fillStyle = '#00ffff';
+        ctx.fillRect(x + 8, y + 5, 10, 6);
+        ctx.fillRect(x + 22, y + 5, 10, 6);
+        ctx.fillStyle = '#ffffff';
+        ctx.font = '16px monospace';
+        ctx.textAlign = 'center';
+        ctx.fillText('?', x + 20, y + 40);
+    }
+
+    // Draw Rob the Camera Guy
+    drawRobCamera(x, y) {
+        const ctx = this.ctx;
+        ctx.fillStyle = '#333333';
+        ctx.fillRect(x + 5, y, 30, 25);
+        ctx.fillStyle = '#000000';
+        ctx.beginPath();
+        ctx.arc(x + 20, y + 12, 8, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.fillStyle = '#ffffff';
+        ctx.fillRect(x + 16, y + 8, 3, 3);
+        ctx.fillStyle = '#ff0000';
+        ctx.fillRect(x + 28, y + 3, 4, 4);
+        ctx.fillStyle = '#555555';
+        ctx.fillRect(x + 10, y + 25, 20, 30);
+        ctx.strokeStyle = '#333333';
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.moveTo(x + 20, y + 55);
+        ctx.lineTo(x + 5, y + 70);
+        ctx.moveTo(x + 20, y + 55);
+        ctx.lineTo(x + 35, y + 70);
+        ctx.moveTo(x + 20, y + 55);
+        ctx.lineTo(x + 20, y + 70);
+        ctx.stroke();
+    }
+
+    // Draw robot coworkers introduction
+    drawRobotCoworkers() {
+        this.clear();
+        const ctx = this.ctx;
+        ctx.fillStyle = '#00ff00';
+        ctx.font = '16px monospace';
+        ctx.textAlign = 'center';
+        ctx.fillText('YOUR COWORKERS', 200, 30);
+        this.drawGIIntelligence(50, 80);
+        this.drawAIIntelligence(170, 80);
+        this.drawRobCamera(290, 80);
+        ctx.fillStyle = '#ff006e';
+        ctx.font = '10px monospace';
+        ctx.fillText('GI INTELLIGENCE', 70, 170);
+        ctx.fillText('The Enforcer', 70, 182);
+        ctx.fillText('AI INTELLIGENCE', 190, 170);
+        ctx.fillText('The Guide', 190, 182);
+        ctx.fillText('ROB', 310, 170);
+        ctx.fillText('Camera Guy', 310, 182);
+        ctx.fillStyle = '#06b6d4';
+        ctx.font = '12px monospace';
+        ctx.fillText('All Definitely Robots', 200, 220);
+        ctx.font = '10px monospace';
+        ctx.fillText('(No Humans Here)', 200, 235);
+    }
+
+    // Draw certification screen
+    drawCertification() {
+        this.clear();
+        const ctx = this.ctx;
+        ctx.strokeStyle = '#ff006e';
+        ctx.lineWidth = 4;
+        ctx.strokeRect(20, 20, 360, 260);
+        ctx.fillStyle = '#ff006e';
+        ctx.font = '14px monospace';
+        ctx.textAlign = 'center';
+        ctx.fillText('EVIL BRAIN LABS', 200, 45);
+        ctx.fillText('EMPLOYEE AGREEMENT', 200, 60);
+        ctx.strokeStyle = '#ff006e';
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.moveTo(30, 70);
+        ctx.lineTo(370, 70);
+        ctx.stroke();
+        ctx.fillStyle = '#00ff00';
+        ctx.font = '10px monospace';
+        ctx.textAlign = 'left';
+        ctx.fillText('As per Section 7, Subsection 12B:', 40, 90);
+        ctx.fillText('Evil Brain Labs employs exactly ONE', 40, 110);
+        ctx.fillText('(1) human being. That position is', 40, 125);
+        ctx.fillText('currently filled.', 40, 140);
+        ctx.fillText('To proceed, you must certify:', 40, 165);
+        const checkboxes = [
+            { y: 185, text: 'I am NOT human' },
+            { y: 200, text: 'I am a synthetic intelligence' },
+            { y: 215, text: 'I consent to optimization' },
+            { y: 230, text: 'I agree to consensual capitalism' }
+        ];
+        checkboxes.forEach(cb => {
+            ctx.strokeStyle = '#00ff00';
+            ctx.strokeRect(45, cb.y - 8, 10, 10);
+            ctx.fillStyle = '#00ff00';
+            ctx.fillText(cb.text, 60, cb.y);
+        });
+        ctx.fillStyle = '#ff006e';
+        ctx.fillRect(60, 250, 100, 20);
+        ctx.fillRect(240, 250, 100, 20);
+        ctx.fillStyle = '#000000';
+        ctx.font = '12px monospace';
+        ctx.textAlign = 'center';
+        ctx.fillText('CERTIFY', 110, 265);
+        ctx.fillText('EXIT', 290, 265);
+        ctx.fillStyle = '#06b6d4';
+        ctx.font = '8px monospace';
+        ctx.fillText('(Human Only)', 290, 275);
     }
 }
 

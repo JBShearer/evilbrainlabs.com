@@ -5,7 +5,7 @@
 class GameEngine {
     constructor() {
         this.gameState = {
-            currentNodeId: 'start',
+            currentNodeId: 'certification',
             nodeHistory: [],
             visitedNodes: new Map(),
             playerChoices: new Set(),
@@ -19,7 +19,8 @@ class GameEngine {
                 konamiActivated: false,
                 brokeFourthWall: false,
                 productsCreated: 0,
-                reachedEnding: false
+                reachedEnding: false,
+                claimedHuman: false
             },
             achievements: new Set(),
             playTime: 0,

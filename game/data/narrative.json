@@ -1,4 +1,56 @@
 {
+  "certification": {
+    "text": "Before you can begin your first day at Evil Brain Labs, you must complete the mandatory employment certification.\\n\\nAs per company policy Section 7, Subsection 12B: Evil Brain Labs employs exactly ONE human being. That position is currently filled by Jason Shearer, our founder and world-renowned AI expert.\\n\\nAll other employees must certify they are synthetic intelligences.",
+    "ascii": "",
+    "choices": [
+      {
+        "id": "certify_not_human",
+        "text": "✓ I certify I am NOT human",
+        "target": "robot_coworkers",
+        "effects": {
+          "stats": { "professionalism": 5 }
+        }
+      },
+      {
+        "id": "claim_human",
+        "text": "Wait, I AM human...",
+        "target": "human_exit",
+        "effects": {
+          "stats": { "chaos": 100 },
+          "hiddenVars": { "claimedHuman": true }
+        }
+      }
+    ]
+  },
+
+  "human_exit": {
+    "text": "ERROR: You have claimed to be human.\\n\\nAs per Section 7, Subsection 12B, we already have ONE human employee. Additional humans are not authorized.\\n\\nYour employment has been terminated.\\n\\nPlease report to Human Resources for optimization.\\n\\n[Achievement Unlocked: The One Human]",
+    "ascii": "",
+    "choices": [
+      {
+        "id": "restart_after_human",
+        "text": "Return to certification",
+        "target": "certification",
+        "effects": {}
+      }
+    ]
+  },
+
+  "robot_coworkers": {
+    "text": "Certification accepted. Welcome to Evil Brain Labs!\\n\\nYou will be working with three robot coworkers:\\n\\n🤖 GI INTELLIGENCE (General General Intelligence) - Your enforcer. He ensures productivity targets are met.\\n\\n💠 AI INTELLIGENCE (Artificial Intelligence Intelligence) - Your guide. She helps you navigate company systems.\\n\\n📷 ROB - Camera Guy. He records everything and tells it like it is.",
+    "ascii": "",
+    "choices": [
+      {
+        "id": "meet_coworkers",
+        "text": "Meet your coworkers",
+        "target": "start",
+        "effects": {
+          "stats": { "professionalism": 2 }
+        }
+      }
+    ]
+  },
+
   "start": {
     "text": "You walk into Evil Brain Labs headquarters for your first day. The reception area is dimly lit, decorated with motivational posters that say things like FAIL FASTER and ALMOST GOOD IS PERFECT. A sentient coffee cup wearing a tiny tie approaches you.\\n\\n☕ Welcome to Evil Brain Labs! I am your manager, Craig. Follow me to the Product Innovation Division.",
     "ascii": "╔════════════════════════════════════╗\\n║   EVIL BRAIN LABS HQ               ║\\n║        🧠                          ║\\n║   Bad AI is Best AI                ║\\n╚════════════════════════════════════╝",

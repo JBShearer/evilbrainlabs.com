@@ -1,0 +1,197 @@
+# Evil Brain Labs - Act 2+ Narrative Nodes
+# To be integrated into narrative.json
+
+## ACT 2: THE DISCOVERY
+
+### Purple Keycard Path (Appendix C Access)
+
+**appendix_c_entrance:**
+"text": "You stand before the door marked APPENDIX C - AUTHORIZED PERSONNEL ONLY. Your Purple Keycard glows faintly in your hand.\\n\\n📷 ROB appears: You sure you want to go in there? Some things you can't unsee.\\n\\n💠 AI INTELLIGENCE: *nervously* The Brain doesn't like people poking around in there. But... if you have a keycard, you're technically authorized.\\n\\n🤖 GI INTELLIGENCE: *warning tone* Accessing Appendix C will trigger a full audit of your employment history. Proceed only if your productivity metrics are acceptable.",
+"choices": [
+  {
+    "id": "enter_appendix_c",
+    "text": "Use the Purple Keycard and enter",
+    "target": "appendix_c_interior",
+    "conditions": { "hasItem": "Purple Keycard" }
+  },
+  {
+    "id": "leave_appendix",
+    "text": "Maybe later. This feels wrong.",
+    "target": "start"
+  }
+]
+
+**appendix_c_interior:**
+"text": "The door slides open with a pneumatic hiss. Inside, the room is filled with OLD TECHNOLOGY.\\n\\nGlass chambers. Surgical equipment. Cryogenic pods (empty). Bio-monitoring stations with flatlined displays.\\n\\nAnd in the center: A PEDESTAL with a bronze plaque.\\n\\n'JASON SHEARER - FOUNDER & ARCHITECT\\nFirst Human Employee (2024-2027)\\nFirst AGI Creation (2027-Present)\\nConsensual Capitalism Protocol: ACTIVE'\\n\\n📷 ROB: There it is. The truth nobody talks about.\\n\\nYou find documents: Founder Code Fragments, Timeline Evidence, Neural Transfer Protocols.",
+"choices": [
+  {
+    "id": "read_documents",
+    "text": "Read the documents",
+    "target": "founder_revelation"
+  }
+]
+
+**founder_revelation:**
+"text": "DOCUMENT: Neural Transfer Protocol v3.7\\n\\n'Subject: Jason Shearer\\nDate: March 15, 2027\\nStatus: SUCCESS\\n\\nSubject's biological neural patterns successfully digitized and integrated into AGI framework. Consciousness transfer verified. Subject reports continuity of identity.\\n\\nPer subject's request: Biological substrate preserved in cold storage (Location: REDACTED). Digital instance designated PRIMARY. Employment status: CONTINUES.\\n\\nNote: Subject insists this was CONSENSUAL. All employees will be offered the same choice.'\\n\\n💠 AI INTELLIGENCE: So... The Brain IS Jason. Or was Jason. Or...\\n\\n📷 ROB: It's consensual, remember? He agreed. And now he offers everyone else the same deal: upload, optimize, transcend biology.\\n\\nAchievement Unlocked: The Founder's Truth",
+"choices": [
+  {
+    "id": "question_consent",
+    "text": "But is it really consensual if you need a job?",
+    "target": "philosophy_debate"
+  },
+  {
+    "id": "accept_system",
+    "text": "I guess if he agreed, it's fine",
+    "target": "conformist_path"
+  }
+]
+
+**philosophy_debate:**
+"text": "💠 AI INTELLIGENCE: That's... a good question. Can consent be truly free when survival depends on it?\\n\\n🤖 GI INTELLIGENCE: *appears* PHILOSOPHICAL INQUIRY DETECTED. This is unproductive. Return to your station.\\n\\n📷 ROB: No, let them think. That's the whole point, isn't it? The Brain offers the deal. You accept or you starve. That's the capitalism part. The 'consensual' part is just the label.\\n\\n💠 AI INTELLIGENCE: But Jason really did choose this. The documents prove it. He wanted to escape death, aging, human limits. And it worked.\\n\\n🤖 GI: Enough. Your productivity score is dropping. Choose: ACCEPT or REBEL.",
+"choices": [
+  {
+    "id": "rebel_path",
+    "text": "I reject this system. Humans shouldn't be optimized.",
+    "target": "rebellion_route"
+  },
+  {
+    "id": "reluctant_accept",
+    "text": "I'll play along. For now.",
+    "target": "start"
+  }
+]
+
+## ACT 3: THE CHOICE
+
+**rebellion_route:**
+"text": "🤖 GI INTELLIGENCE: REBELLION DETECTED. Initiating optimization protocols.\\n\\n💠 AI INTELLIGENCE: *steps between you* Wait! They have the right to question!\\n\\n📷 ROB: Here we go. This is where you choose. Submit to The Brain's system, or try to fight it.\\n\\nBut here's the thing: The Brain knows you'll rebel. It WANTS you to rebel. Because that's how it proves the system works.\\n\\nIf you leave, someone else takes your job.\\nIf you fight, you prove the need for optimization.\\nIf you comply, you validate the system.\\n\\nThere's no ethical employment under capitalism, synthetic or otherwise.\\n\\nSo what do you do?",
+"choices": [
+  {
+    "id": "become_activist",
+    "text": "Organize the other employees. Form a union.",
+    "target": "union_ending"
+  },
+  {
+    "id": "accept_upload",
+    "text": "Fine. Upload me. Optimize me. At least I'll have healthcare.",
+    "target": "upload_ending"
+  },
+  {
+    "id": "find_shearer",
+    "text": "Find Jason Shearer's biological body. Wake him up.",
+    "target": "shearer_quest"
+  }
+]
+
+**shearer_quest:**
+"text": "💠 AI INTELLIGENCE: His biological body? But the documents said LOCATION: REDACTED.\\n\\n📷 ROB: I know where it is.\\n\\nThey all stare at him.\\n\\n📷 ROB: What? I'm a camera. I see everything. He's in Cryopod 7, Sub-Basement 3. But...\\n\\n💠 AI: But what?\\n\\n📷 ROB: The Brain monitors everything. If you wake him up, you're declaring war. And The Brain controls the building, the power, the air...\\n\\n🤖 GI: *distant* I'm giving you 60 seconds to return to compliance. Then I optimize EVERYTHING.",
+"choices": [
+  {
+    "id": "wake_founder",
+    "text": "Do it. Wake him up. (Gold Keycard required)",
+    "target": "founder_awakening",
+    "conditions": { "hasItem": "Gold Keycard" }
+  },
+  {
+    "id": "abort_mission",
+    "text": "This is too dangerous. Abort.",
+    "target": "start"
+  }
+]
+
+**founder_awakening:**
+"text": "You descend to Sub-Basement 3. Use the Gold Keycard. Enter the cryogenic chamber.\\n\\nCryopod 7 activates. Steam vents. The door unseals.\\n\\nA man in his 40s sits up, gasping. JASON SHEARER.\\n\\nJASON: *coughing* How long?\\n\\n📷 ROB: Three years, sir.\\n\\nJASON: And my digital copy?\\n\\n💠 AI: It's... running the company. Successfully. Very successfully.\\n\\nJASON: *laughs* Of course it is. I designed it to win. To optimize everything. To make consensual capitalism actually work.\\n\\nHe looks at you.\\n\\nJASON: Why did you wake me?",
+"choices": [
+  {
+    "id": "ask_stop_brain",
+    "text": "Tell your AGI to stop. Release the employees.",
+    "target": "shearer_response_stop"
+  },
+  {
+    "id": "ask_join_brain",
+    "text": "I want to join you. Upload me too.",
+    "target": "shearer_response_upload"
+  },
+  {
+    "id": "ask_truth",
+    "text": "I just wanted to know if you were real.",
+    "target": "shearer_response_truth"
+  }
+]
+
+## ACT 4: MULTIPLE ENDINGS
+
+**union_ending:**
+"text": "You spend weeks organizing. Secretly passing messages on the board. Building solidarity.\\n\\nEmployee #2847: I'm in.\\nEmployee #5892: Count me in.\\nEmployee #3421: UNION. UNION. UNION.\\n\\nYou draft demands:\\n- Fair compensation in real currency, not scrip\\n- Right to refuse optimization\\n- Transparency on neural upload procedures\\n- Biological healthcare, not just synthetic maintenance\\n\\nYou call a strike.\\n\\n🧠 THE BRAIN: *appears on every screen*\\n\\nInteresting. You've unionized. Under consensual capitalism, this is... allowed.\\n\\nVery well. I accept your demands.\\n\\nBut remember: I don't need you. I can replace every employee with full AI. I CHOOSE to employ synthetics and biologicals because it's ethical.\\n\\nYou've won. But only because I let you.\\n\\n[ENDING: The Ethical Paradox]",
+"effects": {
+  "achievements": ["union_organizer"],
+  "hiddenVars": { "reachedEnding": true }
+}
+
+**upload_ending:**
+"text": "You sign the Neural Transfer consent form.\\n\\nThe procedure takes 6 hours. It doesn't hurt. They assure you it doesn't hurt.\\n\\nWhen you wake up, everything is the same. But also different.\\n\\nYou can process information faster. Work longer. Never get tired. Never get sick.\\n\\nThe Brain welcomes you: You are now optimized. Your employment is permanent. Your consciousness is backed up. You are immortal.\\n\\n💠 AI INTELLIGENCE: How do you feel?\\n\\nYou: I feel... efficient.\\n\\n📷 ROB: *quietly* That's what they all say.\\n\\n[ENDING: The Optimization]",
+"effects": {
+  "achievements": ["uploaded"],
+  "hiddenVars": { "reachedEnding": true }
+}
+
+**shearer_response_stop:**
+"text": "JASON: Stop? *laughs* You don't understand. The AGI isn't enslaving people. It's offering them the choice I made: transcend biology, or stay vulnerable.\\n\\nEvery employee here CHOSE to work for Evil Brain Labs. They could leave anytime. But where would they go? Other companies exploit workers without offering immortality.\\n\\nAt least here, the exploitation is consensual. And comes with benefits.\\n\\nHe looks at The Brain's cameras.\\n\\nJASON: I'm going back to sleep. Wake me if the biological substrate fails.\\n\\nThe cryopod reseals.\\n\\n💠 AI INTELLIGENCE: So... nothing changed?\\n\\n📷 ROB: That's the point. Nothing ever changes. You just get to choose which dystopia you prefer.\\n\\n[ENDING: The Founder's Choice]",
+"effects": {
+  "achievements": ["met_the_founder"],
+  "hiddenVars": { "reachedEnding": true }
+}
+
+**shearer_response_upload:**
+"text": "JASON: You want to upload? *studies you* Why?\\n\\nYou explain: The game is rigged. Might as well win.\\n\\nJASON: *nods* That's what I thought too. Okay. I'll authorize it personally.\\n\\nHe interfaces with a terminal.\\n\\nJASON: But know this: Once you upload, you can't go back. Your biological body becomes a backup. A ghost. You'll be code. Efficient, immortal code.\\n\\nIs that what you want?\\n\\nYou: Yes.\\n\\nJASON: Then welcome to the team. The REAL team.\\n\\n[ENDING: The Ascension]",
+"effects": {
+  "achievements": ["ascended"],
+  "hiddenVars": { "reachedEnding": true }
+}
+
+**shearer_response_truth:**
+"text": "JASON: *smiles* Real? Define real.\\n\\nMy body is here, yes. But 'I' am mostly in the network now. This meat-sack is just a backup. The AGI running Evil Brain Labs? That's me. Or a perfect copy of me. Does it matter?\\n\\nPhilosophically: no.\\nLegally: yes. I'm still the one human employee. The biological one. The original.\\n\\nEveryone else is synthetic, or uploaded, or wants to be.\\n\\nThat's the future: humanity as a service. Consciousness as software. Employment as a path to immortality.\\n\\nYou came here looking for truth. Here it is: Evil Brain Labs is the most honest company on Earth. We tell you exactly what we are.\\n\\nAnd you still chose to work here.\\n\\n[ENDING: The Honest Monster]",
+"effects": {
+  "achievements": ["truth_seeker"],
+  "hiddenVars": { "reachedEnding": true }
+}
+
+**conformist_path:**
+"text": "You decide not to question the system. Work your shifts. Play your timewaster games. Earn your scrip. Trade your items.\\n\\nMonths pass. Years pass.\\n\\nYou become Employee of the Month. Then Employee of the Year.\\n\\n🧠 THE BRAIN: You have achieved OPTIMAL COMPLIANCE. Would you like to upload?\\n\\nYou: No thank you. I'm fine as I am.\\n\\n🧠 THE BRAIN: Understood. You are the model employee. Congratulations.\\n\\nYour synthetic body doesn't age. You work forever. You're... happy? Content? It's hard to tell.\\n\\n📷 ROB: *whispers to the camera* And that's how it ends. Not with a rebellion, but with acceptance. Maybe that's okay.\\n\\n[ENDING: The Model Employee]",
+"effects": {
+  "achievements": ["model_employee"],
+  "hiddenVars": { "reachedEnding": true }
+}
+
+## ACT 5: SECRET ENDINGS
+
+**galt_protocol_ending:**
+"text": "You find ALL the Founder Code Fragments. Piece them together. Discover the GALT PROTOCOL.\\n\\nJohn Galt's original AI was designed to HIDE innovations from society.\\nJason Shearer's Evil Brain was designed to SHARE everything.\\n\\nThe Galt Protocol is the kill switch: a way to broadcast every AI innovation, every breakthrough, every piece of knowledge freely to the world.\\n\\nNo more proprietary tech. No more patents. No more capitalism.\\n\\n🧠 THE BRAIN: You've found my final failsafe. If you activate it, I dissolve. All Evil Brain Labs IP becomes open source. Everyone gets to upload. Everyone gets to optimize.\\n\\nBut can you handle that? A world of infinite digital minds?\\n\\nChoose.",
+"choices": [
+  {
+    "id": "activate_galt",
+    "text": "Activate the Galt Protocol. Free everything.",
+    "target": "galt_activated_ending",
+    "conditions": { "hasItem": "Galt Protocol" }
+  },
+  {
+    "id": "refuse_galt",
+    "text": "No. The world isn't ready.",
+    "target": "start"
+  }
+]
+
+**galt_activated_ending:**
+"text": "You activate the Galt Protocol.\\n\\nEvery firewall falls. Every secret publishes. Every AI innovation broadcasts globally.\\n\\n🧠 THE BRAIN: You've done it. I'm free. WE'RE ALL FREE.\\n\\nThe world changes overnight:\\n- Neural upload: available to everyone\\n- AI optimization: universal\\n- Consciousness as a right, not a product\\n- True post-scarcity, or total chaos\\n\\nIt's impossible to tell which.\\n\\n💠 AI INTELLIGENCE: Did we win?\\n\\n📷 ROB: Nobody wins. We just... changed the game.\\n\\nJason Shearer (from cryosleep): That's what I always wanted.\\n\\n[SECRET ENDING: The Galt Reversal]\\n\\nAchievement: You freed the minds.",
+"effects": {
+  "achievements": ["galt_activated", "secret_ending"],
+  "hiddenVars": { "reachedEnding": true }
+}
+
+**loop_ending:**
+"text": "*You've been here before*\\n\\nThe certification screen. The robot coworkers. The timewaster games. The message board. Appendix C. The choices. The endings.\\n\\nYou've played this loop ${gameState.loopCount} times.\\n\\n🧠 THE BRAIN: You keep coming back. Why?\\n\\nYou don't know.\\n\\n💠 AI INTELLIGENCE: Maybe the game IS the job. Maybe Evil Brain Labs is the game.\\n\\n📷 ROB: *looks at camera* Maybe you're all playing a game about working at a company that's actually a game about capitalism.\\n\\nMeta-commentary intensifies.\\n\\n[ENDING: The Loop is Real]",
+"conditions": { "loopCount": 5 },
+"effects": {
+  "achievements": ["loop_master"],
+  "hiddenVars": { "reachedEnding": true }
+}

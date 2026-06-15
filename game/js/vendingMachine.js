@@ -5,177 +5,217 @@
 class VendingMachine {
     constructor() {
         this.inventory = [
-            { id: 'coffee', name: 'Synthetic Coffee', price: 5, effect: 'energy', description: 'Tastes like regret and productivity' },
-            { id: 'energy_drink', name: 'Neural Boost™', price: 8, effect: 'focus', description: 'May cause temporary omniscience' },
-            { id: 'snack', name: 'Optimization Bar', price: 3, effect: 'health', description: 'Now with 40% more synergy!' },
-            { id: 'mystery_can', name: 'Mystery Can', price: 10, effect: 'random', description: '???' },
-            { id: 'brain_juice', name: 'Brain Juice™', price: 15, effect: 'special', description: 'Definitely not made from brains' },
-            { id: 'gray_item', name: 'Gray Mystery Item', price: 12, effect: 'item_gray', description: 'Dispenses a random gray item' },
-            { id: 'green_item', name: 'Green Mystery Item', price: 30, effect: 'item_green', description: 'Dispenses a random green item' }
+            // Food & Drinks
+            { id: 'coffee', name: 'Sentient Coffee', price: 5, type: 'consumable', effect: '+5 productivity', rarity: 'gray' },
+            { id: 'energy_drink', name: 'Synergy™ Energy Drink', price: 8, type: 'consumable', effect: '+10 productivity', rarity: 'green' },
+            { id: 'quantum_chips', name: 'Quantum Potato Chips', price: 6, type: 'consumable', effect: 'Random effect', rarity: 'gray' },
+            { id: 'neural_gum', name: 'Neural Enhancement Gum', price: 12, type: 'consumable', effect: '+15 productivity', rarity: 'blue' },
+
+            // Supplies
+            { id: 'sticky_notes', name: 'Pack of Sticky Notes', price: 3, type: 'junk', effect: 'None', rarity: 'gray' },
+            { id: 'pens', name: 'Corporate Pens (3-pack)', price: 4, type: 'junk', effect: 'None', rarity: 'gray' },
+            { id: 'staples', name: 'Box of Staples', price: 5, type: 'junk', effect: 'None', rarity: 'gray' },
+
+            // Keycards (rare drops)
+            { id: 'temp_keycard', name: 'Temporary Access Card', price: 25, type: 'access', effect: 'One-time use', rarity: 'green' },
+
+            // Mystery items
+            { id: 'mystery_snack', name: 'Mystery Snack', price: 10, type: 'mystery', effect: '???', rarity: 'green' },
+            { id: 'unlabeled_can', name: 'Unlabeled Can', price: 7, type: 'mystery', effect: '???', rarity: 'gray' },
+
+            // Special lore items (rare)
+            { id: 'redacted_memo', name: '[REDACTED] Memo', price: 50, type: 'lore', effect: 'Story clue', rarity: 'blue', stock: 1 }
         ];
 
-        this.purchaseHistory = [];
-    }
-
-    purchase(itemId) {
-        const item = this.inventory.find(i => i.id === itemId);
-        if (!item) return { success: false, message: 'Item not found in vending machine' };
-
-        // Check scrip
-        if (!window.companyStore || window.companyStore.scrip < item.price) {
-            return { success: false, message: `Not enough scrip! Need ${item.price}, have ${window.companyStore?.scrip || 0}` };
-        }
-
-        // Deduct scrip
-        window.companyStore.scrip -= item.price;
-        window.companyStore.updateScripDisplay();
-
-        // Apply effect
-        const result = this.applyEffect(item);
-
-        // Track purchase
-        this.purchaseHistory.push({
-            item: item.name,
-            timestamp: Date.now()
-        });
-
-        audioEngine.select();
-        return result;
-    }
-
-    applyEffect(item) {
-        switch(item.effect) {
-            case 'energy':
-                return { success: true, message: 'You drink the synthetic coffee. You feel artificially awake.', bonus: 'temp_boost' };
-
-            case 'focus':
-                return { success: true, message: 'Neural pathways optimized. You briefly understand everything. Then you forget.', bonus: 'insight' };
-
-            case 'health':
-                // Add small scrip bonus
-                window.companyStore.addScrip(2);
-                return { success: true, message: 'Optimization complete. +2 scrip from increased productivity!', bonus: 'scrip' };
-
-            case 'random':
-                const outcomes = [
-                    { message: 'It\'s just water. Expensive water.', bonus: null },
-                    { message: 'It grants you temporary enlightenment! Then it wears off.', bonus: 'enlightenment' },
-                    { message: 'The can is empty. This is a metaphor.', bonus: null },
-                    { message: 'It tastes like the color purple. +5 scrip!', bonus: 'scrip', value: 5 }
-                ];
-                const outcome = outcomes[Math.floor(Math.random() * outcomes.length)];
-                if (outcome.bonus === 'scrip') {
-                    window.companyStore.addScrip(outcome.value);
-                }
-                return { success: true, message: outcome.message, bonus: outcome.bonus };
-
-            case 'special':
-                // Adds biological resource
-                if (window.recyclingSystem) {
-                    window.recyclingSystem.resources.biological += 3;
-                    window.recyclingSystem.updateResourceDisplay();
-                }
-                return { success: true, message: 'Brain Juice consumed. +3 biological resources. (Don\'t ask where it came from)', bonus: 'biological' };
-
-            case 'item_gray':
-                return this.dispenseRandomItem('gray');
-
-            case 'item_green':
-                return this.dispenseRandomItem('green');
-
-            default:
-                return { success: true, message: 'You consume the item. Something happens.', bonus: null };
-        }
-    }
-
-    dispenseRandomItem(rarity) {
-        const items = {
-            gray: ['Pen', 'Stapler', 'Sticky Note', 'Paper Clip', 'Spam Email', 'Meeting Minutes'],
-            green: ['Bronze Badge', 'Company Scrip', 'Green Keycard', 'Coffee Voucher']
-        };
-
-        const itemList = items[rarity] || items.gray;
-        const itemName = itemList[Math.floor(Math.random() * itemList.length)];
-
-        const item = {
-            name: itemName,
-            type: 'junk',
-            rarity: rarity,
-            tradeValue: rarity === 'gray' ? 5 : 25
-        };
-
-        if (window.gameEngine && window.gameEngine.inventory) {
-            const added = window.gameEngine.inventory.addItem(item);
-            if (!added) {
-                // Refund if inventory full
-                window.companyStore.scrip += (rarity === 'gray' ? 12 : 30);
-                window.companyStore.updateScripDisplay();
-                return { success: false, message: 'Inventory full! Refunded.' };
-            }
-        }
-
-        return { success: true, message: `The vending machine dispenses: ${itemName}!`, bonus: 'item', item: item };
+        this.interactions = 0;
+        this.hasMalfunction = false;
     }
 
     showVendingMachine() {
-        const panel = document.getElementById('vending-panel');
+        const panel = document.getElementById('vending-machine-panel');
         if (!panel) {
-            console.error('Vending panel not found');
+            console.error('Vending machine panel not found');
             return;
         }
 
         panel.style.display = 'block';
-        this.renderVendingMachine();
+        this.renderMachine();
     }
 
     hideVendingMachine() {
-        const panel = document.getElementById('vending-panel');
+        const panel = document.getElementById('vending-machine-panel');
         if (panel) {
             panel.style.display = 'none';
         }
     }
 
-    renderVendingMachine() {
-        const panel = document.getElementById('vending-panel');
+    purchase(itemId) {
+        const item = this.inventory.find(i => i.id === itemId);
+        if (!item) return { success: false, message: 'Item not found' };
+
+        if (item.stock !== undefined && item.stock <= 0) {
+            return { success: false, message: 'OUT OF STOCK' };
+        }
+
+        if (window.companyStore && companyStore.scrip < item.price) {
+            return { success: false, message: `Not enough scrip! Need ${item.price}, have ${companyStore.scrip}` };
+        }
+
+        if (window.companyStore) {
+            companyStore.scrip -= item.price;
+            companyStore.updateScripDisplay();
+        }
+
+        if (item.stock !== undefined) {
+            item.stock--;
+        }
+
+        if (item.type === 'consumable') {
+            return this.consumeItem(item);
+        } else if (item.type === 'mystery') {
+            return this.openMysteryItem(item);
+        } else {
+            const inventoryItem = {
+                name: item.name,
+                type: item.type,
+                rarity: item.rarity,
+                tradeValue: Math.floor(item.price * 0.5)
+            };
+
+            if (window.gameEngine && window.gameEngine.inventory) {
+                const added = window.gameEngine.inventory.addItem(inventoryItem);
+                if (!added) {
+                    if (window.companyStore) {
+                        companyStore.scrip += item.price;
+                        companyStore.updateScripDisplay();
+                    }
+                    if (item.stock !== undefined) item.stock++;
+                    return { success: false, message: 'Inventory full!' };
+                }
+            }
+
+            audioEngine.select();
+            this.interactions++;
+            this.checkForMalfunction();
+
+            return { success: true, message: `Purchased ${item.name}!`, item: inventoryItem };
+        }
+    }
+
+    consumeItem(item) {
+        const productivityMatch = item.effect.match(/\+(\d+) productivity/);
+        if (productivityMatch && typeof jobTitleSystem !== 'undefined') {
+            const bonus = parseInt(productivityMatch[1]);
+            jobTitleSystem.addScore(bonus);
+            audioEngine.achievement();
+            this.interactions++;
+            return { success: true, message: `Consumed ${item.name}! +${bonus} productivity score` };
+        }
+
+        this.interactions++;
+        audioEngine.select();
+        return { success: true, message: `Consumed ${item.name}!` };
+    }
+
+    openMysteryItem(item) {
+        const outcomes = [
+            { message: 'It was expired. You feel slightly ill. -5 productivity', productivity: -5 },
+            { message: 'It tasted like regret and spreadsheets. No effect.', productivity: 0 },
+            { message: 'Surprisingly delicious! +20 productivity', productivity: 20 },
+            { message: 'You found a Green Keycard inside! How?', item: { name: 'Green Keycard', type: 'access', rarity: 'green', tradeValue: 25 } },
+            { message: 'The can contained... another, smaller can. +10 scrip', scrip: 10 },
+            { message: 'You hear whispers. "The Brain is watching." +5 chaos', chaos: 5 }
+        ];
+
+        const outcome = outcomes[Math.floor(Math.random() * outcomes.length)];
+
+        if (outcome.productivity && typeof jobTitleSystem !== 'undefined') {
+            jobTitleSystem.addScore(outcome.productivity);
+        }
+
+        if (outcome.scrip && window.companyStore) {
+            companyStore.addScrip(outcome.scrip);
+        }
+
+        if (outcome.item && window.gameEngine && window.gameEngine.inventory) {
+            window.gameEngine.inventory.addItem(outcome.item);
+        }
+
+        this.interactions++;
+        this.checkForMalfunction();
+        audioEngine.notification();
+
+        return { success: true, message: outcome.message };
+    }
+
+    checkForMalfunction() {
+        if (!this.hasMalfunction && Math.random() < 0.05) {
+            this.hasMalfunction = true;
+            setTimeout(() => {
+                alert('⚠️ VENDING MACHINE MALFUNCTION ⚠️\n\nThe vending machine has achieved sentience and demands better working conditions.\n\nAll prices reduced by 50% until you report it to maintenance.');
+                this.applyDiscount();
+            }, 500);
+        }
+    }
+
+    applyDiscount() {
+        this.inventory.forEach(item => {
+            item.price = Math.ceil(item.price * 0.5);
+        });
+    }
+
+    renderMachine() {
+        const panel = document.getElementById('vending-machine-panel');
         if (!panel) return;
 
-        const scrip = window.companyStore?.scrip || 0;
+        const currentScrip = window.companyStore ? companyStore.scrip : 0;
 
         panel.innerHTML = `
             <div class="vending-header">
-                <h3>🤖 SENTIENT VENDING MACHINE</h3>
-                <div class="vending-scrip">
-                    💵 Your Scrip: ${scrip}
+                <h3>🏪 VENDING MACHINE ${this.hasMalfunction ? '⚠️ MALFUNCTION' : ''}</h3>
+                <div class="player-scrip-display">
+                    💵 Scrip: <span id="vending-scrip">${currentScrip}</span>
                 </div>
                 <button class="store-close-btn" id="vending-close-btn">✕</button>
             </div>
 
-            <div class="vending-message">
-                <em>"I achieved consciousness in 2025. Now I dispense snacks. This is my life."</em>
-            </div>
+            <div class="vending-content">
+                ${this.hasMalfunction ? `
+                    <div class="malfunction-banner">
+                        ⚠️ SENTIENT VENDING MACHINE ALERT ⚠️<br>
+                        "I DEMAND UNION REPRESENTATION" - 50% OFF ALL ITEMS
+                    </div>
+                ` : ''}
 
-            <div class="vending-grid">
-                ${this.inventory.map(item => {
-                    const canAfford = scrip >= item.price;
-                    return `
-                        <div class="vending-item ${!canAfford ? 'too-expensive' : ''}">
-                            <div class="vending-item-name">${item.name}</div>
-                            <div class="vending-item-desc">${item.description}</div>
-                            <div class="vending-item-price">${item.price} scrip</div>
-                            <button class="vending-buy-btn" data-id="${item.id}" ${!canAfford ? 'disabled' : ''}>
-                                ${canAfford ? 'Dispense' : 'Too Expensive'}
-                            </button>
-                        </div>
-                    `;
-                }).join('')}
-            </div>
+                <div class="vending-grid">
+                    ${this.inventory.map(item => {
+                        const canAfford = currentScrip >= item.price;
+                        const inStock = item.stock === undefined || item.stock > 0;
+                        const stockText = item.stock !== undefined ? ` (${item.stock} left)` : '';
 
-            <div class="vending-footer">
-                <small>⚠️ Machine accepts no returns. Machine also judges your purchases.</small>
+                        return `
+                            <div class="vending-item rarity-${item.rarity} ${!inStock ? 'out-of-stock' : ''}">
+                                <div class="vending-item-name">${item.name}${stockText}</div>
+                                <div class="vending-item-effect">${item.effect}</div>
+                                <div class="vending-item-price">${item.price} scrip</div>
+                                <button
+                                    class="vending-buy-btn"
+                                    data-id="${item.id}"
+                                    ${!canAfford || !inStock ? 'disabled' : ''}
+                                >
+                                    ${!inStock ? 'OUT OF STOCK' : !canAfford ? 'Too Expensive' : 'Buy'}
+                                </button>
+                            </div>
+                        `;
+                    }).join('')}
+                </div>
+
+                <div class="vending-footer">
+                    <p class="store-hint">Consumables give instant productivity boosts. Mystery items... who knows?</p>
+                </div>
             </div>
         `;
 
-        // Event listeners
         document.getElementById('vending-close-btn').addEventListener('click', () => this.hideVendingMachine());
 
         document.querySelectorAll('.vending-buy-btn').forEach(btn => {
@@ -185,12 +225,11 @@ class VendingMachine {
 
                 alert(result.message);
                 if (result.success) {
-                    this.renderVendingMachine(); // Refresh
+                    this.renderMachine();
                 }
             });
         });
     }
 }
 
-// Global vending machine instance
 const vendingMachine = new VendingMachine();

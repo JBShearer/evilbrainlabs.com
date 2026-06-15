@@ -40,7 +40,7 @@
         </div>
 
         <!-- Main Game Container -->
-        <main class="game-container">
+        <main class="game-container" id="game-wrapper">
             <!-- Graphics Display (Canvas) -->
             <div class="graphics-display" id="graphics-display">
                 <!-- Canvas will be injected here -->
@@ -68,6 +68,27 @@
                 <span class="loading-text">◐ Loading...</span>
             </div>
         </main>
+
+        <!-- Timewaster Container (overlays main game when active) -->
+        <div class="timewaster-overlay" id="timewaster-container" style="display: none;">
+            <!-- Timewaster games will be rendered here -->
+        </div>
+
+        <!-- Inventory Panel -->
+        <div class="inventory-panel" id="inventory-panel">
+            <div class="inventory-header">
+                <h3>📦 INVENTORY</h3>
+                <span class="inventory-count"><span id="inventory-count">0</span>/20</span>
+            </div>
+            <div class="inventory-grid" id="inventory-grid">
+                <!-- 20 inventory slots -->
+            </div>
+        </div>
+
+        <!-- Message Board Panel -->
+        <div class="message-board-panel" id="message-board-panel">
+            <!-- Message board will be rendered here -->
+        </div>
 
         <!-- Controls Footer -->
         <footer class="game-controls">
@@ -130,6 +151,9 @@
     <script src="js/audioEngine.js"></script>
     <script src="js/saveManager.js"></script>
     <script src="js/achievements.js"></script>
+    <script src="js/inventorySystem.js"></script>
+    <script src="js/messageBoardSystem.js"></script>
+    <script src="js/timewasterEngine.js"></script>
     <script src="js/gameEngine.js"></script>
 </body>
 </html>

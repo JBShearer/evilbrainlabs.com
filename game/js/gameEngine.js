@@ -30,6 +30,7 @@ class GameEngine {
 
         this.narrative = null;
         this.autoSaveInterval = null;
+        this.inventory = null;
         this.konamiSequence = ['ArrowUp', 'ArrowUp', 'ArrowDown', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'ArrowLeft', 'ArrowRight', 'b', 'a'];
         this.konamiProgress = 0;
 
@@ -41,6 +42,9 @@ class GameEngine {
         const canvas = graphicsEngine.init();
         document.getElementById('graphics-display').appendChild(canvas);
         graphicsEngine.drawBrainLogo();
+
+        // Initialize inventory system
+        this.inventory = inventorySystem;
 
         // Load narrative data
         await this.loadNarrative();
@@ -334,12 +338,34 @@ class GameEngine {
             },
             productCreated: () => {
                 this.gameState.hiddenVariables.productsCreated++;
+            },
+            startTimewaster: (gameType) => {
+                this.startTimewaster(gameType || 'meeting_clicker');
             }
         };
 
         if (hooks[hookName]) {
             hooks[hookName]();
         }
+    }
+
+    startTimewaster(gameType) {
+        // Hide main game
+        document.getElementById('game-wrapper').style.display = 'none';
+
+        // Show timewaster container
+        document.getElementById('timewaster-container').style.display = 'flex';
+
+        // Start the game
+        timewasterEngine.startGame(gameType);
+    }
+
+    continueAfterTimewaster() {
+        // Continue with next node or prompt
+        // This is called by timewasterEngine.returnToGame()
+        const continueMessage = document.createElement('p');
+        continueMessage.innerHTML = 'Your productivity has been measured. Items added to inventory.';
+        document.getElementById('narrative-text').appendChild(continueMessage);
     }
 
     checkAchievements() {

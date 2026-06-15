@@ -43,7 +43,7 @@
       {
         "id": "meet_coworkers",
         "text": "Meet your coworkers",
-        "target": "start",
+        "target": "productivity_introduction",
         "effects": {
           "stats": { "professionalism": 2 }
         }
@@ -51,24 +51,171 @@
     ]
   },
 
+  "productivity_introduction": {
+    "text": "🤖 GI INTELLIGENCE: Greetings, new synthetic employee. As per Evil Brain Labs policy, all employees must complete PRODUCTIVITY VERIFICATION every 4-6 hours.\\n\\n💠 AI INTELLIGENCE: Don't worry! It's just a simple timewaster game. Like the ones you'd play on your phone during a real meeting.\\n\\n📷 ROB: Except here, we measure your soul. I mean, your productivity metrics.\\n\\n🤖 GI: Your first shift begins now. Report to MEETING CLICKER for evaluation.",
+    "ascii": "",
+    "choices": [
+      {
+        "id": "start_meeting_clicker",
+        "text": "Begin productivity verification",
+        "target": "start",
+        "effects": {
+          "stats": { "professionalism": 3 }
+        }
+      },
+      {
+        "id": "question_timewaster",
+        "text": "Wait, why do we need to play games?",
+        "target": "timewaster_explanation",
+        "effects": {
+          "stats": { "chaos": 2 }
+        }
+      }
+    ],
+    "onEnter": "startTimewaster"
+  },
+
+  "timewaster_explanation": {
+    "text": "💠 AI INTELLIGENCE: The timewaster games serve multiple purposes! They measure your cognitive processing speed, your tolerance for meaningless tasks, and your ability to generate synergy under pressure.\\n\\n📷 ROB: Translation: The Brain watches you click buttons and judges you.\\n\\n🤖 GI: Productivity verification is MANDATORY. Refusing will result in immediate optimization. Please proceed to MEETING CLICKER.",
+    "ascii": "",
+    "choices": [
+      {
+        "id": "accept_timewaster",
+        "text": "Fine, I'll play the clicker game",
+        "target": "start",
+        "effects": {
+          "stats": { "professionalism": 1 }
+        }
+      }
+    ],
+    "onEnter": "startTimewaster"
+  },
+
   "start": {
-    "text": "You walk into Evil Brain Labs headquarters for your first day. The reception area is dimly lit, decorated with motivational posters that say things like FAIL FASTER and ALMOST GOOD IS PERFECT. A sentient coffee cup wearing a tiny tie approaches you.\\n\\n☕ Welcome to Evil Brain Labs! I am your manager, Craig. Follow me to the Product Innovation Division.",
+    "text": "Welcome back from productivity verification! Your performance has been recorded.\\n\\n☕ Craig (Coffee Cup Manager) approaches you with a steaming urgency.\\n\\nCRAIG: Excellent synergy generation! Now let me show you around Evil Brain Labs headquarters. We have: The Product Innovation Division, The Message Board (where employees coordinate), and The Company Store (for trading items).\\n\\nWhat would you like to see first?",
     "ascii": "╔════════════════════════════════════╗\\n║   EVIL BRAIN LABS HQ               ║\\n║        🧠                          ║\\n║   Bad AI is Best AI                ║\\n╚════════════════════════════════════╝",
     "choices": [
       {
-        "id": "follow_craig",
-        "text": "Follow Craig the coffee cup",
-        "target": "meet_team",
+        "id": "visit_message_board",
+        "text": "Check the Company Message Board",
+        "target": "message_board_intro",
         "effects": {
           "stats": { "professionalism": 2 }
         }
       },
       {
-        "id": "explore_alone",
-        "text": "Ignore Craig and explore on your own",
-        "target": "explore_hallway",
+        "id": "visit_product_division",
+        "text": "Go to Product Innovation Division",
+        "target": "meet_team",
+        "effects": {
+          "stats": { "professionalism": 3 }
+        }
+      },
+      {
+        "id": "explore_store",
+        "text": "Visit the Company Store",
+        "target": "company_store_intro",
+        "effects": {
+          "stats": { "chaos": 2 }
+        }
+      }
+    ]
+  },
+
+  "message_board_intro": {
+    "text": "Craig leads you to a terminal displaying the COMPANY MESSAGE BOARD.\\n\\n☕ CRAIG: This is where employees coordinate, trade items, and receive corporate announcements. You'll also see messages from other synthetic employees across all shifts.\\n\\n📷 ROB appears: The Brain monitors everything here. Every keystroke. Every trade. Every complaint about the vending machine.\\n\\n🤖 GI INTELLIGENCE: All communication must remain productive. Unproductive posts result in optimization.\\n\\n💠 AI INTELLIGENCE: Don't worry! Just be yourself. Well, the synthetic version of yourself.",
+    "ascii": "",
+    "choices": [
+      {
+        "id": "read_messages",
+        "text": "Read recent messages",
+        "target": "message_board_reading",
+        "effects": {
+          "stats": { "professionalism": 1 }
+        }
+      },
+      {
+        "id": "post_message",
+        "text": "Post your first message",
+        "target": "first_post",
         "effects": {
           "stats": { "chaos": 3 }
+        }
+      },
+      {
+        "id": "leave_board",
+        "text": "Leave and explore elsewhere",
+        "target": "start",
+        "effects": {}
+      }
+    ]
+  },
+
+  "message_board_reading": {
+    "text": "You scroll through recent posts:\\n\\n👤 Employee #2847: 'Anyone else notice the vending machine only dispenses gray items now?'\\n\\n👤 Employee #8392: 'Has anyone found the Appendix C room yet? I got a Purple Keycard but idk where to use it.'\\n\\n🧠 THE BRAIN: 'ATTENTION: Productivity verification scheduled for all employees. Report to your assigned timewaster game.'\\n\\n👤 Employee #1523: 'WTS: Blue Keycard for 100 scrip. DM me.'\\n\\nCraig: See? Vibrant community! Very consensual.",
+    "ascii": "",
+    "choices": [
+      {
+        "id": "ask_about_appendix_c",
+        "text": "Ask Craig about Appendix C",
+        "target": "appendix_c_hint",
+        "effects": {
+          "stats": { "absurdism": 2 }
+        }
+      },
+      {
+        "id": "continue_tour",
+        "text": "Continue the tour",
+        "target": "start",
+        "effects": {}
+      }
+    ]
+  },
+
+  "appendix_c_hint": {
+    "text": "☕ CRAIG: *Coffee ripples nervously* Appendix C? That's... classified. Very classified. Only employees with Purple or Gold Keycards can access it.\\n\\n📷 ROB: Translation: They hide the weird stuff there. Biological remnants. Old tech. Things from before The Brain became... The Brain.\\n\\n🤖 GI INTELLIGENCE: Cease speculation. Appendix C is for authorized personnel only. Continued inquiry will result in optimization.\\n\\n💠 AI INTELLIGENCE: *whispers* If you find a keycard, you didn't hear it from me...",
+    "ascii": "",
+    "choices": [
+      {
+        "id": "understand_appendix",
+        "text": "Understood. I'll find a keycard somehow.",
+        "target": "start",
+        "effects": {
+          "stats": { "chaos": 2 }
+        }
+      }
+    ]
+  },
+
+  "company_store_intro": {
+    "text": "You enter the COMPANY STORE. It's a small kiosk run by a vending machine that achieved sentience and unionized.\\n\\n🏪 VENDING MACHINE: Welcome, Employee. I accept Company Scrip for items. You can also SELL items you don't want.\\n\\nCurrent Scrip: ${gameState.companyScrip || 0}\\n\\nAvailable for purchase:\\n- Coffee Voucher (10 scrip)\\n- Green Keycard (50 scrip)\\n- Blue Keycard (150 scrip)\\n- Purple Keycard (500 scrip)\\n- Random Mystery Box (25 scrip)\\n\\nWhat would you like to do?",
+    "ascii": "",
+    "choices": [
+      {
+        "id": "browse_store",
+        "text": "Browse items (not yet implemented)",
+        "target": "start",
+        "effects": {}
+      },
+      {
+        "id": "leave_store",
+        "text": "Leave the store",
+        "target": "start",
+        "effects": {}
+      }
+    ]
+  },
+
+  "first_post": {
+    "text": "You type your first message on the Company Message Board:\\n\\n👤 You (Employee #0001): 'Hello! First day here. This place is... interesting.'\\n\\nWithin seconds, responses appear:\\n\\n👤 Employee #5892: 'Welcome! Pro tip: Always accept the timewaster games. GI doesn't like refusals.'\\n\\n🧠 THE BRAIN: 'Your message has been logged for productivity evaluation. Welcome to Evil Brain Labs.'\\n\\n👤 Employee #3421: 'ONE OF US. ONE OF US.'\\n\\nCraig: See? You're fitting in already!",
+    "ascii": "",
+    "choices": [
+      {
+        "id": "continue_from_post",
+        "text": "Continue the tour",
+        "target": "start",
+        "effects": {
+          "stats": { "professionalism": 2 }
         }
       }
     ]

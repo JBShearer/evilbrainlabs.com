@@ -39,23 +39,36 @@ class GameEngine {
 
     async init() {
         // Wait for all global instances to be ready
-        if (typeof graphicsEngine === 'undefined' ||
-            typeof audioEngine === 'undefined' ||
-            typeof saveManager === 'undefined' ||
-            typeof achievementTracker === 'undefined' ||
-            typeof jobTitleSystem === 'undefined' ||
-            typeof inventorySystem === 'undefined' ||
-            typeof messageBoardSystem === 'undefined' ||
-            typeof companyStore === 'undefined' ||
-            typeof vendingMachine === 'undefined' ||
-            typeof productGenerator === 'undefined' ||
-            typeof recyclingSystem === 'undefined' ||
-            typeof employeeEvaluator === 'undefined' ||
-            typeof timewasterEngine === 'undefined') {
-            console.error('Required engine not loaded yet, retrying...');
+        const engines = {
+            graphicsEngine,
+            audioEngine,
+            saveManager,
+            achievementTracker,
+            jobTitleSystem,
+            inventorySystem,
+            messageBoardSystem,
+            companyStore,
+            vendingMachine,
+            productGenerator,
+            recyclingSystem,
+            employeeEvaluator,
+            timewasterEngine
+        };
+
+        const missing = [];
+        for (const [name, engine] of Object.entries(engines)) {
+            if (typeof engine === 'undefined') {
+                missing.push(name);
+            }
+        }
+
+        if (missing.length > 0) {
+            console.error('Missing engines:', missing);
             setTimeout(() => this.init(), 100);
             return;
         }
+
+        console.log('All engines loaded! Initializing game...');
 
         // Initialize graphics engine
         const canvas = graphicsEngine.init();

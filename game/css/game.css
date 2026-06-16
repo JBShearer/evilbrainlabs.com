@@ -2109,7 +2109,7 @@ body {
 
 .message-content {
     padding: 1.5rem;
-    min-height: 150px;
+    min-height: 80px;
 }
 
 .message {

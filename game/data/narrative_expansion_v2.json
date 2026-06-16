@@ -840,6 +840,32 @@
       }
     }
   },
+  "product_cycle_3_accelerated": {
+    "text": "PRODUCT #3 - ACCELERATED DEVELOPMENT\\n\\n*You're moving FAST now*\\n\\n*Product ships in 24 hours*\\n\\n\ud83e\udd16 ALEX: IMPRESSIVE. You're self-optimizing. The Brain will be pleased.\\n\\n\ud83d\udca0 AI: Productivity increased 300%. Warning: sustainability metrics declining.\\n\\n\ud83d\udd0c THE PLUG: You're burning out. I can tell. But you can't stop, can you?\\n\\nProduct #3 ships. Immediately breaks. Nobody cares. Product #4 is already scheduled.",
+    "choices": [
+      {
+        "id": "continue_acceleration",
+        "text": "FASTER. Product #4 NOW.",
+        "target": "product_cycle_4",
+        "effects": {
+          "hiddenVars": {
+            "optimizationLevel": 3,
+            "speedrunning": true
+          }
+        }
+      },
+      {
+        "id": "crash_from_burnout",
+        "text": "I... I need to stop.",
+        "target": "dev_cycle_3_normal",
+        "effects": {
+          "stats": {
+            "chaos": 5
+          }
+        }
+      }
+    ]
+  },
   "product_cycle_3": {
     "text": "PRODUCT DEVELOPMENT CYCLE #3\\n\\nYour next product: AI-Powered ${['Regret Compiler', 'Procrastination Optimizer', 'Meeting Summoner', 'Code That Judges You'][Math.floor(Math.random() * 4)]}\\n\\n\ud83e\udd16 ALEX: You're getting the hang of this!\\n\\n*but you notice patterns now*\\n\\n*the same meetings*\\n\\n*the same bugs*\\n\\n*the same jokes from Craig*\\n\\n\ud83d\udcf7 ROB: Something wrong?",
     "choices": [

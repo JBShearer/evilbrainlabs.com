@@ -52,7 +52,9 @@ class GameEngine {
             productGenerator,
             recyclingSystem,
             employeeEvaluator,
-            timewasterEngine
+            timewasterEngine,
+            contentLoader,
+            companyMessageBoard
         };
 
         const missing = [];
@@ -69,6 +71,9 @@ class GameEngine {
         }
 
         console.log('All engines loaded! Initializing game...');
+
+        // Initialize content loader first (other systems may need it)
+        await contentLoader.init();
 
         // Initialize graphics engine
         const canvas = graphicsEngine.init();
@@ -98,18 +103,37 @@ class GameEngine {
             }
         }
 
+        // Initialize company message board (after UI is ready)
+        if (document.getElementById('message-board')) {
+            await companyMessageBoard.init();
+        }
+
         // Display first node
         await this.goToNode(this.gameState.currentNodeId);
     }
 
     async loadNarrative() {
         try {
-            const response = await fetch('/game/data/narrative.json');
+            const response = await fetch('data/narrative.json?v=3');
             if (!response.ok) {
                 throw new Error(`HTTP error! status: ${response.status}`);
             }
             this.narrative = await response.json();
             console.log('Narrative loaded successfully:', Object.keys(this.narrative).length, 'nodes');
+
+            // Load narrative expansion v2 (111 additional nodes)
+            try {
+                const expansionV2 = await contentLoader.loadNarrativeExpansion('v2');
+                if (expansionV2 && Object.keys(expansionV2).length > 0) {
+                    // Merge expansion into main narrative
+                    this.narrative = { ...this.narrative, ...expansionV2 };
+                    console.log('Narrative expansion v2 loaded:', Object.keys(expansionV2).length, 'additional nodes');
+                    console.log('Total narrative nodes:', Object.keys(this.narrative).length);
+                }
+            } catch (expansionError) {
+                console.warn('Could not load narrative expansion v2:', expansionError);
+            }
+
         } catch (error) {
             console.error('Failed to load narrative:', error);
             alert('Failed to load game data. Please refresh the page.');

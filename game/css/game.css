@@ -2046,3 +2046,190 @@ body {
     background: var(--terminal-accent);
     box-shadow: 0 0 10px var(--terminal-glow);
 }
+
+/* ============================================
+   Company Message Board Styles
+   ============================================ */
+
+.message-board-panel {
+    margin: 2rem auto;
+    max-width: 800px;
+    border: 2px solid var(--terminal-accent);
+    border-radius: 8px;
+    background: rgba(0, 0, 0, 0.6);
+    box-shadow: 0 0 20px rgba(255, 0, 110, 0.3);
+}
+
+.message-board-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem 1.5rem;
+    background: var(--terminal-accent);
+    border-radius: 6px 6px 0 0;
+}
+
+.message-board-header h3 {
+    margin: 0;
+    color: #0a0a0a;
+    font-size: 1.2rem;
+}
+
+.message-controls {
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+}
+
+.message-nav-btn,
+.message-pause-btn {
+    background: rgba(0, 0, 0, 0.3);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    color: #0a0a0a;
+    padding: 0.3rem 0.8rem;
+    cursor: pointer;
+    border-radius: 4px;
+    font-size: 1rem;
+    font-weight: bold;
+    transition: all 0.2s;
+}
+
+.message-nav-btn:hover,
+.message-pause-btn:hover {
+    background: rgba(0, 0, 0, 0.5);
+    transform: scale(1.1);
+}
+
+.message-counter {
+    color: #0a0a0a;
+    font-weight: bold;
+    font-size: 0.9rem;
+    padding: 0 0.5rem;
+}
+
+.message-content {
+    padding: 1.5rem;
+    min-height: 150px;
+}
+
+.message {
+    padding: 1rem;
+    border-left: 4px solid var(--terminal-accent);
+    background: rgba(255, 0, 110, 0.05);
+    border-radius: 4px;
+}
+
+.message.sentiment-positive {
+    border-left-color: #00ff00;
+    background: rgba(0, 255, 0, 0.05);
+}
+
+.message.sentiment-tense {
+    border-left-color: #ff9900;
+    background: rgba(255, 153, 0, 0.05);
+}
+
+.message.sentiment-chaotic {
+    border-left-color: #ff0000;
+    background: rgba(255, 0, 0, 0.05);
+}
+
+.message.sentiment-neutral {
+    border-left-color: #00ffff;
+    background: rgba(0, 255, 255, 0.05);
+}
+
+.message-header {
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+    margin-bottom: 0.75rem;
+    flex-wrap: wrap;
+}
+
+.message-speaker {
+    font-weight: bold;
+    text-transform: uppercase;
+    font-size: 0.9rem;
+}
+
+/* Speaker-specific colors */
+.message.the-brain .message-speaker {
+    color: var(--terminal-accent);
+    text-shadow: 0 0 5px var(--terminal-accent);
+}
+
+.message.craig .message-speaker {
+    color: #8338ec;
+}
+
+.message.rob .message-speaker {
+    color: #3a86ff;
+}
+
+.message.alex .message-speaker {
+    color: #06ffa5;
+}
+
+.message.the-plug .message-speaker {
+    color: #ff9900;
+}
+
+.message.mobile-app .message-speaker {
+    color: #ffbe0b;
+}
+
+.message-sentiment {
+    font-size: 1.2rem;
+}
+
+.message-context {
+    font-size: 0.8rem;
+    color: var(--terminal-text-dim);
+    background: rgba(255, 255, 255, 0.1);
+    padding: 0.2rem 0.5rem;
+    border-radius: 3px;
+}
+
+.message-body {
+    font-size: 1rem;
+    line-height: 1.5;
+    color: var(--terminal-text);
+    margin-bottom: 0.5rem;
+}
+
+.message-timestamp {
+    font-size: 0.75rem;
+    color: var(--terminal-text-dim);
+    text-align: right;
+}
+
+.message-error {
+    color: var(--terminal-accent);
+    text-align: center;
+    padding: 2rem;
+    font-style: italic;
+}
+
+/* Mobile responsiveness for message board */
+@media (max-width: 768px) {
+    .message-board-panel {
+        margin: 1rem;
+    }
+
+    .message-board-header {
+        flex-direction: column;
+        gap: 0.5rem;
+        padding: 1rem;
+    }
+
+    .message-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.5rem;
+    }
+
+    .message-body {
+        font-size: 0.9rem;
+    }
+}

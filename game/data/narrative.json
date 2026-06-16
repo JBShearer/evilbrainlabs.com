@@ -375,12 +375,20 @@
     "onEnter": "endingReached"
   },
   "ending_success": {
-    "text": "Six months later, you are promoted to Senior Absurdist at Evil Brain Labs. Your product is now in 10,000 homes, and nobody can explain why it works.\\n\\nCraig: You have done well. You understand our mission: to build things that make people say ...but why? Welcome to the team.\\n\\n🧠 THE END 🧠\\n\\n(But the loop continues... press Restart to create more absurd products)",
-    "ascii": "╔══════════════════════════════════╗\\n║         🏆 SUCCESS! 🏆          ║\\n║   AN AI PRODUCT GENERATOR        ║\\n╚══════════════════════════════════╝",
+    "text": "Six months later, orientation is complete.\\n\\nCraig: You understand our mission. But now... your REAL work begins.\\n\\n🤖 GI INTELLIGENCE: Report to Product Development immediately.\\n\\n💠 AI INTELLIGENCE: You'll be shipping products. Many, many products.\\n\\n📷 ROB: This is where it gets interesting.\\n\\n🧠 THE BRAIN: Employee #0001. Welcome to your career.",
+    "ascii": "╔══════════════════════════════════╗\\n║    ORIENTATION COMPLETE          ║\\n║    CAREER MODE: ACTIVATED        ║\\n╚══════════════════════════════════╝",
     "choices": [
       {
-        "id": "credits",
-        "text": "View credits",
+        "id": "begin_career",
+        "text": "Begin Product Development Career",
+        "target": "product_cycle_1",
+        "effects": {
+          "stats": { "professionalism": 10 }
+        }
+      },
+      {
+        "id": "credits_first",
+        "text": "View credits (then continue to career)",
         "target": "credits",
         "effects": {}
       }
@@ -391,9 +399,15 @@
     "ascii": "╔════════════════════════╗\\n║     THANK YOU FOR      ║\\n║       PLAYING          ║\\n║         🧠             ║\\n║  evilbrainlabs.com     ║\\n╚════════════════════════╝",
     "choices": [
       {
+        "id": "continue_career",
+        "text": "Continue to Product Development Career",
+        "target": "product_cycle_1",
+        "effects": {}
+      },
+      {
         "id": "restart_game",
-        "text": "Restart and try different paths",
-        "target": "start",
+        "text": "Restart from beginning",
+        "target": "certification",
         "effects": {}
       }
     ]

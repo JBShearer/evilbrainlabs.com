@@ -289,9 +289,11 @@ class GraphicsEngine {
         ctx.fillStyle = '#00ff00';
         ctx.font = '20px monospace';
         ctx.textAlign = 'center';
-        ctx.fillText('SUCCESS!', 200, 250);
+        ctx.fillText('ORIENTATION', 200, 240);
+        ctx.fillText('COMPLETE', 200, 265);
         ctx.font = '12px monospace';
-        ctx.fillText('Senior Absurdist', 200, 270);
+        ctx.fillStyle = '#ff006e';
+        ctx.fillText('Career Mode Unlocked', 200, 285);
     }
 
     // Draw GI Intelligence (red enforcer robot)

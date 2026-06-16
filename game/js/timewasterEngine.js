@@ -165,32 +165,46 @@ class TimewasterEngine {
         // Calculate drop chances based on score
         const performance = this.score;
 
-        // GRAY items (90% chance, 1-3 items)
-        const grayCount = Math.floor(Math.random() * 3) + 1;
+        // GRAY items (95% chance, 1-2 items guaranteed)
+        const grayCount = Math.floor(Math.random() * 2) + 1;
         for (let i = 0; i < grayCount; i++) {
-            if (Math.random() < 0.9) {
+            if (Math.random() < 0.95) {
                 items.push(this.generateItem('gray'));
             }
         }
 
-        // GREEN items (7% chance if score > 20)
-        if (performance > 20 && Math.random() < 0.07) {
-            items.push(this.generateItem('green'));
+        // GREEN items (improved drop rates)
+        // 20% chance if score > 10, 40% if score > 30
+        if (performance > 10) {
+            const greenChance = performance > 30 ? 0.40 : 0.20;
+            if (Math.random() < greenChance) {
+                items.push(this.generateItem('green'));
+            }
         }
 
-        // BLUE items (2% chance if score > 50)
-        if (performance > 50 && Math.random() < 0.02) {
-            items.push(this.generateItem('blue'));
+        // BLUE items (improved drop rates)
+        // 8% chance if score > 30, 15% if score > 60
+        if (performance > 30) {
+            const blueChance = performance > 60 ? 0.15 : 0.08;
+            if (Math.random() < blueChance) {
+                items.push(this.generateItem('blue'));
+            }
         }
 
-        // PURPLE items (0.9% chance if score > 80)
-        if (performance > 80 && Math.random() < 0.009) {
-            items.push(this.generateItem('purple'));
+        // PURPLE items (3% chance if score > 50, 8% if score > 90)
+        if (performance > 50) {
+            const purpleChance = performance > 90 ? 0.08 : 0.03;
+            if (Math.random() < purpleChance) {
+                items.push(this.generateItem('purple'));
+            }
         }
 
-        // GOLD items (0.1% chance if score > 100)
-        if (performance > 100 && Math.random() < 0.001) {
-            items.push(this.generateItem('gold'));
+        // GOLD items (1% chance if score > 80, 5% if score > 120)
+        if (performance > 80) {
+            const goldChance = performance > 120 ? 0.05 : 0.01;
+            if (Math.random() < goldChance) {
+                items.push(this.generateItem('gold'));
+            }
         }
 
         return items;

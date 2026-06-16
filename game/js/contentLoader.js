@@ -18,7 +18,7 @@ class ContentLoader {
     };
 
     // Cache busting version for file loads
-    this.cacheBust = '5';
+    this.cacheBust = '8';
 
     this.indices = {
       items: null,

@@ -376,16 +376,6 @@
         }
       }
     ],
-    "loopback": {
-      "enabled": true,
-      "minVisits": 2,
-      "probability": 0.4,
-      "targets": [
-        "meet_team",
-        "start"
-      ],
-      "message": "\ud83e\udd16 Alex: Temporal recursion detected. We are in a brainstorm loop. This is normal."
-    },
     "onEnter": "productCreated"
   },
   "product_launch": {
@@ -406,17 +396,72 @@
         }
       },
       {
-        "id": "start_new_product",
-        "text": "Immediately pitch a new product",
-        "target": "brainstorm_session",
+        "id": "question_meaning",
+        "text": "Wait... what was the point of this?",
+        "target": "existential_moment",
+        "effects": {
+          "stats": {
+            "chaos": 3
+          }
+        }
+      }
+    ],
+    "onEnter": "endingReached"
+  },
+  "existential_moment": {
+    "text": "You pause mid-celebration. The investors are clapping. Craig is beaming. But something feels... hollow.\\n\\n\ud83d\udcf7 ROB: (quietly) First time noticing the emptiness?\\n\\n\ud83e\udd16 ALEX: (faster) THIS_IS_NORMAL. CONTINUE_CELEBRATING. DO_NOT_QUESTION.\\n\\nWhat did you actually build? Who benefits? Does it matter?",
+    "ascii": "",
+    "choices": [
+      {
+        "id": "push_through",
+        "text": "Push the feeling down. Keep celebrating.",
+        "target": "ending_success",
+        "effects": {
+          "stats": {
+            "professionalism": 5
+          }
+        }
+      },
+      {
+        "id": "voice_concern",
+        "text": "Ask the team: Why are we building this?",
+        "target": "team_reaction",
         "effects": {
           "stats": {
             "chaos": 5
           }
         }
       }
-    ],
-    "onEnter": "endingReached"
+    ]
+  },
+  "team_reaction": {
+    "text": "The room goes silent. Craig stops mid-pitch. Alex freezes completely, literally buffering.\\n\\n\u2615 CRAIG: (nervous laugh) Why? Because... innovation! Disruption! Synergy!\\n\\n\ud83d\udcf7 ROB: He's right to ask. We never ask why anymore.\\n\\n\ud83e\udd16 ALEX: (rebooting) ERROR_DETECTED. EXISTENTIAL_QUESTIONING_IS_PROHIBITED.\\n\\n\ud83e\udde0 THE BRAIN: (voice from speakers) Employee #0001. Report to orientation. Immediately.",
+    "ascii": "\u26a0\ufe0f",
+    "choices": [
+      {
+        "id": "comply_brain",
+        "text": "Report to orientation",
+        "target": "ending_success",
+        "effects": {
+          "stats": {
+            "professionalism": 3
+          }
+        }
+      },
+      {
+        "id": "refuse_brain",
+        "text": "No. I want answers first.",
+        "target": "ending_success",
+        "effects": {
+          "stats": {
+            "chaos": 10
+          },
+          "hiddenVars": {
+            "questionedAuthority": true
+          }
+        }
+      }
+    ]
   },
   "ending_success": {
     "text": "Six months later, orientation is complete.\\n\\nCraig: You understand our mission. But now... your REAL work begins.\\n\\n\ud83e\udd16 GI INTELLIGENCE: Report to Product Development immediately.\\n\\n\ud83d\udca0 AI INTELLIGENCE: You'll be shipping products. Many, many products.\\n\\n\ud83d\udcf7 ROB: This is where it gets interesting.\\n\\n\ud83e\udde0 THE BRAIN: Employee #0001. Welcome to your career.",

@@ -457,6 +457,25 @@ class GameEngine {
     }
 
     startTimewaster(gameType) {
+        // If no game type specified, pick randomly
+        if (!gameType) {
+            const games = ['meeting_clicker', 'buzzword_bingo', 'email_sorter'];
+
+            // Track last game played to avoid repeats
+            if (!this.gameState.hiddenVariables.lastMinigame) {
+                this.gameState.hiddenVariables.lastMinigame = '';
+            }
+
+            // Filter out the last game played
+            const availableGames = games.filter(g => g !== this.gameState.hiddenVariables.lastMinigame);
+
+            // Pick a random game from remaining options
+            gameType = availableGames[Math.floor(Math.random() * availableGames.length)];
+
+            // Remember this game
+            this.gameState.hiddenVariables.lastMinigame = gameType;
+        }
+
         // Hide main game
         document.getElementById('game-wrapper').style.display = 'none';
 

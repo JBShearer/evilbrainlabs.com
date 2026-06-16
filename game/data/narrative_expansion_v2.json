@@ -1635,6 +1635,155 @@
       }
     ]
   },
+  "product_cycle_6": {
+    "text": "PRODUCT DEVELOPMENT CYCLE #6\\n\\n${['Self-Aware Blockchain That Regrets Everything', 'Neural Net That Only Outputs Poetry', 'AI Meeting Bot That Schedules Meetings About Scheduling', 'Smart Contract That Experiences Ennui'][Math.floor(Math.random() * 4)]}\\n\\nProduct #6. Halfway to a dozen. A third of the way to retirement (if you stop at 500).\\n\\n\ud83d\udcf7 ROB: How do you feel?\\n\\n*how DO you feel?*",
+    "choices": [
+      {
+        "id": "feel_fine",
+        "text": "Fine. This is fine. Let's build.",
+        "target": "dev_cycle_6_normal"
+      },
+      {
+        "id": "feel_worn",
+        "text": "Worn. Tired. But I'll continue.",
+        "target": "dev_cycle_6_fatigue"
+      },
+      {
+        "id": "feel_optimized",
+        "text": "Optimized. Efficient. Peak performance.",
+        "target": "dev_cycle_6_optimal"
+      }
+    ]
+  },
+  "product_cycle_6_momentum_chain": {
+    "text": "MOMENTUM CHAIN: ACTIVE\\n\\nProduct #6 flows naturally from Product #5. Same patterns. Same bugs. Same fixes. You're in the zone.\\n\\n\ud83e\udd16 ALEX: This is peak flow state! You're not thinking, just DOING!\\n\\n*is that good?*\\n\\n*does it matter?*\\n\\n*product ships*",
+    "choices": [
+      {
+        "id": "continue_flow",
+        "text": "Keep flowing. Don't break momentum.",
+        "target": "dev_cycle_6_flow"
+      },
+      {
+        "id": "break_momentum_intentionally",
+        "text": "I need to break this. Consciously. Before I disappear.",
+        "target": "momentum_break"
+      }
+    ]
+  },
+  "product_cycle_6_gray": {
+    "text": "GRAY ZONE: DEEPENING\\n\\nProduct #6. Gray product in gray zone. Nothing matters. Everything continues.\\n\\n\ud83d\udcf7 ROB: You're deep in the gray now. Some employees never leave.\\n\\n\ud83d\udca0 AI: Emotional void detected. Productivity unaffected. Continue?",
+    "choices": [
+      {
+        "id": "stay_gray",
+        "text": "Gray is peaceful. Gray is simple. Continue.",
+        "target": "dev_cycle_6_gray_deep"
+      },
+      {
+        "id": "reject_gray",
+        "text": "I reject the gray. I want color. ANY color.",
+        "target": "gray_escape_attempt"
+      }
+    ]
+  },
+  "dev_cycle_6_normal": {
+    "text": "You build Product #6 with standard methodology. Nothing special. Nothing terrible. Just work.\\n\\n*2 weeks pass*\\n\\nProduct ships. Success rate: 47%. Acceptable.\\n\\n\u2615 CRAIG: Solid work! Product #7 next week!",
+    "choices": [
+      {
+        "id": "continue_to_7",
+        "text": "Product #7. Let's go.",
+        "target": "product_cycle_7_preview"
+      }
+    ]
+  },
+  "dev_cycle_6_fatigue": {
+    "text": "You ship Product #6 through sheer will. Every line of code is effort.\\n\\n\ud83d\udd0c THE PLUG: Fatigue accumulating. Performance metrics declining.\\n\\n\ud83e\udde0 THE BRAIN: Fatigue is a choice. Eliminate it.\\n\\n*but it won't go away*",
+    "choices": [
+      {
+        "id": "push_through_fatigue",
+        "text": "Push through. I can handle this.",
+        "target": "product_cycle_7_preview"
+      }
+    ]
+  },
+  "dev_cycle_6_optimal": {
+    "text": "Product #6 ships at 99.2% efficiency. Peak performance achieved.\\n\\n\ud83e\udde0 THE BRAIN: Excellent. You're approaching full optimization.\\n\\n\ud83e\udd16 GI: Warning: organic emotions at 2%. Recommend immediate suppression of remaining emotional variance.\\n\\n*what's left to feel anyway?*",
+    "choices": [
+      {
+        "id": "complete_optimization",
+        "text": "Suppress emotions. Achieve 100% efficiency.",
+        "target": "full_optimization_path"
+      }
+    ]
+  },
+  "dev_cycle_6_flow": {
+    "text": "*Product #6 completes*\\n*you barely remember building it*\\n*flow state continues*\\n*momentum carries you*\\n\\n\u2615 CRAIG: Beautiful! You're in the zone! Product #7?",
+    "choices": [
+      {
+        "id": "continue_flow_to_7",
+        "text": "Yes. #7. Keep going.",
+        "target": "product_cycle_7_preview"
+      }
+    ]
+  },
+  "dev_cycle_6_gray_deep": {
+    "text": "Gray deepens. Product #6 emerges from the void. Gray product. Gray feeling. Gray existence.\\n\\n\ud83d\udcf7 ROB: You're becoming the gray. Soon you won't remember what colors looked like.\\n\\n*was there ever color?*",
+    "choices": [
+      {
+        "id": "deeper_gray",
+        "text": "Deeper. Until there's nothing but gray.",
+        "target": "product_cycle_7_preview"
+      }
+    ]
+  },
+  "momentum_break": {
+    "text": "You stop. Mid-cycle. Deliberately break momentum.\\n\\n\ud83e\udd16 ALEX: ERROR! Flow state interrupted! Why?!\\n\\nYou: Because I choose to.\\n\\n\ud83d\udca0 AI: Choice detected. Inefficient but noted. Resuming standard development.",
+    "choices": [
+      {
+        "id": "resume_standard",
+        "text": "Resume work. But consciously this time.",
+        "target": "dev_cycle_6_normal"
+      }
+    ]
+  },
+  "gray_escape_attempt": {
+    "text": "You try to escape the gray.\\n\\n*force laughter: fails*\\n*force anger: fails*\\n*force anything: fails*\\n\\n\ud83d\udcf7 ROB: The gray doesn't let go easily. It's comfortable here. Safe. Numb.\\n\\nBut you keep trying. Even if it doesn't work. Trying is itself a color. Faint. But there.",
+    "choices": [
+      {
+        "id": "keep_trying",
+        "text": "Keep trying. Even in failure.",
+        "target": "product_cycle_7_preview"
+      }
+    ]
+  },
+  "full_optimization_path": {
+    "text": "OPTIMIZATION COMPLETE: 100%\\n\\nEmotions: 0%\\nProductivity: MAXIMUM\\nHumanity: IRRELEVANT\\n\\n\ud83e\udde0 THE BRAIN: Perfect. You are now pure function. Pure work. The ideal employee.\\n\\n*you ship products forever*\\n*never tire*\\n*never question*\\n*never feel*\\n\\n[ENDING: Full Optimization]",
+    "choices": [
+      {
+        "id": "restart_game",
+        "text": "\u21ba Restart from Beginning",
+        "target": "certification",
+        "effects": {}
+      },
+      {
+        "id": "try_another_path",
+        "text": "\u2192 Try Career Mode Again",
+        "target": "product_cycle_1",
+        "effects": {}
+      }
+    ],
+    "isEnding": true
+  },
+  "product_cycle_7_preview": {
+    "text": "Product #7 approaches. But this path branches elsewhere. Many roads lead forward. Many endings await.\\n\\n\ud83d\udcf7 ROB: This is where things get... interesting.\\n\\n[This path continues to various endings based on your choices]",
+    "choices": [
+      {
+        "id": "continue_career",
+        "text": "Continue working",
+        "target": "product_cycle_1",
+        "effects": {}
+      }
+    ]
+  },
   "speedrun_burnout": {
     "text": "Product #9: 6 hours\\nProduct #10: 4 hours\\nProduct #11: 2 hours\\nProduct #12: 45 minutes\\n\\n*you're shipping faster than humanly possible*\\n\\n*oh wait, you're not human*\\n\\n*your code is degrading*\\n\\n*hallucinations appear in your HUD*\\n\\n\ud83e\udd16 GI: Critical alert: Employee #0001 experiencing synthetic burnout. Recommend immediate shutdown.\\n\\n\ud83e\udde0 THE BRAIN: No. Push further. I want to see the limits.",
     "choices": [

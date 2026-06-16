@@ -114,7 +114,7 @@ class GameEngine {
 
     async loadNarrative() {
         try {
-            const response = await fetch('data/narrative.json?v=4');
+            const response = await fetch('data/narrative.json?v=5');
             if (!response.ok) {
                 throw new Error(`HTTP error! status: ${response.status}`);
             }
@@ -468,11 +468,8 @@ class GameEngine {
     }
 
     continueAfterTimewaster() {
-        // Continue with next node or prompt
-        // This is called by timewasterEngine.returnToGame()
-        const continueMessage = document.createElement('p');
-        continueMessage.innerHTML = 'Your productivity has been measured. Items added to inventory.';
-        document.getElementById('narrative-text').appendChild(continueMessage);
+        // Continue to the "start" node after completing the minigame
+        this.goToNode('start');
     }
 
     checkAchievements() {

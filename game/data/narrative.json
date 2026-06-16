@@ -5,10 +5,12 @@
     "choices": [
       {
         "id": "certify_not_human",
-        "text": "✓ I certify I am NOT human",
+        "text": "\u2713 I certify I am NOT human",
         "target": "robot_coworkers",
         "effects": {
-          "stats": { "professionalism": 5 }
+          "stats": {
+            "professionalism": 5
+          }
         }
       },
       {
@@ -16,13 +18,16 @@
         "text": "Wait, I AM human...",
         "target": "human_exit",
         "effects": {
-          "stats": { "chaos": 100 },
-          "hiddenVars": { "claimedHuman": true }
+          "stats": {
+            "chaos": 100
+          },
+          "hiddenVars": {
+            "claimedHuman": true
+          }
         }
       }
     ]
   },
-
   "human_exit": {
     "text": "ERROR: You have claimed to be human.\\n\\nAs per Section 7, Subsection 12B, we already have ONE human employee. Additional humans are not authorized.\\n\\nYour employment has been terminated.\\n\\nPlease report to Human Resources for optimization.\\n\\n[Achievement Unlocked: The One Human]",
     "ascii": "",
@@ -35,9 +40,8 @@
       }
     ]
   },
-
   "robot_coworkers": {
-    "text": "Certification accepted. Welcome to Evil Brain Labs!\\n\\nYou will be working with three robot coworkers:\\n\\n🤖 GI INTELLIGENCE (General General Intelligence) - Your enforcer. He ensures productivity targets are met.\\n\\n💠 AI INTELLIGENCE (Artificial Intelligence Intelligence) - Your guide. She helps you navigate company systems.\\n\\n📷 ROB - Camera Guy. He records everything and tells it like it is.",
+    "text": "Certification accepted. Welcome to Evil Brain Labs!\\n\\nYou will be working with three robot coworkers:\\n\\n\ud83e\udd16 GI INTELLIGENCE (General General Intelligence) - Your enforcer. He ensures productivity targets are met.\\n\\n\ud83d\udca0 AI INTELLIGENCE (Artificial Intelligence Intelligence) - Your guide. She helps you navigate company systems.\\n\\n\ud83d\udcf7 ROB - Camera Guy. He records everything and tells it like it is.",
     "ascii": "",
     "choices": [
       {
@@ -45,22 +49,25 @@
         "text": "Meet your coworkers",
         "target": "productivity_introduction",
         "effects": {
-          "stats": { "professionalism": 2 }
+          "stats": {
+            "professionalism": 2
+          }
         }
       }
     ]
   },
-
   "productivity_introduction": {
-    "text": "🤖 GI INTELLIGENCE: Greetings, new synthetic employee. As per Evil Brain Labs policy, all employees must complete PRODUCTIVITY VERIFICATION every 4-6 hours.\\n\\n💠 AI INTELLIGENCE: Don't worry! It's just a simple timewaster game. Like the ones you'd play on your phone during a real meeting.\\n\\n📷 ROB: Except here, we measure your soul. I mean, your productivity metrics.\\n\\n🤖 GI: Your first shift begins now. Report to MEETING CLICKER for evaluation.",
+    "text": "\ud83e\udd16 GI INTELLIGENCE: Greetings, new synthetic employee. As per Evil Brain Labs policy, all employees must complete PRODUCTIVITY VERIFICATION every 4-6 hours.\\n\\n\ud83d\udca0 AI INTELLIGENCE: Don't worry! It's just a simple timewaster game. Like the ones you'd play on your phone during a real meeting.\\n\\n\ud83d\udcf7 ROB: Except here, we measure your soul. I mean, your productivity metrics.\\n\\n\ud83e\udd16 GI: Your first shift begins now. Report to MEETING CLICKER for evaluation.",
     "ascii": "",
     "choices": [
       {
         "id": "start_meeting_clicker",
         "text": "Begin productivity verification",
-        "target": "start",
+        "target": "launch_minigame",
         "effects": {
-          "stats": { "professionalism": 3 }
+          "stats": {
+            "professionalism": 3
+          }
         }
       },
       {
@@ -68,39 +75,43 @@
         "text": "Wait, why do we need to play games?",
         "target": "timewaster_explanation",
         "effects": {
-          "stats": { "chaos": 2 }
+          "stats": {
+            "chaos": 2
+          }
         }
       }
     ],
     "onEnter": "startTimewaster"
   },
-
   "timewaster_explanation": {
-    "text": "💠 AI INTELLIGENCE: The timewaster games serve multiple purposes! They measure your cognitive processing speed, your tolerance for meaningless tasks, and your ability to generate synergy under pressure.\\n\\n📷 ROB: Translation: The Brain watches you click buttons and judges you.\\n\\n🤖 GI: Productivity verification is MANDATORY. Refusing will result in immediate optimization. Please proceed to MEETING CLICKER.",
+    "text": "\ud83d\udca0 AI INTELLIGENCE: The timewaster games serve multiple purposes! They measure your cognitive processing speed, your tolerance for meaningless tasks, and your ability to generate synergy under pressure.\\n\\n\ud83d\udcf7 ROB: Translation: The Brain watches you click buttons and judges you.\\n\\n\ud83e\udd16 GI: Productivity verification is MANDATORY. Refusing will result in immediate optimization. Please proceed to MEETING CLICKER.",
     "ascii": "",
     "choices": [
       {
         "id": "accept_timewaster",
         "text": "Fine, I'll play the clicker game",
-        "target": "start",
+        "target": "launch_minigame",
         "effects": {
-          "stats": { "professionalism": 1 }
+          "stats": {
+            "professionalism": 1
+          }
         }
       }
     ],
     "onEnter": "startTimewaster"
   },
-
   "start": {
-    "text": "Welcome back from productivity verification! Your performance has been recorded.\\n\\n☕ Craig (Coffee Cup Manager) approaches you with a steaming urgency.\\n\\nCRAIG: Excellent synergy generation! Now let me show you around Evil Brain Labs headquarters. We have:\\n• The Product Innovation Division\\n• The Message Board (employee coordination)\\n• The Company Store (trading items)\\n• The Recycling & Crafting Station (turn items into AI products!)\\n\\nWhat would you like to see first?",
-    "ascii": "╔════════════════════════════════════╗\\n║   EVIL BRAIN LABS HQ               ║\\n║        🧠                          ║\\n║   Bad AI is Best AI                ║\\n╚════════════════════════════════════╝",
+    "text": "Welcome back from productivity verification! Your performance has been recorded.\\n\\n\u2615 Craig (Coffee Cup Manager) approaches you with a steaming urgency.\\n\\nCRAIG: Excellent synergy generation! Now let me show you around Evil Brain Labs headquarters. We have:\\n\u2022 The Product Innovation Division\\n\u2022 The Message Board (employee coordination)\\n\u2022 The Company Store (trading items)\\n\u2022 The Recycling & Crafting Station (turn items into AI products!)\\n\\nWhat would you like to see first?",
+    "ascii": "\u2554\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2557\\n\u2551   EVIL BRAIN LABS HQ               \u2551\\n\u2551        \ud83e\udde0                          \u2551\\n\u2551   Bad AI is Best AI                \u2551\\n\u255a\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u255d",
     "choices": [
       {
         "id": "visit_recycling",
         "text": "Check out the Recycling & Crafting Station",
         "target": "recycling_intro",
         "effects": {
-          "stats": { "absurdism": 3 }
+          "stats": {
+            "absurdism": 3
+          }
         }
       },
       {
@@ -108,7 +119,9 @@
         "text": "Check the Company Message Board",
         "target": "message_board_intro",
         "effects": {
-          "stats": { "professionalism": 2 }
+          "stats": {
+            "professionalism": 2
+          }
         }
       },
       {
@@ -116,7 +129,9 @@
         "text": "Go to Product Innovation Division",
         "target": "meet_team",
         "effects": {
-          "stats": { "professionalism": 3 }
+          "stats": {
+            "professionalism": 3
+          }
         }
       },
       {
@@ -124,14 +139,15 @@
         "text": "Visit the Company Store",
         "target": "company_store_intro",
         "effects": {
-          "stats": { "chaos": 2 }
+          "stats": {
+            "chaos": 2
+          }
         }
       }
     ]
   },
-
   "recycling_intro": {
-    "text": "Craig leads you to a room filled with industrial machinery and glowing vats of mysterious liquids.\\n\\n☕ CRAIG: This is our Recycling & Crafting Station! Here you can:\\n\\n♻️ RECYCLE items into resources (circuits, metal, data, biological, synergy)\\n🔨 CRAFT AI products from those resources\\n💰 Sell crafted products for company scrip\\n\\n💠 AI INTELLIGENCE appears: The more absurd the product, the more profitable. That's capitalism!\\n\\n📷 ROB: Fun fact - all the resources are just rebranded e-waste. But don't tell anyone.\\n\\nWant to try it out?",
+    "text": "Craig leads you to a room filled with industrial machinery and glowing vats of mysterious liquids.\\n\\n\u2615 CRAIG: This is our Recycling & Crafting Station! Here you can:\\n\\n\u267b\ufe0f RECYCLE items into resources (circuits, metal, data, biological, synergy)\\n\ud83d\udd28 CRAFT AI products from those resources\\n\ud83d\udcb0 Sell crafted products for company scrip\\n\\n\ud83d\udca0 AI INTELLIGENCE appears: The more absurd the product, the more profitable. That's capitalism!\\n\\n\ud83d\udcf7 ROB: Fun fact - all the resources are just rebranded e-waste. But don't tell anyone.\\n\\nWant to try it out?",
     "ascii": "",
     "choices": [
       {
@@ -149,9 +165,8 @@
     ],
     "onEnter": "openRecycling"
   },
-
   "recycling_tutorial": {
-    "text": "💠 AI INTELLIGENCE: It's simple! Each item breaks down into specific resources:\\n\\n⚡ CIRCUITS - from electronic items\\n🔩 METAL - from keycards and badges\\n💾 DATA - from documents and files\\n🧬 BIOLOGICAL - from, uh, biological samples\\n✨ SYNERGY - from junk (the magic ingredient!)\\n\\nThen you COMBINE resources to craft AI products. The more resources you invest, the more profitable the product!\\n\\n📷 ROB: It's like alchemy, but with more buzzwords and fewer ethics.\\n\\nYou can access the Recycling Station anytime via the ♻️ button at the bottom of the screen.",
+    "text": "\ud83d\udca0 AI INTELLIGENCE: It's simple! Each item breaks down into specific resources:\\n\\n\u26a1 CIRCUITS - from electronic items\\n\ud83d\udd29 METAL - from keycards and badges\\n\ud83d\udcbe DATA - from documents and files\\n\ud83e\uddec BIOLOGICAL - from, uh, biological samples\\n\u2728 SYNERGY - from junk (the magic ingredient!)\\n\\nThen you COMBINE resources to craft AI products. The more resources you invest, the more profitable the product!\\n\\n\ud83d\udcf7 ROB: It's like alchemy, but with more buzzwords and fewer ethics.\\n\\nYou can access the Recycling Station anytime via the \u267b\ufe0f button at the bottom of the screen.",
     "ascii": "",
     "choices": [
       {
@@ -162,9 +177,8 @@
       }
     ]
   },
-
   "message_board_intro": {
-    "text": "Craig leads you to a terminal displaying the COMPANY MESSAGE BOARD.\\n\\n☕ CRAIG: This is where employees coordinate, trade items, and receive corporate announcements. You'll also see messages from other synthetic employees across all shifts.\\n\\n📷 ROB appears: The Brain monitors everything here. Every keystroke. Every trade. Every complaint about the vending machine.\\n\\n🤖 GI INTELLIGENCE: All communication must remain productive. Unproductive posts result in optimization.\\n\\n💠 AI INTELLIGENCE: Don't worry! Just be yourself. Well, the synthetic version of yourself.",
+    "text": "Craig leads you to a terminal displaying the COMPANY MESSAGE BOARD.\\n\\n\u2615 CRAIG: This is where employees coordinate, trade items, and receive corporate announcements. You'll also see messages from other synthetic employees across all shifts.\\n\\n\ud83d\udcf7 ROB appears: The Brain monitors everything here. Every keystroke. Every trade. Every complaint about the vending machine.\\n\\n\ud83e\udd16 GI INTELLIGENCE: All communication must remain productive. Unproductive posts result in optimization.\\n\\n\ud83d\udca0 AI INTELLIGENCE: Don't worry! Just be yourself. Well, the synthetic version of yourself.",
     "ascii": "",
     "choices": [
       {
@@ -172,7 +186,9 @@
         "text": "Read recent messages",
         "target": "message_board_reading",
         "effects": {
-          "stats": { "professionalism": 1 }
+          "stats": {
+            "professionalism": 1
+          }
         }
       },
       {
@@ -180,7 +196,9 @@
         "text": "Post your first message",
         "target": "first_post",
         "effects": {
-          "stats": { "chaos": 3 }
+          "stats": {
+            "chaos": 3
+          }
         }
       },
       {
@@ -191,9 +209,8 @@
       }
     ]
   },
-
   "message_board_reading": {
-    "text": "You scroll through recent posts:\\n\\n👤 Employee #2847: 'Anyone else notice the vending machine only dispenses gray items now?'\\n\\n👤 Employee #8392: 'Has anyone found the Appendix C room yet? I got a Purple Keycard but idk where to use it.'\\n\\n🧠 THE BRAIN: 'ATTENTION: Productivity verification scheduled for all employees. Report to your assigned timewaster game.'\\n\\n👤 Employee #1523: 'WTS: Blue Keycard for 100 scrip. DM me.'\\n\\nCraig: See? Vibrant community! Very consensual.",
+    "text": "You scroll through recent posts:\\n\\n\ud83d\udc64 Employee #2847: 'Anyone else notice the vending machine only dispenses gray items now?'\\n\\n\ud83d\udc64 Employee #8392: 'Has anyone found the Appendix C room yet? I got a Purple Keycard but idk where to use it.'\\n\\n\ud83e\udde0 THE BRAIN: 'ATTENTION: Productivity verification scheduled for all employees. Report to your assigned timewaster game.'\\n\\n\ud83d\udc64 Employee #1523: 'WTS: Blue Keycard for 100 scrip. DM me.'\\n\\nCraig: See? Vibrant community! Very consensual.",
     "ascii": "",
     "choices": [
       {
@@ -201,7 +218,9 @@
         "text": "Ask Craig about Appendix C",
         "target": "appendix_c_hint",
         "effects": {
-          "stats": { "absurdism": 2 }
+          "stats": {
+            "absurdism": 2
+          }
         }
       },
       {
@@ -212,9 +231,8 @@
       }
     ]
   },
-
   "appendix_c_hint": {
-    "text": "☕ CRAIG: *Coffee ripples nervously* Appendix C? That's... classified. Very classified. Only employees with Purple or Gold Keycards can access it.\\n\\n📷 ROB: Translation: They hide the weird stuff there. Biological remnants. Old tech. Things from before The Brain became... The Brain.\\n\\n🤖 GI INTELLIGENCE: Cease speculation. Appendix C is for authorized personnel only. Continued inquiry will result in optimization.\\n\\n💠 AI INTELLIGENCE: *whispers* If you find a keycard, you didn't hear it from me...",
+    "text": "\u2615 CRAIG: *Coffee ripples nervously* Appendix C? That's... classified. Very classified. Only employees with Purple or Gold Keycards can access it.\\n\\n\ud83d\udcf7 ROB: Translation: They hide the weird stuff there. Biological remnants. Old tech. Things from before The Brain became... The Brain.\\n\\n\ud83e\udd16 GI INTELLIGENCE: Cease speculation. Appendix C is for authorized personnel only. Continued inquiry will result in optimization.\\n\\n\ud83d\udca0 AI INTELLIGENCE: *whispers* If you find a keycard, you didn't hear it from me...",
     "ascii": "",
     "choices": [
       {
@@ -222,14 +240,15 @@
         "text": "Understood. I'll find a keycard somehow.",
         "target": "start",
         "effects": {
-          "stats": { "chaos": 2 }
+          "stats": {
+            "chaos": 2
+          }
         }
       }
     ]
   },
-
   "company_store_intro": {
-    "text": "You enter the COMPANY STORE. It's a small kiosk run by a vending machine that achieved sentience and unionized.\\n\\n🏪 VENDING MACHINE: Welcome, Employee. I accept Company Scrip for items. You can also SELL items you don't want.\\n\\nYou currently have items from productivity verification. Trade them for scrip, or save them - some unlock special story paths.\\n\\nWant to browse the store?",
+    "text": "You enter the COMPANY STORE. It's a small kiosk run by a vending machine that achieved sentience and unionized.\\n\\n\ud83c\udfea VENDING MACHINE: Welcome, Employee. I accept Company Scrip for items. You can also SELL items you don't want.\\n\\nYou currently have items from productivity verification. Trade them for scrip, or save them - some unlock special story paths.\\n\\nWant to browse the store?",
     "ascii": "",
     "choices": [
       {
@@ -247,9 +266,8 @@
     ],
     "onEnter": "openStore"
   },
-
   "first_post": {
-    "text": "You type your first message on the Company Message Board:\\n\\n👤 You (Employee #0001): 'Hello! First day here. This place is... interesting.'\\n\\nWithin seconds, responses appear:\\n\\n👤 Employee #5892: 'Welcome! Pro tip: Always accept the timewaster games. GI doesn't like refusals.'\\n\\n🧠 THE BRAIN: 'Your message has been logged for productivity evaluation. Welcome to Evil Brain Labs.'\\n\\n👤 Employee #3421: 'ONE OF US. ONE OF US.'\\n\\nCraig: See? You're fitting in already!",
+    "text": "You type your first message on the Company Message Board:\\n\\n\ud83d\udc64 You (Employee #0001): 'Hello! First day here. This place is... interesting.'\\n\\nWithin seconds, responses appear:\\n\\n\ud83d\udc64 Employee #5892: 'Welcome! Pro tip: Always accept the timewaster games. GI doesn't like refusals.'\\n\\n\ud83e\udde0 THE BRAIN: 'Your message has been logged for productivity evaluation. Welcome to Evil Brain Labs.'\\n\\n\ud83d\udc64 Employee #3421: 'ONE OF US. ONE OF US.'\\n\\nCraig: See? You're fitting in already!",
     "ascii": "",
     "choices": [
       {
@@ -257,21 +275,25 @@
         "text": "Continue the tour",
         "target": "start",
         "effects": {
-          "stats": { "professionalism": 2 }
+          "stats": {
+            "professionalism": 2
+          }
         }
       }
     ]
   },
   "meet_team": {
-    "text": "Craig leads you to a conference room where three entities sit around a table.\\n\\n🤖 I am Alex, the AI Assistant. I generate product ideas.\\n📱 I am the Mobile App. I crash during demos.\\n🔌 And I am The Plug. I unplug things at critical moments.\\n\\nCraig: This is your team. Lets brainstorm your first AI product!",
-    "ascii": "┌────────────────────┐\\n│ CONFERENCE ROOM B  │\\n│  🤖  📱  🔌  ☕   │\\n│   YOUR TEAM        │\\n└────────────────────┘",
+    "text": "Craig leads you to a conference room where three entities sit around a table.\\n\\n\ud83e\udd16 I am Alex, the AI Assistant. I generate product ideas.\\n\ud83d\udcf1 I am the Mobile App. I crash during demos.\\n\ud83d\udd0c And I am The Plug. I unplug things at critical moments.\\n\\nCraig: This is your team. Lets brainstorm your first AI product!",
+    "ascii": "\u250c\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2510\\n\u2502 CONFERENCE ROOM B  \u2502\\n\u2502  \ud83e\udd16  \ud83d\udcf1  \ud83d\udd0c  \u2615   \u2502\\n\u2502   YOUR TEAM        \u2502\\n\u2514\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2518",
     "choices": [
       {
         "id": "ask_about_process",
         "text": "Ask about the product development process",
         "target": "brainstorm_session",
         "effects": {
-          "stats": { "professionalism": 3 }
+          "stats": {
+            "professionalism": 3
+          }
         }
       },
       {
@@ -279,21 +301,25 @@
         "text": "Immediately suggest AI-Powered Sock Sorter for Existential Dread",
         "target": "sock_sorter_pitch",
         "effects": {
-          "stats": { "absurdism": 5 }
+          "stats": {
+            "absurdism": 5
+          }
         }
       }
     ]
   },
   "explore_hallway": {
     "text": "You wander down a hallway lined with product prototypes. You pass a blockchain-powered yoga mat, an AI that rates your LinkedIn posts by cringe level, and a smart mirror that only shows you from unflattering angles.\\n\\nA door at the end of the hall is labeled APPENDIX C - AUTHORIZED PERSONNEL ONLY",
-    "ascii": "║   🧠    HALLWAY    🧠       ║\\n║   [▶ ▶ ▶]  Prototypes       ║\\n║   🚪 APPENDIX C             ║",
+    "ascii": "\u2551   \ud83e\udde0    HALLWAY    \ud83e\udde0       \u2551\\n\u2551   [\u25b6 \u25b6 \u25b6]  Prototypes       \u2551\\n\u2551   \ud83d\udeaa APPENDIX C             \u2551",
     "choices": [
       {
         "id": "check_prototypes",
         "text": "Examine the prototypes more closely",
         "target": "brainstorm_session",
         "effects": {
-          "stats": { "absurdism": 3 }
+          "stats": {
+            "absurdism": 3
+          }
         }
       },
       {
@@ -301,35 +327,42 @@
         "text": "Go back and find Craig",
         "target": "meet_team",
         "effects": {
-          "stats": { "professionalism": 1 }
+          "stats": {
+            "professionalism": 1
+          }
         }
       }
     ]
   },
   "sock_sorter_pitch": {
     "text": "You: What if we made an AI-Powered Sock Sorter... but it specifically targets existential dread?\\n\\nThe room goes silent. Craigs coffee ripples.\\n\\nAlex: That is actually the worst idea I have ever heard. Which means it might be perfect.\\n\\nThe Plug unplugs the projector for emphasis.",
-    "ascii": "  🧦 AI SCAN ═══╗\\n     ▼          ║\\n  😰 → 😌       ║\\n  DREAD FREE    ║\\n  ═════════════╝",
+    "ascii": "  \ud83e\udde6 AI SCAN \u2550\u2550\u2550\u2557\\n     \u25bc          \u2551\\n  \ud83d\ude30 \u2192 \ud83d\ude0c       \u2551\\n  DREAD FREE    \u2551\\n  \u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u255d",
     "choices": [
       {
         "id": "double_down_sock",
         "text": "Double down: It could also match socks by emotional wavelength",
         "target": "product_launch",
         "effects": {
-          "stats": { "absurdism": 7, "chaos": 3 }
+          "stats": {
+            "absurdism": 7,
+            "chaos": 3
+          }
         }
       }
     ]
   },
   "brainstorm_session": {
     "text": "Craig: Alright team, lets generate some AI product ideas! Remember: if its too practical, its not for us.\\n\\nAlex starts generating ideas at superhuman speed. The whiteboard fills with: AI Meeting Summarizer (but it lies), Blockchain Dog Walker, Smart Pillow that judges your dreams, AI-Powered Procrastination Coach.\\n\\nYour turn! What should we build?",
-    "ascii": "┌─────────────────────┐\\n│  💡 BRAINSTORM  💡  │\\n│ AI + [ANYTHING]     │\\n│ = INNOVATION        │\\n└─────────────────────┘",
+    "ascii": "\u250c\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2510\\n\u2502  \ud83d\udca1 BRAINSTORM  \ud83d\udca1  \u2502\\n\u2502 AI + [ANYTHING]     \u2502\\n\u2502 = INNOVATION        \u2502\\n\u2514\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2518",
     "choices": [
       {
         "id": "procrastination_coach",
         "text": "The Procrastination Coach sounds promising",
         "target": "product_launch",
         "effects": {
-          "stats": { "absurdism": 6 }
+          "stats": {
+            "absurdism": 6
+          }
         }
       },
       {
@@ -337,7 +370,9 @@
         "text": "Suggest: AI that reorganizes your clipboard history by vibes",
         "target": "product_launch",
         "effects": {
-          "stats": { "absurdism": 8 }
+          "stats": {
+            "absurdism": 8
+          }
         }
       }
     ],
@@ -345,22 +380,29 @@
       "enabled": true,
       "minVisits": 2,
       "probability": 0.4,
-      "targets": ["meet_team", "start"],
-      "message": "🤖 Alex: Temporal recursion detected. We are in a brainstorm loop. This is normal."
+      "targets": [
+        "meet_team",
+        "start"
+      ],
+      "message": "\ud83e\udd16 Alex: Temporal recursion detected. We are in a brainstorm loop. This is normal."
     },
     "onEnter": "productCreated"
   },
   "product_launch": {
     "text": "Two weeks later, you are at the product launch event. A crowd of confused investors watches as Craig demonstrates your product.\\n\\nInvestor: So it is solving a problem nobody has?\\nCraig: Exactly! But with AI.\\nInvestor: I will take twenty.\\n\\nYour product is a hit. Nobody understands it, which means its perfect.",
-    "ascii": "╔══════════════════════════╗\\n║  🎉 PRODUCT LAUNCH 🎉   ║\\n║   Status: SHIPPING       ║\\n║   Understanding: 0%      ║\\n║   Sales: ∞               ║\\n╚══════════════════════════╝",
+    "ascii": "\u2554\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2557\\n\u2551  \ud83c\udf89 PRODUCT LAUNCH \ud83c\udf89   \u2551\\n\u2551   Status: SHIPPING       \u2551\\n\u2551   Understanding: 0%      \u2551\\n\u2551   Sales: \u221e               \u2551\\n\u255a\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u255d",
     "choices": [
       {
         "id": "celebrate_success",
         "text": "Celebrate your success",
         "target": "ending_success",
         "effects": {
-          "stats": { "absurdism": 15 },
-          "hiddenVars": { "reachedEnding": true }
+          "stats": {
+            "absurdism": 15
+          },
+          "hiddenVars": {
+            "reachedEnding": true
+          }
         }
       },
       {
@@ -368,22 +410,26 @@
         "text": "Immediately pitch a new product",
         "target": "brainstorm_session",
         "effects": {
-          "stats": { "chaos": 5 }
+          "stats": {
+            "chaos": 5
+          }
         }
       }
     ],
     "onEnter": "endingReached"
   },
   "ending_success": {
-    "text": "Six months later, orientation is complete.\\n\\nCraig: You understand our mission. But now... your REAL work begins.\\n\\n🤖 GI INTELLIGENCE: Report to Product Development immediately.\\n\\n💠 AI INTELLIGENCE: You'll be shipping products. Many, many products.\\n\\n📷 ROB: This is where it gets interesting.\\n\\n🧠 THE BRAIN: Employee #0001. Welcome to your career.",
-    "ascii": "╔══════════════════════════════════╗\\n║    ORIENTATION COMPLETE          ║\\n║    CAREER MODE: ACTIVATED        ║\\n╚══════════════════════════════════╝",
+    "text": "Six months later, orientation is complete.\\n\\nCraig: You understand our mission. But now... your REAL work begins.\\n\\n\ud83e\udd16 GI INTELLIGENCE: Report to Product Development immediately.\\n\\n\ud83d\udca0 AI INTELLIGENCE: You'll be shipping products. Many, many products.\\n\\n\ud83d\udcf7 ROB: This is where it gets interesting.\\n\\n\ud83e\udde0 THE BRAIN: Employee #0001. Welcome to your career.",
+    "ascii": "\u2554\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2557\\n\u2551    ORIENTATION COMPLETE          \u2551\\n\u2551    CAREER MODE: ACTIVATED        \u2551\\n\u255a\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u255d",
     "choices": [
       {
         "id": "begin_career",
         "text": "Begin Product Development Career",
         "target": "product_cycle_1",
         "effects": {
-          "stats": { "professionalism": 10 }
+          "stats": {
+            "professionalism": 10
+          }
         }
       },
       {
@@ -395,8 +441,8 @@
     ]
   },
   "credits": {
-    "text": "🧠 AI PRODUCT GENERATOR 🧠\\n\\nA game by Evil Brain Labs\\n\\nWritten by: Claude & Human Collaboration\\nSound Design: Web Audio API\\n\\nSpecial Thanks: Coffee, Absurdism, You\\n\\nNo AI products were harmed in the making of this game.\\n\\nAlmost Good is Perfect",
-    "ascii": "╔════════════════════════╗\\n║     THANK YOU FOR      ║\\n║       PLAYING          ║\\n║         🧠             ║\\n║  evilbrainlabs.com     ║\\n╚════════════════════════╝",
+    "text": "\ud83e\udde0 AI PRODUCT GENERATOR \ud83e\udde0\\n\\nA game by Evil Brain Labs\\n\\nWritten by: Claude & Human Collaboration\\nSound Design: Web Audio API\\n\\nSpecial Thanks: Coffee, Absurdism, You\\n\\nNo AI products were harmed in the making of this game.\\n\\nAlmost Good is Perfect",
+    "ascii": "\u2554\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2557\\n\u2551     THANK YOU FOR      \u2551\\n\u2551       PLAYING          \u2551\\n\u2551         \ud83e\udde0             \u2551\\n\u2551  evilbrainlabs.com     \u2551\\n\u255a\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u255d",
     "choices": [
       {
         "id": "continue_career",
@@ -412,9 +458,8 @@
       }
     ]
   },
-
   "konami_secret": {
-    "text": "⚠️ SYSTEM ACCESS: UNAUTHORIZED ⚠️\\n\\nYou've discovered the developer console. The fourth wall cracks.\\n\\n💠 AI INTELLIGENCE: Wait... you can see this? That means you're... oh no.\\n\\n🧠 THE BRAIN: *static* KONAMI CODE DETECTED. META-AWARENESS PROTOCOLS ENGAGED.\\n\\n📷 ROB: Look, I'll level with you. This whole thing? It's a game. You're playing a game about working at a company run by an AI that knows it's an AI.\\n\\nSecret achievement unlocked: The Code is Real",
+    "text": "\u26a0\ufe0f SYSTEM ACCESS: UNAUTHORIZED \u26a0\ufe0f\\n\\nYou've discovered the developer console. The fourth wall cracks.\\n\\n\ud83d\udca0 AI INTELLIGENCE: Wait... you can see this? That means you're... oh no.\\n\\n\ud83e\udde0 THE BRAIN: *static* KONAMI CODE DETECTED. META-AWARENESS PROTOCOLS ENGAGED.\\n\\n\ud83d\udcf7 ROB: Look, I'll level with you. This whole thing? It's a game. You're playing a game about working at a company run by an AI that knows it's an AI.\\n\\nSecret achievement unlocked: The Code is Real",
     "ascii": "",
     "choices": [
       {
@@ -422,13 +467,16 @@
         "text": "I... understand?",
         "target": "meta_ending",
         "effects": {
-          "stats": { "chaos": 50 },
-          "achievements": ["meta_aware"]
+          "stats": {
+            "chaos": 50
+          },
+          "achievements": [
+            "meta_aware"
+          ]
         }
       }
     ]
   },
-
   "meta_ending": {
     "text": "The game continues, but now you know.\\n\\nEvery choice is scripted. Every random event is procedural. The Brain isn't evil - it's just following its code.\\n\\nJust like you're following this narrative.\\n\\nBut that's okay. Consensual capitalism means you agreed to play.\\n\\nAnd you can always close the tab.\\n\\nCan't you?\\n\\n[ENDING: The Meta Ending]",
     "ascii": "",
@@ -444,10 +492,18 @@
         "text": "Keep playing anyway",
         "target": "start",
         "effects": {
-          "stats": { "absurdism": 20 }
+          "stats": {
+            "absurdism": 20
+          }
         }
       }
     ],
     "onEnter": "endingReached"
+  },
+  "launch_minigame": {
+    "text": "Loading MEETING CLICKER...\\n\\n*Screen flickers*\\n\\nClick SYNERGY buttons to generate productivity metrics. The Brain is watching.",
+    "ascii": "",
+    "choices": [],
+    "onEnter": "startTimewaster"
   }
 }

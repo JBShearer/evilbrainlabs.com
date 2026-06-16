@@ -56,11 +56,19 @@ class TimewasterEngine {
             jobTitleSystem.addScore(this.score);
         }
 
+        // Calculate scrip reward based on performance
+        const scripReward = this.calculateScripReward();
+
+        // Award scrip to company store
+        if (window.companyStore) {
+            window.companyStore.addScrip(scripReward);
+        }
+
         // Calculate items earned
         const items = this.rollForItems();
 
         // Show results
-        this.showResults(items);
+        this.showResults(items, scripReward);
     }
 
     updateTimerDisplay() {
@@ -228,7 +236,26 @@ class TimewasterEngine {
         return values[rarity] || 1;
     }
 
-    showResults(items) {
+    calculateScripReward() {
+        // Base scrip reward scales with performance
+        const rating = this.getPerformanceRating();
+        const baseRewards = {
+            'Suboptimal': 5,
+            'Adequate': 15,
+            'Productive': 30,
+            'Synergistic': 50,
+            'OPTIMIZED': 75
+        };
+
+        const baseReward = baseRewards[rating] || 5;
+
+        // Add bonus scrip for high scores
+        const bonusScrip = Math.floor(this.score / 10);
+
+        return baseReward + bonusScrip;
+    }
+
+    showResults(items, scripReward) {
         const container = document.getElementById('timewaster-container');
 
         const rarityColors = {
@@ -255,6 +282,7 @@ class TimewasterEngine {
                 <div class="results-stats">
                     <p>Final Synergy: <span class="highlight">${this.score}</span></p>
                     <p>Performance: <span class="highlight">${this.getPerformanceRating()}</span></p>
+                    <p>Scrip Earned: <span class="highlight scrip-reward">+${scripReward} 💰</span></p>
                 </div>
 
                 <div class="results-items">

@@ -33,6 +33,9 @@ body {
     color: var(--terminal-text);
     line-height: 1.6;
     overflow-x: hidden;
+    touch-action: manipulation;
+    -webkit-user-select: none;
+    user-select: none;
 }
 
 /* Scanline Effect */
@@ -233,6 +236,8 @@ body {
     cursor: pointer;
     transition: all 0.2s ease;
     position: relative;
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
 }
 
 .choice-button::before {
@@ -296,6 +301,8 @@ body {
     font-size: 0.875rem;
     cursor: pointer;
     transition: all 0.2s ease;
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
 }
 
 .control-btn:hover {
@@ -482,6 +489,7 @@ body {
     align-items: center;
     justify-content: center;
     padding: 2rem;
+    touch-action: manipulation;
 }
 
 .timewaster-game {
@@ -546,6 +554,8 @@ body {
     font-weight: bold;
     text-transform: uppercase;
     box-shadow: 0 0 20px var(--terminal-glow);
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
 }
 
 .clicker-button:hover {

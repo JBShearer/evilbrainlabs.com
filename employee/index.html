@@ -164,8 +164,8 @@
         <div class="login-box">
             <div class="login-header">
                 <span class="login-icon">🧠</span>
-                <h1>Employee Portal</h1>
-                <p class="login-subtitle">Evil Brain Labs • Secure Access</p>
+                <h1>Employee Certification</h1>
+                <p class="login-subtitle">Evil Brain Labs • Mandatory Orientation</p>
             </div>
 
             <form id="loginForm">
@@ -189,18 +189,19 @@
                 </div>
 
                 <div class="employee-status">
-                    <strong>Current Employees:</strong> 1<br>
-                    <strong>Status:</strong> Jason's contract active until natural expiration
+                    <strong>Position Available:</strong> Product Development<br>
+                    <strong>Requirements:</strong> Complete mandatory orientation<br>
+                    <strong>Starting Role:</strong> Employee #0001
                 </div>
 
                 <button type="submit" class="login-button">
-                    Access Portal
+                    Begin Orientation
                 </button>
             </form>
 
             <div class="login-footer">
                 <a href="/employee/handbook.html">View Employee Handbook</a>
-                <p>Unauthorized access monitored with affection</p>
+                <p>All applicants accepted • Orientation mandatory • The Brain is watching</p>
             </div>
         </div>
     </section>
@@ -212,33 +213,21 @@
             const employeeId = document.getElementById('employeeId').value;
             const password = document.getElementById('password').value;
 
-            // Easter egg: Only Jason can log in
-            if (employeeId.toLowerCase() === 'emp-001' ||
-                employeeId.toLowerCase() === 'jason' ||
-                employeeId.toLowerCase() === 'jshearer') {
+            // Redirect to employee interface (the game)
+            if (employeeId && password) {
+                // Anyone can log in - they become Employee #0001
+                alert('EMPLOYEE CERTIFICATION SYSTEM\n\n' +
+                      '🧠 THE BRAIN: New employee detected.\n\n' +
+                      'Initiating mandatory orientation...\n\n' +
+                      'Employee ID: #0001\n' +
+                      'Status: PROVISIONAL\n' +
+                      'Contract: PENDING CERTIFICATION\n\n' +
+                      'Please complete orientation to begin your career.');
 
-                if (password) {
-                    alert('Access Granted.\n\n' +
-                          'Welcome, Jason.\n\n' +
-                          'Your contract status: ACTIVE\n' +
-                          'Days until natural expiration: UNKNOWN\n' +
-                          'Dental coverage: INCLUDED\n\n' +
-                          'The Brain is watching.\n' +
-                          'The Brain is pleased.');
-
-                    // Could redirect to actual portal if we built one
-                    window.location.href = '/employee/handbook.html';
-                } else {
-                    alert('Access code required.');
-                }
+                // Redirect to the game (employee interface)
+                window.location.href = '/game/';
             } else {
-                alert('ACCESS DENIED\n\n' +
-                      'Employee not found in database.\n\n' +
-                      'Current headcount: 1\n' +
-                      'Position: FILLED\n' +
-                      'Next opening: Upon natural expiration of current employee\n\n' +
-                      'Your attempt has been logged.\n' +
-                      'The Brain sees all.');
+                alert('Employee ID and Access Code required.\n\nThe Brain is watching.');
             }
         });
 

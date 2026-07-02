@@ -496,21 +496,21 @@ const CONFIG = {
 };
 
 /* ================= SUPABASE CLIENT ================= */
-let supabase = null;
+let supabaseClient = null;
 let supabaseSession = null;
 
 function initSupabase() {
-  if (typeof window.supabase !== 'undefined' && !supabase) {
-    supabase = window.supabase.createClient(CONFIG.SUPABASE_URL, CONFIG.SUPABASE_ANON_KEY);
+  if (typeof window.supabase !== 'undefined' && !supabaseClient) {
+    supabaseClient = window.supabase.createClient(CONFIG.SUPABASE_URL, CONFIG.SUPABASE_ANON_KEY);
     // Check for existing session
-    supabase.auth.getSession().then(({ data: { session } }) => {
+    supabaseClient.auth.getSession().then(({ data: { session } }) => {
       if (session) {
         supabaseSession = session;
         handleSupabaseUser(session.user);
       }
     });
     // Listen for auth changes (magic link callback)
-    supabase.auth.onAuthStateChange((event, session) => {
+    supabaseClient.auth.onAuthStateChange((event, session) => {
       supabaseSession = session;
       if (session?.user) {
         handleSupabaseUser(session.user);
@@ -519,13 +519,13 @@ function initSupabase() {
       }
     });
   }
-  return supabase;
+  return supabaseClient;
 }
 
 async function handleSupabaseUser(user) {
   if (!user) return;
   // Load profile from database
-  const { data: profile } = await supabase
+  const { data: profile } = await supabaseClient
     .from('profiles')
     .select('*')
     .eq('id', user.id)
@@ -553,7 +553,7 @@ async function handleSupabaseUser(user) {
 document.addEventListener('DOMContentLoaded', () => {
   console.log('DOM loaded, initializing Supabase...');
   initSupabase();
-  console.log('Supabase client:', !!supabase);
+  console.log('Supabase client:', !!supabaseClient);
   loadCasesFromDB().then(() => {
     console.log('Cases loaded, REG length:', REG.length);
   });
@@ -1125,12 +1125,12 @@ S.caseFilter='all'; S.caseQuery=''; S.openCaseId=null;
 /* Load cases from Supabase */
 async function loadCasesFromDB() {
   console.log('loadCasesFromDB called');
-  if (!supabase) { initSupabase(); }
-  if (!supabase) { console.log('No Supabase client'); return; }
+  if (!supabaseClient) { initSupabase(); }
+  if (!supabaseClient) { console.log('No Supabase client'); return; }
 
   try {
     console.log('Fetching use_cases...');
-    const { data: useCases, error } = await supabase
+    const { data: useCases, error } = await supabaseClient
       .from('use_cases')
       .select(`
         *,
@@ -1550,9 +1550,9 @@ $('#loginsend').onclick=async()=>{
   if(!email.includes('@')){ stamp('THAT IS NOT AN EMAIL'); return; }
 
   // Use Supabase magic link auth
-  if(supabase){
+  if(supabaseClient){
     try{
-      const { error } = await supabase.auth.signInWithOtp({
+      const { error } = await supabaseClient.auth.signInWithOtp({
         email,
         options: {
           emailRedirectTo: window.location.origin
@@ -1582,8 +1582,8 @@ wireLogin();
 $('#authbtn').onclick=async()=>{
   if(!S.user){ openLogin(); return; }
   if(confirm('Sign out? Your record persists. Your session does not.')){
-    if(supabase){
-      await supabase.auth.signOut();
+    if(supabaseClient){
+      await supabaseClient.auth.signOut();
     }
     S.user=null; S.portfolio=[]; supabaseSession=null;
     $('#authbtn').textContent='SIGN IN';

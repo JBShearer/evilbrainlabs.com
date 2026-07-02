@@ -2,7 +2,6 @@
 // Generates 2-color SVG vignettes for registry cards using Claude Sonnet
 
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
-import Anthropic from "https://esm.sh/@anthropic-ai/sdk@0.25.0";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -157,7 +156,21 @@ Deno.serve(async (req) => {
   }
 
   try {
-    const { use_case_id, retry = false } = await req.json();
+    const { use_case_id, retry = false, debug = false } = await req.json();
+
+    // Debug mode - return available env vars (names only, not values)
+    if (debug) {
+      const claudeKey = Deno.env.get("CLAUDE");
+      const anthropicKey = Deno.env.get("ANTHROPIC_API_KEY");
+      return new Response(JSON.stringify({
+        has_CLAUDE: !!claudeKey,
+        CLAUDE_prefix: claudeKey ? claudeKey.slice(0, 12) + "..." : null,
+        has_ANTHROPIC_API_KEY: !!anthropicKey,
+        SUPABASE_URL: !!Deno.env.get("SUPABASE_URL"),
+      }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
 
     if (!use_case_id) {
       return new Response(JSON.stringify({ error: "use_case_id required" }), {
@@ -171,10 +184,17 @@ Deno.serve(async (req) => {
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
     );
 
-    // Fetch use case and its triples
+    // Fetch use case with joined entity/predicate names
     const { data: useCase, error: ucErr } = await supabase
       .from("use_cases")
-      .select("id, title, triples(subject, predicate, object)")
+      .select(`
+        id, title, description, category,
+        triples(
+          subject:entities!triples_subject_id_fkey(canonical_name),
+          predicate:predicates!triples_predicate_id_fkey(label),
+          object:entities!triples_object_id_fkey(canonical_name)
+        )
+      `)
       .eq("id", use_case_id)
       .single();
 
@@ -185,20 +205,24 @@ Deno.serve(async (req) => {
       });
     }
 
-    // Get triple or fallback to title parsing
+    // Get triple or fallback to title/description parsing
     let subject: string, predicate: string, object: string;
 
     if (useCase.triples && useCase.triples.length > 0) {
       const triple = useCase.triples[0];
-      subject = triple.subject;
-      predicate = triple.predicate;
-      object = triple.object;
+      subject = triple.subject?.canonical_name || useCase.title;
+      predicate = triple.predicate?.label || "affects";
+      object = triple.object?.canonical_name || "users";
     } else {
-      // Fallback: parse title
-      const words = useCase.title.split(/\s+/);
-      subject = words[0] || "AI";
-      predicate = "generates";
-      object = words.slice(1).join(" ") || "harm";
+      // Fallback: use title and category
+      subject = useCase.title;
+      predicate = useCase.category === "surveillance" ? "surveils"
+                : useCase.category === "discrimination" ? "discriminates_against"
+                : useCase.category === "manipulation" ? "manipulates"
+                : useCase.category === "labor" ? "exploits"
+                : useCase.category === "environment" ? "consumes"
+                : "affects";
+      object = "users";
     }
 
     // Generate deterministic seed
@@ -227,24 +251,41 @@ Deno.serve(async (req) => {
     let vignette_status = "ai_generated";
 
     // Try Claude API
-    const anthropicKey = Deno.env.get("ANTHROPIC_API_KEY");
+    const anthropicKey = Deno.env.get("CLAUDE") || Deno.env.get("ANTHROPIC_API_KEY");
+    console.log("Claude key found:", !!anthropicKey, "key prefix:", anthropicKey?.slice(0, 10));
 
     if (anthropicKey) {
       try {
-        const anthropic = new Anthropic({ apiKey: anthropicKey });
+        console.log("Attempting Claude API call for:", subject, predicate, object);
 
-        const response = await anthropic.messages.create({
-          model: "claude-sonnet-4-20250514",
-          max_tokens: 2000,
-          temperature: 0,
-          messages: [{
-            role: "user",
-            content: buildPrompt(subject, predicate, object, seed),
-          }],
+        // Direct fetch to Claude API (more reliable than SDK in edge functions)
+        const response = await fetch("https://api.anthropic.com/v1/messages", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "x-api-key": anthropicKey,
+            "anthropic-version": "2023-06-01",
+          },
+          body: JSON.stringify({
+            model: "claude-sonnet-4-6",
+            max_tokens: 2000,
+            messages: [{
+              role: "user",
+              content: buildPrompt(subject, predicate, object, seed),
+            }],
+          }),
         });
 
-        const content = response.content[0];
-        if (content.type === "text") {
+        if (!response.ok) {
+          const errorText = await response.text();
+          console.error("Claude API error:", response.status, errorText);
+          throw new Error(`Claude API error: ${response.status} - ${errorText.slice(0, 200)}`);
+        }
+
+        const data = await response.json();
+        const content = data.content?.[0];
+
+        if (content?.type === "text") {
           svg = content.text.trim();
 
           // Extract SVG if wrapped in code block
@@ -267,6 +308,8 @@ Deno.serve(async (req) => {
         console.error("Claude API error:", apiErr);
         svg = geometricFallback(seed);
         vignette_status = "geometric_fallback";
+        // Store the error for debugging
+        (globalThis as any).__lastError = String(apiErr);
       }
     } else {
       // No API key, use fallback
@@ -291,6 +334,7 @@ Deno.serve(async (req) => {
         svg_inline: svg,
         vignette_status,
         upload_failed: true,
+        debug_error: (globalThis as any).__lastError,
       }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
@@ -308,6 +352,7 @@ Deno.serve(async (req) => {
       success: true,
       vignette_url: publicUrl.data.publicUrl,
       vignette_status,
+      debug_error: (globalThis as any).__lastError,
     }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });

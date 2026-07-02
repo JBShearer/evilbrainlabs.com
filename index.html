@@ -6,6 +6,7 @@
 <title>Evil Brain Labs: The Machine</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Permanent+Marker&family=Special+Elite&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
 :root{
   --paper:#F6F2E8; --ink:#1A1817; --pencil:#8B8680; --crayon:#D42B1E;
@@ -477,15 +478,74 @@ careers only go up. sometimes sideways. never out.</div>
 </div>
 
 <script>
-/* ================= CONFIG =================
-   Leave blank to run in DEMO MODE (no backend).
-   Claude Code: fill these during deploy.      */
+/* ================= CONFIG ================= */
 const CONFIG = {
   SUPABASE_URL: "https://aslcrwmbdtvimjrexxzw.supabase.co",
   SUPABASE_ANON_KEY: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFzbGNyd21iZHR2aW1qcmV4eHp3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODExNDA0NjgsImV4cCI6MjA5NjcxNjQ2OH0.XYG0LrgA_92h7dGjw0aamX53WIrwQaqPHNHQLe8p9ls",
   STORY_FN: ""            // optional: streaming story beats from edge function
 };
-const DEMO = !CONFIG.STORY_FN;
+
+/* ================= SUPABASE CLIENT ================= */
+let supabase = null;
+let supabaseSession = null;
+
+function initSupabase() {
+  if (typeof window.supabase !== 'undefined' && !supabase) {
+    supabase = window.supabase.createClient(CONFIG.SUPABASE_URL, CONFIG.SUPABASE_ANON_KEY);
+    // Check for existing session
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (session) {
+        supabaseSession = session;
+        handleSupabaseUser(session.user);
+      }
+    });
+    // Listen for auth changes (magic link callback)
+    supabase.auth.onAuthStateChange((event, session) => {
+      supabaseSession = session;
+      if (session?.user) {
+        handleSupabaseUser(session.user);
+        closeLogin();
+        stamp('EMPLOYMENT CONFIRMED');
+      }
+    });
+  }
+  return supabase;
+}
+
+async function handleSupabaseUser(user) {
+  if (!user) return;
+  // Load profile from database
+  const { data: profile } = await supabase
+    .from('profiles')
+    .select('*')
+    .eq('id', user.id)
+    .single();
+
+  const admin = user.email?.includes('brain') || false;
+  S.user = {
+    id: user.id,
+    email: user.email,
+    admin,
+    designation: profile?.handle || 'BRAINIAC OG-' + String(1000 + hashCode(user.email) % 9000)
+  };
+  S.bc = profile?.braincoin_balance || 3;
+  $('#bc').textContent = S.bc;
+  $('#authbtn').textContent = S.user.designation;
+  if (admin) {
+    $('#adminchip').style.display = 'inline-block';
+    enableAdmin();
+  }
+  renderCareerWidgets();
+  renderAll();
+}
+
+// Initialize on load
+document.addEventListener('DOMContentLoaded', () => {
+  initSupabase();
+  loadCasesFromDB();
+});
+
+const DEMO = !CONFIG.SUPABASE_URL;
 
 /* ============ SEED VOCAB (demo; replace with Supabase fetch) ============ */
 const VOCAB = {
@@ -963,32 +1023,153 @@ $('#filebtn2').onclick=async()=>requireAuth(async()=>{
   const {subject,predicate,object}=F.slots;
   if(subject&&predicate&&object) $('#addrel').click();
   if(!title && !desc && F.staged.length===0){ stamp('THE FORM IS EMPTY'); return; }
-  const filing={
-    title: title || (F.staged[0]?`${F.staged[0].subject} that ${F.staged[0].predicate} ${F.staged[0].object}`:'Untitled Bad Idea'),
-    desc, triples:[...F.staged], valence:F.valence, at:new Date()
-  };
-  if(!DEMO){
-    // production path: submit_use_case edge function handles embed, dedupe,
-    // coin mint, signing, and payout. Client never writes the economy.
+
+  const filingTitle = title || (F.staged[0]?`${F.staged[0].subject} that ${F.staged[0].predicate} ${F.staged[0].object}`:'Untitled Bad Idea');
+
+  // Submit to Supabase edge function
+  if(supabase && supabaseSession){
     try{
-      await fetch(`${CONFIG.SUPABASE_URL}/functions/v1/submit-use-case`,{
+      const response = await fetch(`${CONFIG.SUPABASE_URL}/functions/v1/submit_use_case`,{
         method:'POST',
-        headers:{'Content-Type':'application/json','Authorization':`Bearer ${CONFIG.SUPABASE_ANON_KEY}`},
-        body:JSON.stringify(filing)
+        headers:{
+          'Content-Type':'application/json',
+          'Authorization':`Bearer ${supabaseSession.access_token}`
+        },
+        body:JSON.stringify({
+          title: filingTitle,
+          description: desc || `${F.staged.map(t=>`${t.subject} ${t.predicate} ${t.object}`).join('. ')}`,
+          category: 'other',
+          severity: 3,
+          mint_valence: F.valence
+        })
       });
-    }catch{ stamp('FILED LOCALLY. BACKEND ASLEEP.'); }
+
+      const result = await response.json();
+
+      if(!response.ok){
+        stamp(result.error || 'FILING FAILED');
+        return;
+      }
+
+      if(result.existing){
+        stamp('THIS BAD IDEA ALREADY EXISTS');
+        // Load the existing case
+        const existingId = result.use_case.id;
+        await loadCasesFromDB();
+        setTimeout(()=>{ switchView('cases'); openCase(existingId); }, 500);
+        return;
+      }
+
+      // Success - reload cases and show the new one
+      S.bc = result.use_case ? S.bc + 1 : S.bc;
+      $('#bc').textContent = S.bc;
+
+      const filing = {
+        id: result.use_case.id,
+        dbId: result.use_case.id,
+        title: filingTitle,
+        desc,
+        triples: [...F.staged],
+        valence: F.valence,
+        mine: true,
+        pressure: 0,
+        review: false,
+        flipcount: 0,
+        up: 0,
+        coinId: result.coin?.id
+      };
+
+      bumpDoom(1);
+      addXP(F.valence==='evil'?'evil':'prod',8);
+      fileToRegistry(filing);
+      setTimeout(()=>{ switchView('cases'); openCase(filing.id); }, 900);
+      F.staged=[]; renderStaged(); $('#uc-title').value=''; $('#uc-desc').value='';
+      stamp(F.valence==='evil'?'FILED. COIN MINTED. EVIL.':'FILED. COIN MINTED. GOOD. FOR NOW.');
+
+    }catch(err){
+      console.error('Filing error:', err);
+      stamp('BACKEND ASLEEP. FILED LOCALLY.');
+      // Fall through to local filing
+    }
+  } else {
+    // Demo mode - local only
+    const filing={
+      title: filingTitle,
+      desc, triples:[...F.staged], valence:F.valence, at:new Date()
+    };
+    S.bc+=1; $('#bc').textContent=S.bc; bumpDoom(1);
+    addXP(filing.valence==='evil'?'evil':'prod',8);
+    filing.mine=true; fileToRegistry(filing);
+    setTimeout(()=>{ switchView('cases'); openCase(filing.id); }, 900);
+    F.staged=[]; renderStaged(); $('#uc-title').value=''; $('#uc-desc').value='';
+    stamp(filing.valence==='evil'?'FILED. COIN MINTED. EVIL.':'FILED. COIN MINTED. GOOD. FOR NOW.');
   }
-  S.bc+=1; $('#bc').textContent=S.bc; bumpDoom(1);
-  addXP(filing.valence==='evil'?'evil':'prod',8);
-  filing.mine=true; fileToRegistry(filing);
-  setTimeout(()=>{ switchView('cases'); openCase(filing.id); }, 900);
-  F.staged=[]; renderStaged(); $('#uc-title').value=''; $('#uc-desc').value='';
-  stamp(filing.valence==='evil'?'FILED. COIN MINTED. EVIL.':'FILED. COIN MINTED. GOOD. FOR NOW.');
 });
 const REG=[]; let caseSeq=0;
 S.caseFilter='all'; S.caseQuery=''; S.openCaseId=null;
+
+/* Load cases from Supabase */
+async function loadCasesFromDB() {
+  if (!supabase) { initSupabase(); }
+  if (!supabase) return; // Still no client, stay with seed data
+
+  try {
+    const { data: useCases, error } = await supabase
+      .from('use_cases')
+      .select(`
+        *,
+        coins (
+          id,
+          owner_id,
+          current_valence,
+          mint_valence,
+          pressure
+        ),
+        profiles!use_cases_submitted_by_fkey (handle)
+      `)
+      .eq('status', 'active')
+      .order('created_at', { ascending: false })
+      .limit(50);
+
+    if (error) {
+      console.error('Error loading cases:', error);
+      return;
+    }
+
+    if (useCases && useCases.length > 0) {
+      // Clear seed data and load from DB
+      REG.length = 0;
+      caseSeq = 0;
+
+      useCases.forEach(uc => {
+        const coin = uc.coins?.[0];
+        const isOwner = S.user && coin?.owner_id === S.user.id;
+        fileToRegistry({
+          id: uc.id, // Use DB id
+          dbId: uc.id,
+          title: uc.title,
+          desc: uc.description,
+          triples: [], // TODO: load from triples table
+          valence: coin?.current_valence || 'evil',
+          mine: isOwner,
+          pressure: coin?.pressure || 0,
+          review: (coin?.pressure || 0) >= 10,
+          flipcount: 0, // TODO: count from flips table
+          up: 0,
+          coinId: coin?.id,
+          submittedBy: uc.profiles?.handle || 'Anonymous'
+        });
+      });
+      renderCaseBook();
+      rollTriple();
+    }
+  } catch (err) {
+    console.error('Failed to load cases:', err);
+  }
+}
+
 function fileToRegistry(f){
-  f.id=++caseSeq;
+  if (!f.id) f.id = ++caseSeq;
   f.pressure=f.pressure||0; f.flipcount=f.flipcount||0; f.review=f.review||false;
   f.up=f.up||0;
   REG.unshift(f); renderAll();
@@ -1006,26 +1187,91 @@ function buildActions(f){
   } else if(f.mine){
     const flip=document.createElement('button'); flip.className='fvote flip';
     flip.textContent='FLIP (free · yours)';
-    flip.onclick=e=>{ e.stopPropagation(); if(!S.user){ openLogin('SIGN IN TO FLIP YOUR OWN RECORD.'); return; }
-      f.valence=f.valence==='evil'?'good':'evil'; f.flipcount++;
-      stamp('FLIPPED. HISTORY REMEMBERS.'); renderAll(); };
+    flip.onclick=async e=>{
+      e.stopPropagation();
+      if(!S.user){ openLogin('SIGN IN TO FLIP YOUR OWN RECORD.'); return; }
+
+      // Call self_flip edge function if we have a coinId
+      if(supabase && supabaseSession && f.coinId){
+        try{
+          const response = await fetch(`${CONFIG.SUPABASE_URL}/functions/v1/self_flip`,{
+            method:'POST',
+            headers:{
+              'Content-Type':'application/json',
+              'Authorization':`Bearer ${supabaseSession.access_token}`
+            },
+            body:JSON.stringify({ coin_id: f.coinId })
+          });
+          const result = await response.json();
+          if(!response.ok){
+            stamp(result.error || 'FLIP FAILED');
+            return;
+          }
+          f.valence = result.new_valence;
+          f.flipcount++;
+        }catch(err){
+          console.error('Flip error:', err);
+          // Fall through to local flip
+          f.valence=f.valence==='evil'?'good':'evil'; f.flipcount++;
+        }
+      } else {
+        f.valence=f.valence==='evil'?'good':'evil'; f.flipcount++;
+      }
+      stamp('FLIPPED. HISTORY REMEMBERS.'); renderAll();
+    };
     row.appendChild(flip);
   } else {
-    [['toward GOOD'],['toward EVIL']].forEach(([lbl])=>{
+    [['toward_good', 'toward GOOD'],['toward_evil', 'toward EVIL']].forEach(([dir, lbl])=>{
       const v=document.createElement('button'); v.className='fvote';
       v.textContent=`₿1 ${lbl}`;
-      v.onclick=e=>{
+      v.onclick=async e=>{
         e.stopPropagation();
         if(!S.user){ openLogin('SIGN IN FIRST. THE BRAIN INSISTS. Votes go on the record.'); return; }
         if(S.bc<1){ stamp('NO COIN. NO OPINION.'); return; }
-        S.bc--; $('#bc').textContent=S.bc; f.pressure++; bumpDoom(0.5);
-        if(f.pressure>=3){ f.review=true; stamp('TRIBUNAL SUMMONED'); }
+
+        // Call cast_vote edge function if we have a coinId
+        if(supabase && supabaseSession && f.coinId){
+          try{
+            const response = await fetch(`${CONFIG.SUPABASE_URL}/functions/v1/cast_vote`,{
+              method:'POST',
+              headers:{
+                'Content-Type':'application/json',
+                'Authorization':`Bearer ${supabaseSession.access_token}`
+              },
+              body:JSON.stringify({
+                coin_id: f.coinId,
+                direction: dir
+              })
+            });
+            const result = await response.json();
+            if(!response.ok){
+              stamp(result.error || 'VOTE FAILED');
+              return;
+            }
+            S.bc = result.braincoin_balance;
+            $('#bc').textContent = S.bc;
+            f.pressure = result.new_pressure;
+            if(result.under_tribunal_review){
+              f.review = true;
+              stamp('TRIBUNAL SUMMONED');
+            }
+          }catch(err){
+            console.error('Vote error:', err);
+            // Fall through to local vote
+            S.bc--; $('#bc').textContent=S.bc; f.pressure++;
+            if(f.pressure>=10){ f.review=true; stamp('TRIBUNAL SUMMONED'); }
+          }
+        } else {
+          S.bc--; $('#bc').textContent=S.bc; f.pressure++;
+          if(f.pressure>=10){ f.review=true; stamp('TRIBUNAL SUMMONED'); }
+        }
+        bumpDoom(0.5);
         renderAll(); buzz(10);
       };
       row.appendChild(v);
     });
     const p=document.createElement('span'); p.className='pdots';
-    p.textContent='pressure '+'●'.repeat(f.pressure)+'○'.repeat(Math.max(0,3-f.pressure));
+    p.textContent='pressure '+'●'.repeat(Math.min(10,f.pressure))+'○'.repeat(Math.max(0,10-f.pressure));
     row.appendChild(p);
   }
   return row;
@@ -1281,24 +1527,48 @@ function openLogin(msg){
 function closeLogin(){ $('#loginveil').style.display='none'; }
 function wireLogin(){
 $('#logincancel').onclick=closeLogin;
-$('#loginsend').onclick=()=>{
+$('#loginsend').onclick=async()=>{
   const email=$('#loginemail').value.trim().toLowerCase();
   if(!email.includes('@')){ stamp('THAT IS NOT AN EMAIL'); return; }
-  const admin=email.includes('brain');
-  S.user={ email, admin,
-    designation:'BRAINIAC OG-'+String(1000+hashCode(email)%9000) };
-  $('#authbtn').textContent=S.user.designation;
-  if(admin){ $('#adminchip').style.display='inline-block'; enableAdmin(); }
-  closeLogin(); buzz(15);
-  stamp(admin?'WELCOME. THE BRAIN KNOWS ITS OWN.':'EMPLOYMENT CONFIRMED');
-  renderCareerWidgets(); renderAll();
+
+  // Use Supabase magic link auth
+  if(supabase){
+    try{
+      const { error } = await supabase.auth.signInWithOtp({
+        email,
+        options: {
+          emailRedirectTo: window.location.origin
+        }
+      });
+      if(error) throw error;
+      stamp('MAGIC LINK SENT. CHECK YOUR EMAIL.');
+      $('#loginmsg').textContent = 'Magic link sent! Check your inbox and click the link to sign in.';
+    }catch(err){
+      console.error('Auth error:', err);
+      stamp('AUTH FAILED: ' + err.message);
+    }
+  } else {
+    // Demo mode - instant sign in
+    const admin=email.includes('brain');
+    S.user={ email, admin,
+      designation:'BRAINIAC OG-'+String(1000+hashCode(email)%9000) };
+    $('#authbtn').textContent=S.user.designation;
+    if(admin){ $('#adminchip').style.display='inline-block'; enableAdmin(); }
+    closeLogin(); buzz(15);
+    stamp(admin?'WELCOME. THE BRAIN KNOWS ITS OWN.':'EMPLOYMENT CONFIRMED');
+    renderCareerWidgets(); renderAll();
+  }
 };
 }
 wireLogin();
-$('#authbtn').onclick=()=>{
+$('#authbtn').onclick=async()=>{
   if(!S.user){ openLogin(); return; }
   if(confirm('Sign out? Your record persists. Your session does not.')){
-    S.user=null; S.portfolio=[]; $('#authbtn').textContent='SIGN IN';
+    if(supabase){
+      await supabase.auth.signOut();
+    }
+    S.user=null; S.portfolio=[]; supabaseSession=null;
+    $('#authbtn').textContent='SIGN IN';
     $('#adminchip').style.display='none'; renderCareerWidgets(); renderAll();
   }
 };

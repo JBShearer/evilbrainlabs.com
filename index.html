@@ -551,8 +551,12 @@ async function handleSupabaseUser(user) {
 
 // Initialize on load
 document.addEventListener('DOMContentLoaded', () => {
+  console.log('DOM loaded, initializing Supabase...');
   initSupabase();
-  loadCasesFromDB();
+  console.log('Supabase client:', !!supabase);
+  loadCasesFromDB().then(() => {
+    console.log('Cases loaded, REG length:', REG.length);
+  });
 });
 
 const DEMO = !CONFIG.SUPABASE_URL;
@@ -1120,10 +1124,12 @@ S.caseFilter='all'; S.caseQuery=''; S.openCaseId=null;
 
 /* Load cases from Supabase */
 async function loadCasesFromDB() {
+  console.log('loadCasesFromDB called');
   if (!supabase) { initSupabase(); }
-  if (!supabase) return; // Still no client, stay with seed data
+  if (!supabase) { console.log('No Supabase client'); return; }
 
   try {
+    console.log('Fetching use_cases...');
     const { data: useCases, error } = await supabase
       .from('use_cases')
       .select(`
@@ -1146,6 +1152,7 @@ async function loadCasesFromDB() {
       return;
     }
 
+    console.log('Loaded use_cases:', useCases?.length);
     if (useCases && useCases.length > 0) {
       // Clear seed data and load from DB
       REG.length = 0;

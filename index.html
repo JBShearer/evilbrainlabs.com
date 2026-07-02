@@ -804,19 +804,32 @@ function shipIt(){
   S.bc+=1+bonus; $('#bc').textContent=S.bc;
   const p=$('#payout'); p.style.display='block';
   let note='';
+  const newProduct = { name:`${S.ticket.subject} that ${S.ticket.predicate} ${S.ticket.object}`.slice(0,60),
+    triple:{subject:S.ticket.subject,predicate:S.ticket.predicate,object:S.ticket.object},
+    tier:S.ticket.tier, serial:'EB-'+String(1000+Math.floor(Math.random()*9000)),
+    favor:1+(S.ticket.tier==='LEGENDARY'?2:S.ticket.tier==='UNCOMMON'?1:0), maintained:true };
+  const isFoil = Math.random() < 0.04; // 4% foil chance
   if(S.user){
     if(S.portfolio.length<6){
-      S.portfolio.push({ name:`${S.ticket.subject} that ${S.ticket.predicate} ${S.ticket.object}`.slice(0,60),
-        triple:{subject:S.ticket.subject,predicate:S.ticket.predicate,object:S.ticket.object},
-        tier:S.ticket.tier, serial:'EB-'+String(1000+Math.floor(Math.random()*9000)),
-        favor:1+(S.ticket.tier==='LEGENDARY'?2:S.ticket.tier==='UNCOMMON'?1:0), maintained:true });
-      note=' You now manage it.';
+      S.portfolio.push(newProduct);
+      note=' You now manage it.' + (isFoil ? ' ✨ FOIL MINT!' : '');
       if(S.ticket.tier==='LEGENDARY') grantItem();
     } else note=' PORTFOLIO FULL. SIX. THERE IS NO SEVENTH.';
     renderPortfolio(); renderLB();
   } else note=' Sign in and shipped products become yours to manage.';
   p.textContent=`SHIPPED. +1 Braincoin${bonus?` (+${bonus} bonus)`:''}.${note}`;
   $('#choices').innerHTML='';
+
+  // Add scratch-to-reveal button for new card
+  if(S.user && S.portfolio.length<=6){
+    const reveal=document.createElement('button'); reveal.className='choice';
+    reveal.innerHTML='🎴 Reveal your new card!<small>SCRATCH OFF</small>';
+    reveal.onclick=()=>{
+      revealCard(newProduct.triple, newProduct.tier, newProduct.serial, newProduct.triple.subject, isFoil);
+    };
+    $('#choices').appendChild(reveal);
+  }
+
   if(Math.random()<0.65){
     const stir=document.createElement('button'); stir.className='choice';
     stir.innerHTML='Something stirs in the hallway…<small>INTERLUDE</small>';
@@ -1790,6 +1803,316 @@ function openCard(t,grade,serial,title,product){
   $('#cardclose').onclick=close;
 }
 
+/* ---------- SCRATCH CARD REVEAL ---------- */
+function revealCard(t, grade, serial, title, isFoil = false) {
+  const v = $('#loginveil');
+  const hold = v.innerHTML;
+  v.style.display = 'flex';
+
+  const cardHtml = cardSVG(t, grade, serial, title);
+  const gradeLabel = { COMMON: 'COMMON', UNCOMMON: 'UNCOMMON', LEGENDARY: 'LEGENDARY!!' }[grade] || grade;
+  const gradeColor = { COMMON: 'var(--pencil)', UNCOMMON: 'var(--ink)', LEGENDARY: 'var(--crayon)' }[grade] || 'var(--ink)';
+
+  v.innerHTML = `
+    <div class="scratch-reveal-container">
+      <div class="scratch-header">NEW CARD</div>
+
+      <div class="scratch-card-wrapper" id="scratch-wrapper">
+        <div class="card-underneath" id="card-underneath">${cardHtml}</div>
+        <canvas id="scratch-canvas" width="280" height="380"></canvas>
+        ${isFoil ? '<div class="foil-sparkle" id="foil-sparkle"></div>' : ''}
+      </div>
+
+      <div class="scratch-hint" id="scratch-hint">👆 Scratch to reveal!</div>
+
+      <div class="scratch-actions">
+        <button class="rb" id="reveal-btn">REVEAL ALL</button>
+        <button class="rb" id="close-btn" style="display:none">COLLECT</button>
+      </div>
+
+      <div class="confetti-container" id="confetti"></div>
+    </div>
+
+    <style>
+      .scratch-reveal-container {
+        background: var(--paper);
+        border: 3px solid var(--ink);
+        padding: 16px;
+        text-align: center;
+        position: relative;
+        overflow: hidden;
+      }
+      .scratch-header {
+        font-family: var(--hand);
+        font-size: 24px;
+        color: var(--ink);
+        margin-bottom: 12px;
+      }
+      .scratch-card-wrapper {
+        position: relative;
+        width: 280px;
+        height: 380px;
+        margin: 0 auto;
+        cursor: crosshair;
+      }
+      .card-underneath {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        pointer-events: none;
+      }
+      .card-underneath svg {
+        width: 260px;
+        max-width: 100%;
+      }
+      #scratch-canvas {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        touch-action: none;
+      }
+      .foil-sparkle {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        pointer-events: none;
+        background: linear-gradient(135deg,
+          transparent 0%,
+          rgba(255,215,0,0.3) 25%,
+          transparent 50%,
+          rgba(255,215,0,0.3) 75%,
+          transparent 100%);
+        background-size: 200% 200%;
+        animation: foilShine 2s linear infinite;
+        opacity: 0;
+        transition: opacity 0.5s;
+      }
+      @keyframes foilShine {
+        0% { background-position: 200% 200%; }
+        100% { background-position: -200% -200%; }
+      }
+      .scratch-hint {
+        font-family: var(--mono);
+        font-size: 12px;
+        color: var(--pencil);
+        margin: 12px 0;
+        animation: pulse 1.5s ease-in-out infinite;
+      }
+      @keyframes pulse {
+        0%, 100% { opacity: 1; }
+        50% { opacity: 0.5; }
+      }
+      .scratch-actions {
+        margin-top: 12px;
+      }
+      .scratch-actions button {
+        min-width: 120px;
+        margin: 0 4px;
+      }
+      .confetti-container {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        pointer-events: none;
+        overflow: hidden;
+      }
+      .confetti-piece {
+        position: absolute;
+        width: 10px;
+        height: 10px;
+        animation: confettiFall 3s ease-out forwards;
+      }
+      @keyframes confettiFall {
+        0% { transform: translateY(-20px) rotate(0deg); opacity: 1; }
+        100% { transform: translateY(400px) rotate(720deg); opacity: 0; }
+      }
+      .grade-reveal {
+        font-family: var(--hand);
+        font-size: 28px;
+        color: ${gradeColor};
+        margin-top: 12px;
+        animation: gradePopIn 0.5s ease-out;
+      }
+      @keyframes gradePopIn {
+        0% { transform: scale(0); opacity: 0; }
+        50% { transform: scale(1.2); }
+        100% { transform: scale(1); opacity: 1; }
+      }
+    </style>
+  `;
+
+  const canvas = document.getElementById('scratch-canvas');
+  const ctx = canvas.getContext('2d');
+  const wrapper = document.getElementById('scratch-wrapper');
+
+  // Draw scratch coating
+  ctx.fillStyle = '#666';
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+  // Add "SCRATCH HERE" text
+  ctx.fillStyle = '#888';
+  ctx.font = 'bold 20px monospace';
+  ctx.textAlign = 'center';
+  ctx.fillText('SCRATCH', canvas.width/2, canvas.height/2 - 10);
+  ctx.fillText('TO REVEAL', canvas.width/2, canvas.height/2 + 20);
+
+  // Add decorative pattern
+  ctx.strokeStyle = '#777';
+  ctx.lineWidth = 1;
+  for (let i = 0; i < canvas.width; i += 20) {
+    ctx.beginPath();
+    ctx.moveTo(i, 0);
+    ctx.lineTo(i + canvas.height, canvas.height);
+    ctx.stroke();
+  }
+
+  let isScratching = false;
+  let revealed = false;
+  let scratchedPixels = 0;
+  const totalPixels = canvas.width * canvas.height;
+  const revealThreshold = 0.4; // 40% scratched = auto reveal
+
+  function getPos(e) {
+    const rect = canvas.getBoundingClientRect();
+    const scaleX = canvas.width / rect.width;
+    const scaleY = canvas.height / rect.height;
+
+    if (e.touches) {
+      return {
+        x: (e.touches[0].clientX - rect.left) * scaleX,
+        y: (e.touches[0].clientY - rect.top) * scaleY
+      };
+    }
+    return {
+      x: (e.clientX - rect.left) * scaleX,
+      y: (e.clientY - rect.top) * scaleY
+    };
+  }
+
+  function scratch(x, y) {
+    ctx.globalCompositeOperation = 'destination-out';
+    ctx.beginPath();
+    ctx.arc(x, y, 25, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Add some texture variety
+    for (let i = 0; i < 3; i++) {
+      const ox = x + (Math.random() - 0.5) * 30;
+      const oy = y + (Math.random() - 0.5) * 30;
+      ctx.beginPath();
+      ctx.arc(ox, oy, 8 + Math.random() * 8, 0, Math.PI * 2);
+      ctx.fill();
+    }
+
+    // Check reveal progress
+    scratchedPixels += 150; // Approximate
+    if (scratchedPixels / totalPixels > revealThreshold && !revealed) {
+      completeReveal();
+    }
+
+    if (!reduceMotion) buzz(2);
+  }
+
+  function completeReveal() {
+    if (revealed) return;
+    revealed = true;
+
+    // Fade out canvas
+    canvas.style.transition = 'opacity 0.5s';
+    canvas.style.opacity = '0';
+
+    // Hide scratch hint
+    document.getElementById('scratch-hint').style.display = 'none';
+
+    // Show foil effect if applicable
+    if (isFoil) {
+      const foil = document.getElementById('foil-sparkle');
+      if (foil) foil.style.opacity = '1';
+    }
+
+    // Add confetti
+    if (!reduceMotion) {
+      const confettiContainer = document.getElementById('confetti');
+      const colors = ['var(--crayon)', 'var(--ink)', '#FFD700', '#4CAF50', '#2196F3'];
+      for (let i = 0; i < 30; i++) {
+        const piece = document.createElement('div');
+        piece.className = 'confetti-piece';
+        piece.style.left = Math.random() * 100 + '%';
+        piece.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+        piece.style.animationDelay = Math.random() * 0.5 + 's';
+        piece.style.borderRadius = Math.random() > 0.5 ? '50%' : '0';
+        confettiContainer.appendChild(piece);
+      }
+    }
+
+    // Show grade
+    const gradeDiv = document.createElement('div');
+    gradeDiv.className = 'grade-reveal';
+    gradeDiv.textContent = gradeLabel + (isFoil ? ' ✨ FOIL!' : '');
+    wrapper.parentNode.insertBefore(gradeDiv, wrapper.nextSibling);
+
+    // Swap buttons
+    document.getElementById('reveal-btn').style.display = 'none';
+    document.getElementById('close-btn').style.display = 'inline-block';
+
+    buzz(30);
+  }
+
+  // Mouse events
+  canvas.addEventListener('mousedown', (e) => {
+    isScratching = true;
+    const pos = getPos(e);
+    scratch(pos.x, pos.y);
+  });
+
+  canvas.addEventListener('mousemove', (e) => {
+    if (!isScratching || revealed) return;
+    const pos = getPos(e);
+    scratch(pos.x, pos.y);
+  });
+
+  canvas.addEventListener('mouseup', () => isScratching = false);
+  canvas.addEventListener('mouseleave', () => isScratching = false);
+
+  // Touch events
+  canvas.addEventListener('touchstart', (e) => {
+    e.preventDefault();
+    isScratching = true;
+    const pos = getPos(e);
+    scratch(pos.x, pos.y);
+  }, { passive: false });
+
+  canvas.addEventListener('touchmove', (e) => {
+    e.preventDefault();
+    if (!isScratching || revealed) return;
+    const pos = getPos(e);
+    scratch(pos.x, pos.y);
+  }, { passive: false });
+
+  canvas.addEventListener('touchend', () => isScratching = false);
+
+  // Reveal button
+  document.getElementById('reveal-btn').onclick = completeReveal;
+
+  // Close button
+  document.getElementById('close-btn').onclick = () => {
+    v.style.display = 'none';
+    v.innerHTML = hold;
+    wireLogin();
+  };
+}
+
 /* ---------- PvE BATTLE: the board, not the feed ---------- */
 function rngJS(seedStr){ let a=hashCode(seedStr)||1;
   return ()=>{ a|=0; a=(a+0x6D2B79F5)|0; let t=Math.imul(a^(a>>>15),1|a);
@@ -1808,49 +2131,203 @@ function startBattle(){
   const mine=S.portfolio[0], foe=randomOpponent();
   const seed='pve-'+(++battleCount)+'-'+S.xp;
   const v=$('#loginveil'), hold=v.innerHTML; v.style.display='flex';
-  const itemOpts=S.items.map((it,i)=>`<option value="${i}">${it.name} (${it.cls})</option>`).join('');
-  v.innerHTML=`<div class="memo" style="max-width:340px">
-    <div class="dsec" style="margin:0 0 6px">Sparring room · GI Intelligence officiates</div>
-    <div style="display:flex;gap:6px;justify-content:center">
-      <div style="transform:scale(.62);transform-origin:top">${cardSVG(mine.triple,mine.tier,mine.serial,'YOU: '+mine.triple.subject)}</div>
-      <div style="transform:scale(.62);transform-origin:top">${cardSVG(foe.triple,foe.tier,foe.serial,'THE BRAIN')}</div>
+
+  // Enhanced battle UI
+  const mineStats=cardStats(mine.triple,mine.tier,mine.stage||1);
+  const foeStats=cardStats(foe.triple,foe.tier,1);
+
+  // Item bar HTML
+  const itemSlots=Array(3).fill(null).map((_,i)=>{
+    const item=S.items[i];
+    if(item){
+      return `<div class="battle-item-slot filled" data-idx="${i}">
+        <div class="item-name">${item.name.substring(0,12)}</div>
+        <div class="item-fx">${item.fx.match(/\+\d+/)?.[0]||''}</div>
+      </div>`;
+    }
+    return `<div class="battle-item-slot empty">-</div>`;
+  }).join('');
+
+  // Class advantage indicator
+  const BEATS={SURVEIL:'MONETIZE',MONETIZE:'GAMIFY',GAMIFY:'SURVEIL'};
+  const mineAdvantage=BEATS[mineStats.cls]===foeStats.cls;
+  const foeAdvantage=BEATS[foeStats.cls]===mineStats.cls;
+  const advantageText=mineAdvantage?`<span style="color:var(--crayon)">⚡ ${mineStats.cls} > ${foeStats.cls}</span>`:
+    foeAdvantage?`<span style="color:var(--pencil)">⚡ ${foeStats.cls} > ${mineStats.cls}</span>`:'No class advantage';
+
+  v.innerHTML=`<div class="battle-arena">
+    <div class="battle-header">
+      <span class="battle-title">SPARRING ROOM</span>
+      <span class="battle-round" id="battle-round">ROUND 1 OF 3</span>
+      <span class="battle-score" id="battle-score">YOU: 0 | BRAIN: 0</span>
     </div>
-    <div style="margin-top:-96px">
-    ${S.items.length?`<select class="fld" id="wager"><option value="-1">Wager no item</option>${itemOpts}</select><p class="hint" style="margin:-4px 0 6px">Wagered items are consumed win or lose.</p>`:''}
-    <div id="brounds" style="font-family:var(--mono);font-size:11px;min-height:52px"></div>
-    <button class="rb" id="fightbtn" style="width:100%">FIGHT</button>
-    <button class="rb" id="fleebtn" style="width:100%;margin-top:6px">WITHDRAW</button>
-    </div></div>`;
+
+    <div class="battle-cards">
+      <div class="battle-card-container" id="player-card">
+        <div class="card-label">YOUR PRODUCT</div>
+        ${cardSVG(mine.triple,mine.tier,mine.serial,'YOU',mine.stage||1)}
+        <div class="card-wins" id="player-wins">○ ○</div>
+        <div class="card-buff" id="player-buff" style="display:none"></div>
+      </div>
+
+      <div class="battle-vs">
+        <div class="vs-text">VS</div>
+        <div class="advantage-text">${advantageText}</div>
+      </div>
+
+      <div class="battle-card-container" id="foe-card">
+        <div class="card-label">THE BRAIN</div>
+        ${cardSVG(foe.triple,foe.tier,foe.serial,'THE BRAIN',1)}
+        <div class="card-wins" id="foe-wins">○ ○</div>
+      </div>
+    </div>
+
+    <div class="battle-clash" id="battle-clash" style="display:none">
+      <div class="clash-player" id="clash-player">0</div>
+      <div class="clash-icon">⚔</div>
+      <div class="clash-foe" id="clash-foe">0</div>
+    </div>
+
+    <div class="battle-result" id="battle-result" style="display:none"></div>
+
+    <div class="battle-item-bar">
+      <div class="item-timer" id="item-timer" style="display:none">
+        <div class="timer-bar" id="timer-bar"></div>
+        <span>PLAY ITEM (5s)</span>
+      </div>
+      <div class="item-slots" id="item-slots">${itemSlots}</div>
+    </div>
+
+    <div class="battle-controls">
+      <button class="rb" id="fightbtn" style="flex:1">⚔ FIGHT</button>
+      <button class="rb" id="fleebtn" style="flex:1;background:var(--paper)">WITHDRAW</button>
+    </div>
+  </div>
+
+  <style>
+    .battle-arena { background:var(--paper); border:3px solid var(--ink); max-width:680px; width:95vw; padding:16px; }
+    .battle-header { display:flex; justify-content:space-between; align-items:center; padding-bottom:12px; border-bottom:2px solid var(--ink); margin-bottom:12px; font-family:var(--mono); font-size:11px; }
+    .battle-title { font-weight:bold; }
+    .battle-round { color:var(--crayon); font-weight:bold; }
+    .battle-score { background:var(--manila); padding:4px 8px; border:1px solid var(--ink); }
+    .battle-cards { display:flex; justify-content:center; align-items:flex-start; gap:16px; margin:16px 0; }
+    .battle-card-container { text-align:center; position:relative; }
+    .battle-card-container svg { transform:scale(0.7); transform-origin:top center; }
+    .card-label { font-family:var(--mono); font-size:10px; font-weight:bold; margin-bottom:4px; color:var(--pencil); }
+    .card-wins { font-family:var(--mono); font-size:18px; margin-top:-60px; letter-spacing:8px; }
+    .card-wins .win { color:var(--crayon); }
+    .card-buff { position:absolute; bottom:20px; left:50%; transform:translateX(-50%); background:var(--crayon); color:white; padding:4px 8px; border-radius:4px; font-family:var(--mono); font-size:10px; white-space:nowrap; }
+    .battle-vs { display:flex; flex-direction:column; align-items:center; justify-content:center; padding-top:80px; }
+    .vs-text { font-family:var(--hand); font-size:32px; color:var(--ink); font-weight:bold; }
+    .advantage-text { font-family:var(--mono); font-size:9px; margin-top:8px; }
+    .battle-clash { position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); display:flex; align-items:center; gap:16px; background:var(--ink); color:var(--paper); padding:12px 24px; border-radius:8px; font-family:var(--mono); font-size:24px; font-weight:bold; z-index:10; animation:clashPop 0.3s ease-out; }
+    .clash-player { color:#4CAF50; }
+    .clash-foe { color:#f44336; }
+    .clash-icon { font-size:20px; }
+    @keyframes clashPop { from { transform:translate(-50%,-50%) scale(0.5); opacity:0; } to { transform:translate(-50%,-50%) scale(1); opacity:1; } }
+    .battle-result { text-align:center; padding:16px; font-family:var(--hand); font-size:24px; color:var(--crayon); animation:fadeIn 0.5s; }
+    @keyframes fadeIn { from { opacity:0; } to { opacity:1; } }
+    .battle-item-bar { border-top:2px solid var(--ink); padding-top:12px; margin-top:12px; }
+    .item-timer { text-align:center; margin-bottom:8px; font-family:var(--mono); font-size:10px; color:var(--crayon); }
+    .timer-bar { height:4px; background:var(--crayon); width:100%; transition:width 0.1s linear; margin-bottom:4px; }
+    .item-slots { display:flex; gap:8px; justify-content:center; }
+    .battle-item-slot { width:80px; height:48px; border:2px dashed var(--pencil); border-radius:4px; display:flex; flex-direction:column; align-items:center; justify-content:center; font-family:var(--mono); font-size:9px; cursor:pointer; transition:all 0.2s; }
+    .battle-item-slot.filled { border-style:solid; background:var(--manila); }
+    .battle-item-slot.filled:hover { transform:translateY(-2px); box-shadow:0 4px 8px rgba(0,0,0,0.1); }
+    .battle-item-slot.used { opacity:0.5; border-style:dashed; background:var(--paper); }
+    .item-name { font-weight:bold; text-align:center; }
+    .item-fx { color:var(--crayon); }
+    .battle-controls { display:flex; gap:8px; margin-top:12px; }
+    .card-damage { animation:cardShake 0.3s; }
+    @keyframes cardShake { 0%,100%{transform:translateX(0)scale(0.7);} 25%{transform:translateX(-5px)scale(0.7);} 75%{transform:translateX(5px)scale(0.7);} }
+    @media(max-width:600px){ .battle-cards{flex-direction:column;} .battle-vs{padding:8px 0;} .battle-card-container svg{transform:scale(0.5);} .card-wins{margin-top:-40px;} }
+  </style>`;
+
+  let selectedItem=-1;
   const done=()=>{ v.style.display='none'; v.innerHTML=hold; wireLogin(); renderInventory(); };
   $('#fleebtn').onclick=done;
+
+  // Item selection
+  document.querySelectorAll('.battle-item-slot.filled').forEach(slot=>{
+    slot.onclick=()=>{
+      if(slot.classList.contains('used')) return;
+      document.querySelectorAll('.battle-item-slot').forEach(s=>s.style.border='2px solid var(--pencil)');
+      selectedItem=parseInt(slot.dataset.idx);
+      slot.style.border='2px solid var(--crayon)';
+    };
+  });
+
   $('#fightbtn').onclick=async()=>{
     $('#fightbtn').disabled=true;
-    const wi=$('#wager')?parseInt($('#wager').value):-1;
-    let bonus=0;
-    if(wi>=0){ const it=S.items[wi]; bonus=(it.fx.match(/\+(\d+)/)||[0,0])[1]*1;
-      S.items.splice(wi,1); }
+    $('#fleebtn').disabled=true;
+
     const r=rngJS(seed);
     const a=cardStats(mine.triple,mine.tier,mine.stage||1), b=cardStats(foe.triple,foe.tier,1);
-    const BEATS={SURVEIL:'MONETIZE',MONETIZE:'GAMIFY',GAMIFY:'SURVEIL'};
-    let wa=0,wb=0; const lines=[];
+
+    let itemBonus=0;
+    if(selectedItem>=0 && S.items[selectedItem]){
+      const it=S.items[selectedItem];
+      itemBonus=(it.fx.match(/\+(\d+)/)||[0,0])[1]*1;
+      document.querySelectorAll('.battle-item-slot')[selectedItem].classList.add('used');
+      const buffEl=$('#player-buff');
+      buffEl.textContent=`+${itemBonus} ATK (${it.name})`;
+      buffEl.style.display='block';
+      S.items.splice(selectedItem,1);
+    }
+
+    let wa=0,wb=0;
     for(let n=1;n<=3&&wa<2&&wb<2;n++){
-      const as=a.atk+bonus+(BEATS[a.cls]===b.cls?2:0)-b.def+Math.floor(r()*3);
+      $('#battle-round').textContent=`ROUND ${n} OF 3`;
+
+      // Calculate damage
+      const as=a.atk+itemBonus+(BEATS[a.cls]===b.cls?2:0)-b.def+Math.floor(r()*3);
       const bs=b.atk+(BEATS[b.cls]===a.cls?2:0)-a.def+Math.floor(r()*3);
-      // Stage 3 ECOSYSTEM special: wins ties
+
+      // Show clash animation
+      const clashEl=$('#battle-clash');
+      $('#clash-player').textContent=as;
+      $('#clash-foe').textContent=bs;
+      clashEl.style.display='flex';
+      buzz(8);
+      await new Promise(x=>setTimeout(x,reduceMotion?0:800));
+      clashEl.style.display='none';
+
+      // Determine winner
       let w = as!==bs ? (as>bs?'YOU':'BRAIN') : (a.special?.includes('ties')?'YOU':a.spd!==b.spd?(a.spd>b.spd?'YOU':'BRAIN'):'YOU');
       if(w==='YOU')wa++;else wb++;
-      lines.push(`R${n}: you ${as} vs ${bs} · ${w}`);
-      $('#brounds').innerHTML=lines.join('<br>');
-      await new Promise(x=>setTimeout(x,reduceMotion?0:650)); buzz(8);
+
+      // Update score
+      $('#battle-score').textContent=`YOU: ${wa} | BRAIN: ${wb}`;
+
+      // Update win indicators
+      $('#player-wins').innerHTML='○○'.split('').map((_,i)=>i<wa?'<span class="win">●</span>':'○').join(' ');
+      $('#foe-wins').innerHTML='○○'.split('').map((_,i)=>i<wb?'<span class="win">●</span>':'○').join(' ');
+
+      // Damage animation on loser
+      const loserCard=w==='YOU'?'#foe-card':'#player-card';
+      $(loserCard).querySelector('svg')?.classList.add('card-damage');
+      await new Promise(x=>setTimeout(x,reduceMotion?0:400));
+      $(loserCard).querySelector('svg')?.classList.remove('card-damage');
     }
+
+    // Final result
     const won=wa>wb;
-    lines.push(won?'VERDICT: YOU. GI Intelligence nods once.':'VERDICT: THE BRAIN. Naturally.');
-    $('#brounds').innerHTML=lines.join('<br>');
+    const resultEl=$('#battle-result');
+    resultEl.style.display='block';
+    if(won){
+      resultEl.innerHTML=`<div style="font-size:32px">🏆 VICTORY</div><div style="font-size:14px;color:var(--ink)">GI Intelligence nods once.</div>`;
+      addXP('evil',12);
+      if(Math.random()<0.6) grantItem();
+      stamp('VICTORY. LOGGED.');
+    } else {
+      resultEl.innerHTML=`<div style="font-size:32px">💀 DEFEAT</div><div style="font-size:14px;color:var(--ink)">Reassigned to Victory Preparation.</div>`;
+      addXP('prod',4);
+      stamp('REASSIGNED TO VICTORY PREPARATION');
+    }
     bumpDoom(2);
-    if(won){ addXP('evil',12); if(Math.random()<0.6) grantItem();
-      stamp('VICTORY. LOGGED.'); }
-    else { addXP('prod',4); stamp('REASSIGNED TO VICTORY PREPARATION'); }
-    $('#fightbtn').textContent='CLOSE'; $('#fightbtn').disabled=false;
+
+    $('#fightbtn').textContent='CLOSE';
+    $('#fightbtn').disabled=false;
     $('#fightbtn').onclick=done;
   };
 }

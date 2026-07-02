@@ -1152,7 +1152,8 @@ async function loadCasesFromDB() {
       caseSeq = 0;
 
       useCases.forEach(uc => {
-        const coin = uc.coins?.[0];
+        // coins can be array or single object depending on query
+        const coin = Array.isArray(uc.coins) ? uc.coins?.[0] : uc.coins;
         const isOwner = S.user && coin?.owner_id === S.user.id;
         fileToRegistry({
           id: uc.id, // Use DB id

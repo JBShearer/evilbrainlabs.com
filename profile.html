@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Profile | The Registry</title>
+    <link rel="icon" type="image/x-icon" href="/favicon.ico">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="container">
+            <a href="/" class="logo">
+                <span class="logo-icon">🧠</span>
+                <div class="logo-text">
+                    <h1>The Registry</h1>
+                    <span class="tagline">Third worst in AI.</span>
+                </div>
+            </a>
+            <nav class="nav">
+                <a href="/">Browse</a>
+                <a href="/graph.html">The Graph</a>
+                <a href="/submit.html">Submit</a>
+                <a href="/profile.html" class="nav-profile" id="nav-profile" style="display: none;">
+                    <span class="braincoin-icon">🪙</span>
+                    <span id="nav-balance">0</span>
+                </a>
+                <button class="btn btn-outline" id="auth-btn">Sign In</button>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Profile Page -->
+    <section class="profile-page">
+        <div class="container">
+            <div id="auth-required" class="auth-required">
+                <h2>Sign In Required</h2>
+                <p>Sign in to view your profile, coins, and voting history.</p>
+                <button class="btn btn-primary" id="profile-auth-btn">Sign In</button>
+            </div>
+
+            <div id="profile-content" style="display: none;">
+                <div class="profile-header">
+                    <div class="profile-info">
+                        <h2 id="profile-handle">Loading...</h2>
+                        <p id="profile-email" class="profile-email"></p>
+                    </div>
+                    <div class="braincoin-display">
+                        <span class="braincoin-large">🪙</span>
+                        <div>
+                            <div class="braincoin-amount" id="profile-balance">0</div>
+                            <div class="braincoin-label">Braincoins</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="profile-section">
+                    <h3>Your Coins</h3>
+                    <p class="section-desc">Use cases you've submitted. You can flip these for free.</p>
+                    <div id="my-coins" class="coins-grid">
+                        <div class="loading">Loading...</div>
+                    </div>
+                </div>
+
+                <div class="profile-section">
+                    <h3>Your Votes</h3>
+                    <p class="section-desc">Braincoins staked on others' coins. Pending votes await Tribunal ruling.</p>
+                    <div id="my-votes" class="votes-list">
+                        <div class="loading">Loading...</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Auth Modal -->
+    <div class="modal" id="auth-modal">
+        <div class="modal-content">
+            <button class="modal-close" id="modal-close">&times;</button>
+            <h3>Sign In to The Registry</h3>
+            <p>Enter your email for a magic link.</p>
+            <form id="auth-form">
+                <input type="email" id="auth-email" class="input" placeholder="villain@example.com" required>
+                <button type="submit" class="btn btn-primary btn-block">Send Magic Link</button>
+            </form>
+            <p class="auth-note">First time? You'll get 3 Braincoins to start.</p>
+            <div id="auth-message" class="auth-message"></div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-bottom">
+                <p>&copy; 2026 Evil Brain Labs. The record is the joke. The joke is true.</p>
+            </div>
+        </div>
+    </footer>
+
+    <style>
+        .profile-page {
+            padding: var(--space-3xl) 0;
+            min-height: 60vh;
+        }
+
+        .auth-required {
+            text-align: center;
+            padding: var(--space-3xl);
+        }
+
+        .auth-required h2 {
+            margin-bottom: var(--space-md);
+        }
+
+        .auth-required p {
+            margin-bottom: var(--space-xl);
+            color: var(--ink-muted);
+        }
+
+        .profile-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: var(--space-3xl);
+            padding-bottom: var(--space-xl);
+            border-bottom: 2px solid var(--ink);
+        }
+
+        .profile-info h2 {
+            margin-bottom: var(--space-xs);
+        }
+
+        .profile-email {
+            color: var(--ink-muted);
+            font-size: 0.9rem;
+        }
+
+        .braincoin-display {
+            display: flex;
+            align-items: center;
+            gap: var(--space-md);
+            padding: var(--space-lg);
+            background: var(--paper-dark);
+            border: 2px solid var(--ink);
+            border-radius: var(--border-radius);
+        }
+
+        .braincoin-large {
+            font-size: 3rem;
+        }
+
+        .braincoin-amount {
+            font-family: var(--font-hand);
+            font-size: 2rem;
+        }
+
+        .braincoin-label {
+            font-size: 0.85rem;
+            color: var(--ink-muted);
+        }
+
+        .profile-section {
+            margin-bottom: var(--space-3xl);
+        }
+
+        .profile-section h3 {
+            margin-bottom: var(--space-sm);
+        }
+
+        .section-desc {
+            color: var(--ink-muted);
+            margin-bottom: var(--space-lg);
+        }
+
+        .coins-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: var(--space-lg);
+        }
+
+        .coin-card-mini {
+            background: var(--paper);
+            border: 2px solid var(--ink);
+            border-radius: var(--border-radius);
+            padding: var(--space-md);
+        }
+
+        .coin-card-mini h4 {
+            margin-bottom: var(--space-sm);
+        }
+
+        .coin-card-mini h4 a {
+            text-decoration: none;
+        }
+
+        .coin-meta {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.85rem;
+            color: var(--ink-muted);
+        }
+
+        .votes-list {
+            display: flex;
+            flex-direction: column;
+            gap: var(--space-md);
+        }
+
+        .vote-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: var(--space-md);
+            background: var(--paper-dark);
+            border-radius: var(--border-radius);
+        }
+
+        .vote-info {
+            flex: 1;
+        }
+
+        .vote-direction {
+            font-family: var(--font-hand);
+            font-size: 0.9rem;
+        }
+
+        .vote-direction.toward_good {
+            color: var(--good);
+        }
+
+        .vote-direction.toward_evil {
+            color: var(--evil);
+        }
+
+        .vote-status {
+            padding: var(--space-xs) var(--space-sm);
+            border-radius: var(--border-radius);
+            font-size: 0.8rem;
+            font-family: var(--font-mono);
+        }
+
+        .vote-status.pending {
+            background: var(--paper);
+            border: 1px solid var(--ink-muted);
+        }
+
+        .vote-status.returned {
+            background: rgba(45, 90, 39, 0.1);
+            color: var(--good);
+        }
+
+        .vote-status.burned {
+            background: rgba(139, 0, 0, 0.1);
+            color: var(--evil);
+        }
+
+        .empty-message {
+            padding: var(--space-xl);
+            text-align: center;
+            color: var(--ink-muted);
+            border: 2px dashed var(--paper-shadow);
+            border-radius: var(--border-radius);
+        }
+
+        @media (max-width: 768px) {
+            .profile-header {
+                flex-direction: column;
+                gap: var(--space-lg);
+                text-align: center;
+            }
+        }
+    </style>
+
+    <script src="/js/config.js"></script>
+    <script src="/js/auth.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', async () => {
+            initSupabase();
+            await auth.init();
+            setupAuthUI();
+
+            const authRequired = document.getElementById('auth-required');
+            const profileContent = document.getElementById('profile-content');
+            const profileAuthBtn = document.getElementById('profile-auth-btn');
+            const authModal = document.getElementById('auth-modal');
+
+            // Show content based on auth state
+            auth.onAuthChange(async (user, profile) => {
+                if (user) {
+                    authRequired.style.display = 'none';
+                    profileContent.style.display = 'block';
+                    await loadProfileData(user, profile);
+                } else {
+                    authRequired.style.display = 'block';
+                    profileContent.style.display = 'none';
+                }
+            });
+
+            // Auth button
+            profileAuthBtn?.addEventListener('click', () => {
+                authModal.classList.add('active');
+            });
+        });
+
+        async function loadProfileData(user, profile) {
+            const client = initSupabase();
+
+            // Update header info
+            document.getElementById('profile-handle').textContent = profile?.handle || 'Anonymous';
+            document.getElementById('profile-email').textContent = user.email;
+            document.getElementById('profile-balance').textContent = profile?.braincoin_balance || 0;
+
+            // Load user's coins
+            const { data: coins } = await client
+                .from('coins')
+                .select(`
+                    *,
+                    use_cases (id, title, category)
+                `)
+                .eq('owner_id', user.id)
+                .order('minted_at', { ascending: false });
+
+            renderCoins(coins || []);
+
+            // Load user's votes
+            const { data: votes } = await client
+                .from('votes')
+                .select(`
+                    *,
+                    coins (
+                        id,
+                        current_valence,
+                        use_cases (id, title)
+                    )
+                `)
+                .eq('voter_id', user.id)
+                .order('created_at', { ascending: false });
+
+            renderVotes(votes || []);
+        }
+
+        function renderCoins(coins) {
+            const container = document.getElementById('my-coins');
+
+            if (coins.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-message">
+                        <p>You haven't minted any coins yet.</p>
+                        <a href="/submit.html" class="btn btn-outline" style="margin-top: var(--space-md);">Submit a Bad Idea</a>
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = coins.map(coin => `
+                <div class="coin-card-mini">
+                    <h4><a href="/use-case.html?id=${coin.use_cases?.id}">${escapeHtml(coin.use_cases?.title || 'Unknown')}</a></h4>
+                    <div class="coin-meta">
+                        <span class="valence-badge ${coin.current_valence}">${coin.current_valence}</span>
+                        <span>${coin.use_cases?.category || 'uncategorized'}</span>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function renderVotes(votes) {
+            const container = document.getElementById('my-votes');
+
+            if (votes.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-message">
+                        <p>You haven't cast any votes yet.</p>
+                        <p style="font-size: 0.9rem; margin-top: var(--space-sm);">Browse the registry and stake Braincoins on coins you have opinions about.</p>
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = votes.map(vote => `
+                <div class="vote-item">
+                    <div class="vote-info">
+                        <a href="/use-case.html?id=${vote.coins?.use_cases?.id}">
+                            ${escapeHtml(vote.coins?.use_cases?.title || 'Unknown')}
+                        </a>
+                        <div class="vote-direction ${vote.direction}">${vote.direction.replace('_', ' ')}</div>
+                    </div>
+                    <div>
+                        <span class="vote-status ${vote.status}">${vote.status}</span>
+                        ${vote.is_evidence ? '<span title="Evidence submitted">📎</span>' : ''}
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+    </script>
+</body>
+</html>

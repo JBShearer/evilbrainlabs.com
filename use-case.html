@@ -1,0 +1,578 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Use Case | The Registry</title>
+    <link rel="icon" type="image/x-icon" href="/favicon.ico">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="container">
+            <a href="/" class="logo">
+                <span class="logo-icon">🧠</span>
+                <div class="logo-text">
+                    <h1>The Registry</h1>
+                    <span class="tagline">Third worst in AI.</span>
+                </div>
+            </a>
+            <nav class="nav">
+                <a href="/">Browse</a>
+                <a href="/graph.html">The Graph</a>
+                <a href="/submit.html">Submit</a>
+                <a href="/profile.html" class="nav-profile" id="nav-profile" style="display: none;">
+                    <span class="braincoin-icon">🪙</span>
+                    <span id="nav-balance">0</span>
+                </a>
+                <button class="btn btn-outline" id="auth-btn">Sign In</button>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Use Case Detail -->
+    <section class="detail-page">
+        <div class="container">
+            <div id="loading" class="loading">Loading...</div>
+            <div id="detail-content" style="display: none;">
+                <!-- Content loaded dynamically -->
+            </div>
+            <div id="not-found" class="empty-state" style="display: none;">
+                <p>Use case not found.</p>
+                <a href="/" class="btn btn-primary">Back to Registry</a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Auth Modal -->
+    <div class="modal" id="auth-modal">
+        <div class="modal-content">
+            <button class="modal-close" id="modal-close">&times;</button>
+            <h3>Sign In to The Registry</h3>
+            <p>Enter your email for a magic link.</p>
+            <form id="auth-form">
+                <input type="email" id="auth-email" class="input" placeholder="villain@example.com" required>
+                <button type="submit" class="btn btn-primary btn-block">Send Magic Link</button>
+            </form>
+            <div id="auth-message" class="auth-message"></div>
+        </div>
+    </div>
+
+    <!-- Vote Modal -->
+    <div class="modal" id="vote-modal">
+        <div class="modal-content">
+            <button class="modal-close" id="vote-modal-close">&times;</button>
+            <h3>Cast Your Vote</h3>
+            <p>Stake 1 Braincoin to vote. If the Tribunal rules with you, you get it back. If not, it burns.</p>
+            <div id="vote-direction-display"></div>
+            <div class="form-group">
+                <label for="evidence-url">Evidence URL (optional, +10 pressure)</label>
+                <input type="url" id="evidence-url" class="input" placeholder="https://...">
+            </div>
+            <button class="btn btn-primary btn-block" id="confirm-vote-btn">Confirm Vote (Cost: 1 🪙)</button>
+            <div id="vote-message" class="auth-message"></div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-bottom">
+                <p>&copy; 2026 Evil Brain Labs. The record is the joke. The joke is true.</p>
+            </div>
+        </div>
+    </footer>
+
+    <style>
+        .detail-page {
+            padding: var(--space-3xl) 0;
+        }
+
+        .detail-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: var(--space-xl);
+            gap: var(--space-lg);
+        }
+
+        .detail-title {
+            font-size: 2rem;
+            margin-bottom: var(--space-sm);
+        }
+
+        .detail-meta {
+            display: flex;
+            gap: var(--space-lg);
+            color: var(--ink-muted);
+            font-size: 0.9rem;
+        }
+
+        .coin-card {
+            background: var(--paper-dark);
+            border: 3px solid var(--ink);
+            border-radius: var(--border-radius);
+            padding: var(--space-lg);
+            min-width: 200px;
+            text-align: center;
+        }
+
+        .coin-card.under-review {
+            border-color: var(--crayon-red);
+        }
+
+        .coin-valence {
+            font-family: var(--font-hand);
+            font-size: 1.5rem;
+            padding: var(--space-sm) var(--space-lg);
+            border-radius: var(--border-radius);
+            display: inline-block;
+            margin-bottom: var(--space-md);
+        }
+
+        .coin-valence.good {
+            background: var(--good);
+            color: var(--paper);
+        }
+
+        .coin-valence.evil {
+            background: var(--evil);
+            color: var(--paper);
+        }
+
+        .coin-pressure {
+            margin-bottom: var(--space-md);
+        }
+
+        .pressure-label {
+            font-size: 0.85rem;
+            color: var(--ink-muted);
+            margin-bottom: var(--space-xs);
+        }
+
+        .pressure-bar-large {
+            height: 12px;
+            background: var(--paper);
+            border: 1px solid var(--ink-muted);
+            border-radius: 6px;
+            overflow: hidden;
+        }
+
+        .pressure-fill-large {
+            height: 100%;
+            background: var(--ink);
+            transition: width 0.3s ease;
+        }
+
+        .pressure-fill-large.warning {
+            background: var(--crayon-red);
+        }
+
+        .tribunal-badge {
+            display: inline-block;
+            font-family: var(--font-hand);
+            font-size: 0.8rem;
+            color: var(--crayon-red);
+            border: 2px solid var(--crayon-red);
+            padding: var(--space-xs) var(--space-sm);
+            margin-top: var(--space-sm);
+            transform: rotate(-3deg);
+        }
+
+        .detail-description {
+            font-size: 1.1rem;
+            line-height: 1.8;
+            margin-bottom: var(--space-2xl);
+            padding: var(--space-lg);
+            background: var(--paper-dark);
+            border-left: 4px solid var(--ink);
+        }
+
+        .detail-section {
+            margin-bottom: var(--space-2xl);
+        }
+
+        .detail-section h3 {
+            margin-bottom: var(--space-lg);
+            padding-bottom: var(--space-sm);
+            border-bottom: 1px solid var(--paper-shadow);
+        }
+
+        /* Flip History */
+        .flip-timeline {
+            position: relative;
+            padding-left: var(--space-xl);
+        }
+
+        .flip-timeline::before {
+            content: '';
+            position: absolute;
+            left: 8px;
+            top: 0;
+            bottom: 0;
+            width: 2px;
+            background: var(--paper-shadow);
+        }
+
+        .flip-item {
+            position: relative;
+            padding-bottom: var(--space-lg);
+        }
+
+        .flip-item::before {
+            content: '';
+            position: absolute;
+            left: calc(-1 * var(--space-xl) + 4px);
+            top: 4px;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: var(--ink);
+        }
+
+        .flip-item.mint::before {
+            background: var(--good);
+        }
+
+        .flip-arrow {
+            font-family: var(--font-mono);
+        }
+
+        .flip-date {
+            font-size: 0.85rem;
+            color: var(--ink-muted);
+        }
+
+        .flip-type {
+            font-size: 0.8rem;
+            color: var(--ink-muted);
+            font-style: italic;
+        }
+
+        /* Vote Actions */
+        .vote-actions {
+            display: flex;
+            gap: var(--space-md);
+            justify-content: center;
+            margin-top: var(--space-lg);
+        }
+
+        .self-flip-btn {
+            margin-top: var(--space-md);
+        }
+
+        /* Related Use Cases */
+        .related-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: var(--space-lg);
+        }
+
+        @media (max-width: 768px) {
+            .detail-header {
+                flex-direction: column;
+            }
+
+            .coin-card {
+                width: 100%;
+            }
+        }
+    </style>
+
+    <script src="/js/config.js"></script>
+    <script src="/js/auth.js"></script>
+    <script src="/js/registry.js"></script>
+    <script>
+        let currentUseCase = null;
+        let currentCoin = null;
+        let voteDirection = null;
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            initSupabase();
+            await auth.init();
+            setupAuthUI();
+
+            // Get use case ID from URL
+            const params = new URLSearchParams(window.location.search);
+            const id = params.get('id');
+
+            if (!id) {
+                document.getElementById('loading').style.display = 'none';
+                document.getElementById('not-found').style.display = 'block';
+                return;
+            }
+
+            await loadUseCase(id);
+        });
+
+        async function loadUseCase(id) {
+            const client = initSupabase();
+            const loading = document.getElementById('loading');
+            const content = document.getElementById('detail-content');
+            const notFound = document.getElementById('not-found');
+
+            try {
+                // Load use case with coin and flips
+                const { data: useCase, error } = await client
+                    .from('use_cases')
+                    .select(`
+                        *,
+                        coins (
+                            *,
+                            flips (*)
+                        ),
+                        profiles!use_cases_submitted_by_fkey (handle)
+                    `)
+                    .eq('id', id)
+                    .single();
+
+                if (error || !useCase) {
+                    loading.style.display = 'none';
+                    notFound.style.display = 'block';
+                    return;
+                }
+
+                currentUseCase = useCase;
+                currentCoin = useCase.coins?.[0];
+
+                // Load related use cases (same category)
+                let related = [];
+                if (useCase.category) {
+                    const { data } = await client
+                        .from('use_cases')
+                        .select('*, coins(*)')
+                        .eq('category', useCase.category)
+                        .eq('status', 'active')
+                        .neq('id', id)
+                        .limit(5);
+                    related = data || [];
+                }
+
+                // Render
+                renderDetail(useCase, related);
+                loading.style.display = 'none';
+                content.style.display = 'block';
+
+            } catch (err) {
+                console.error('Error loading use case:', err);
+                loading.style.display = 'none';
+                notFound.style.display = 'block';
+            }
+        }
+
+        function renderDetail(useCase, related) {
+            const content = document.getElementById('detail-content');
+            const coin = useCase.coins?.[0];
+            const flips = coin?.flips || [];
+            const pressure = coin?.pressure || 0;
+            const pressurePercent = Math.min((pressure / CONFIG.TRIBUNAL_THRESHOLD) * 100, 100);
+            const underReview = pressure >= CONFIG.TRIBUNAL_THRESHOLD;
+
+            // Sort flips by date
+            flips.sort((a, b) => new Date(a.created_at) - new Date(b.created_at));
+
+            // Severity dots
+            const severityDots = Array(5).fill(0).map((_, i) =>
+                `<span class="severity-dot ${i < useCase.severity ? 'filled' : ''}"></span>`
+            ).join('');
+
+            // Flip timeline
+            const flipTimeline = flips.length > 0 ? flips.map(flip => `
+                <div class="flip-item ${flip.is_self_flip ? '' : 'tribunal'}">
+                    <div>
+                        <span class="valence-badge ${flip.from_valence}">${flip.from_valence}</span>
+                        <span class="flip-arrow">→</span>
+                        <span class="valence-badge ${flip.to_valence}">${flip.to_valence}</span>
+                        <span class="flip-type">(${flip.is_self_flip ? 'self-flip' : 'tribunal'})</span>
+                    </div>
+                    <div class="flip-date">${new Date(flip.created_at).toLocaleDateString()}</div>
+                    ${flip.ruling_text ? `<p style="font-style: italic; margin-top: var(--space-xs);">"${flip.ruling_text}"</p>` : ''}
+                </div>
+            `).join('') : '<p class="form-hint">No flips yet. The minter chose wisely... or did they?</p>';
+
+            // Related cards
+            const relatedCards = related.length > 0
+                ? related.map(uc => registry.renderCard(uc)).join('')
+                : '<p class="form-hint">No related use cases found.</p>';
+
+            // Check if current user owns this coin
+            const isOwner = auth.user && coin?.owner_id === auth.user.id;
+
+            content.innerHTML = `
+                <a href="/" class="btn btn-small btn-outline" style="margin-bottom: var(--space-lg);">← Back to Registry</a>
+
+                <div class="detail-header">
+                    <div>
+                        <h2 class="detail-title">${escapeHtml(useCase.title)}</h2>
+                        <div class="detail-meta">
+                            <span class="card-category">${useCase.category || 'uncategorized'}</span>
+                            <span>Severity: <span class="severity-dots">${severityDots}</span></span>
+                            <span>Submitted by ${useCase.profiles?.handle || 'Anonymous'}</span>
+                        </div>
+                    </div>
+
+                    <div class="coin-card ${underReview ? 'under-review' : ''}">
+                        <div class="coin-valence ${coin?.current_valence || 'evil'}">${coin?.current_valence || 'evil'}</div>
+                        <div class="coin-pressure">
+                            <div class="pressure-label">Pressure: ${pressure}/${CONFIG.TRIBUNAL_THRESHOLD}</div>
+                            <div class="pressure-bar-large">
+                                <div class="pressure-fill-large ${underReview ? 'warning' : ''}"
+                                     style="width: ${pressurePercent}%"></div>
+                            </div>
+                        </div>
+                        ${underReview ? '<div class="tribunal-badge">UNDER TRIBUNAL REVIEW</div>' : ''}
+
+                        ${isOwner ? `
+                            <button class="btn btn-outline btn-small self-flip-btn" onclick="selfFlip()">
+                                Flip to ${coin?.current_valence === 'good' ? 'Evil' : 'Good'}
+                            </button>
+                        ` : `
+                            <div class="vote-actions">
+                                <button class="btn btn-small btn-good" onclick="openVoteModal('toward_good')">Vote Good</button>
+                                <button class="btn btn-small btn-evil" onclick="openVoteModal('toward_evil')">Vote Evil</button>
+                            </div>
+                        `}
+                    </div>
+                </div>
+
+                <div class="detail-description">
+                    ${escapeHtml(useCase.description)}
+                </div>
+
+                <div class="detail-section">
+                    <h3>Flip History</h3>
+                    <div class="flip-timeline">
+                        <div class="flip-item mint">
+                            <div>
+                                <span>Minted as</span>
+                                <span class="valence-badge ${coin?.mint_valence || 'evil'}">${coin?.mint_valence || 'evil'}</span>
+                            </div>
+                            <div class="flip-date">${new Date(coin?.minted_at || useCase.created_at).toLocaleDateString()}</div>
+                        </div>
+                        ${flipTimeline}
+                    </div>
+                </div>
+
+                <div class="detail-section">
+                    <h3>Related Bad Ideas</h3>
+                    <div class="related-grid">
+                        ${relatedCards}
+                    </div>
+                </div>
+            `;
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        // Vote modal
+        function openVoteModal(direction) {
+            if (!auth.isAuthenticated()) {
+                document.getElementById('auth-modal').classList.add('active');
+                return;
+            }
+
+            if (auth.getBalance() < 1) {
+                alert('You need at least 1 Braincoin to vote.');
+                return;
+            }
+
+            voteDirection = direction;
+            const modal = document.getElementById('vote-modal');
+            const display = document.getElementById('vote-direction-display');
+            display.innerHTML = `<p>You are voting: <strong class="${direction === 'toward_good' ? 'good' : 'evil'}">${direction === 'toward_good' ? 'Toward Good' : 'Toward Evil'}</strong></p>`;
+            modal.classList.add('active');
+        }
+
+        document.getElementById('vote-modal-close')?.addEventListener('click', () => {
+            document.getElementById('vote-modal').classList.remove('active');
+        });
+
+        document.getElementById('confirm-vote-btn')?.addEventListener('click', async () => {
+            const evidenceUrl = document.getElementById('evidence-url').value;
+            const message = document.getElementById('vote-message');
+
+            try {
+                const client = initSupabase();
+                const { data: { session } } = await client.auth.getSession();
+
+                const response = await fetch(`${CONFIG.SUPABASE_URL}/functions/v1/cast_vote`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${session.access_token}`
+                    },
+                    body: JSON.stringify({
+                        coin_id: currentCoin.id,
+                        direction: voteDirection,
+                        evidence_url: evidenceUrl || null
+                    })
+                });
+
+                const result = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(result.error);
+                }
+
+                message.textContent = result.message;
+                message.className = 'auth-message success';
+
+                // Reload page after a moment
+                setTimeout(() => {
+                    location.reload();
+                }, 1500);
+
+            } catch (error) {
+                message.textContent = error.message;
+                message.className = 'auth-message error';
+            }
+        });
+
+        // Self flip
+        async function selfFlip() {
+            if (!auth.isAuthenticated()) {
+                document.getElementById('auth-modal').classList.add('active');
+                return;
+            }
+
+            if (!confirm('Flip your coin? This is free but logged forever.')) {
+                return;
+            }
+
+            try {
+                const client = initSupabase();
+                const { data: { session } } = await client.auth.getSession();
+
+                const response = await fetch(`${CONFIG.SUPABASE_URL}/functions/v1/self_flip`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${session.access_token}`
+                    },
+                    body: JSON.stringify({
+                        coin_id: currentCoin.id
+                    })
+                });
+
+                const result = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(result.error);
+                }
+
+                alert(result.message);
+                location.reload();
+
+            } catch (error) {
+                alert('Error: ' + error.message);
+            }
+        }
+    </script>
+</body>
+</html>

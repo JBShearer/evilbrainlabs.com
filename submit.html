@@ -1,0 +1,398 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Submit a Bad Idea | The Registry</title>
+    <meta name="description" content="Submit a bad AI use case to The Registry.">
+    <link rel="icon" type="image/x-icon" href="/favicon.ico">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="container">
+            <a href="/" class="logo">
+                <span class="logo-icon">🧠</span>
+                <div class="logo-text">
+                    <h1>The Registry</h1>
+                    <span class="tagline">Third worst in AI.</span>
+                </div>
+            </a>
+            <nav class="nav">
+                <a href="/">Browse</a>
+                <a href="/graph.html">The Graph</a>
+                <a href="/submit.html">Submit</a>
+                <a href="/profile.html" class="nav-profile" id="nav-profile" style="display: none;">
+                    <span class="braincoin-icon">🪙</span>
+                    <span id="nav-balance">0</span>
+                </a>
+                <button class="btn btn-outline" id="auth-btn">Sign In</button>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Submit Form -->
+    <section class="submit-page">
+        <div class="container">
+            <div class="submit-container">
+                <h2>Submit a Bad Idea</h2>
+                <p class="submit-intro">
+                    Found an AI use case that probably shouldn't exist?<br>
+                    Add it to the record. Mint a coin. History will judge.
+                </p>
+
+                <div id="auth-required" class="auth-required">
+                    <p>You need to sign in to submit a use case.</p>
+                    <button class="btn btn-primary" id="submit-auth-btn">Sign In</button>
+                </div>
+
+                <form id="submit-form" class="submit-form" style="display: none;">
+                    <div class="form-group">
+                        <label for="title">Title *</label>
+                        <input type="text" id="title" class="input" placeholder="e.g., AI-powered lie detector for job interviews" required>
+                        <p class="form-hint">A concise name for this bad idea.</p>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="description">Description *</label>
+                        <textarea id="description" placeholder="Describe the use case and why it's problematic..." required></textarea>
+                        <p class="form-hint">What does it do? Why is it bad? Be specific.</p>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="category">Category</label>
+                            <select id="category" class="filter-select">
+                                <option value="">Select category...</option>
+                                <option value="surveillance">Surveillance</option>
+                                <option value="discrimination">Discrimination</option>
+                                <option value="misinformation">Misinformation</option>
+                                <option value="labor">Labor</option>
+                                <option value="privacy">Privacy</option>
+                                <option value="manipulation">Manipulation</option>
+                                <option value="environment">Environment</option>
+                                <option value="other">Other</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="severity">Severity</label>
+                            <select id="severity" class="filter-select">
+                                <option value="3">3 - Bad (default)</option>
+                                <option value="1">1 - Mild</option>
+                                <option value="2">2 - Concerning</option>
+                                <option value="4">4 - Very Bad</option>
+                                <option value="5">5 - Catastrophic</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Is this Good or Evil? *</label>
+                        <p class="form-hint" style="margin-bottom: var(--space-sm);">You can change your mind later. You will.</p>
+                        <div class="valence-picker">
+                            <label class="valence-option">
+                                <input type="radio" name="valence" value="good">
+                                <span class="valence-label good">Good</span>
+                                <span class="valence-desc">Actually helps people</span>
+                            </label>
+                            <label class="valence-option">
+                                <input type="radio" name="valence" value="evil" checked>
+                                <span class="valence-label evil">Evil</span>
+                                <span class="valence-desc">Probably shouldn't exist</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="form-actions">
+                        <button type="submit" class="btn btn-primary">Submit & Mint Coin</button>
+                        <p class="form-hint">You'll earn 1 Braincoin for your contribution.</p>
+                    </div>
+                </form>
+
+                <div id="submit-result" class="submit-result" style="display: none;"></div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Auth Modal -->
+    <div class="modal" id="auth-modal">
+        <div class="modal-content">
+            <button class="modal-close" id="modal-close">&times;</button>
+            <h3>Sign In to The Registry</h3>
+            <p>Enter your email for a magic link. No password needed.</p>
+            <form id="auth-form">
+                <input type="email" id="auth-email" class="input" placeholder="villain@example.com" required>
+                <button type="submit" class="btn btn-primary btn-block">Send Magic Link</button>
+            </form>
+            <p class="auth-note">First time? You'll get 3 Braincoins to start.</p>
+            <div id="auth-message" class="auth-message"></div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-bottom">
+                <p>&copy; 2026 Evil Brain Labs. The record is the joke. The joke is true.</p>
+            </div>
+        </div>
+    </footer>
+
+    <style>
+        .submit-page {
+            padding: var(--space-3xl) 0;
+        }
+
+        .submit-container {
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .submit-intro {
+            color: var(--ink-muted);
+            margin-bottom: var(--space-xl);
+        }
+
+        .auth-required {
+            text-align: center;
+            padding: var(--space-2xl);
+            border: 2px dashed var(--ink-muted);
+            border-radius: var(--border-radius);
+        }
+
+        .auth-required p {
+            margin-bottom: var(--space-lg);
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: var(--space-lg);
+        }
+
+        .valence-picker {
+            display: flex;
+            gap: var(--space-lg);
+        }
+
+        .valence-option {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: var(--space-lg);
+            border: 2px solid var(--paper-shadow);
+            border-radius: var(--border-radius);
+            cursor: pointer;
+            transition: all 0.15s ease;
+        }
+
+        .valence-option:hover {
+            border-color: var(--ink-muted);
+        }
+
+        .valence-option input {
+            display: none;
+        }
+
+        .valence-option input:checked + .valence-label.good {
+            background: var(--good);
+            color: var(--paper);
+        }
+
+        .valence-option input:checked + .valence-label.evil {
+            background: var(--evil);
+            color: var(--paper);
+        }
+
+        .valence-option:has(input:checked) {
+            border-color: var(--ink);
+        }
+
+        .valence-label {
+            font-family: var(--font-hand);
+            font-size: 1.2rem;
+            padding: var(--space-xs) var(--space-md);
+            border-radius: var(--border-radius);
+            margin-bottom: var(--space-sm);
+        }
+
+        .valence-label.good {
+            border: 2px solid var(--good);
+            color: var(--good);
+        }
+
+        .valence-label.evil {
+            border: 2px solid var(--evil);
+            color: var(--evil);
+        }
+
+        .valence-desc {
+            font-size: 0.85rem;
+            color: var(--ink-muted);
+        }
+
+        .form-actions {
+            text-align: center;
+            margin-top: var(--space-xl);
+        }
+
+        .form-actions .btn {
+            min-width: 200px;
+        }
+
+        .submit-result {
+            padding: var(--space-xl);
+            border: 2px solid var(--ink);
+            border-radius: var(--border-radius);
+            text-align: center;
+        }
+
+        .submit-result.success {
+            border-color: var(--good);
+        }
+
+        .submit-result.error {
+            border-color: var(--crayon-red);
+        }
+
+        .submit-result h3 {
+            margin-bottom: var(--space-md);
+        }
+
+        .submit-result .coin-display {
+            display: inline-flex;
+            align-items: center;
+            gap: var(--space-sm);
+            padding: var(--space-md) var(--space-lg);
+            background: var(--paper-dark);
+            border-radius: var(--border-radius);
+            margin: var(--space-lg) 0;
+        }
+
+        @media (max-width: 768px) {
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+
+            .valence-picker {
+                flex-direction: column;
+            }
+        }
+    </style>
+
+    <script src="/js/config.js"></script>
+    <script src="/js/auth.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', async () => {
+            initSupabase();
+            await auth.init();
+            setupAuthUI();
+
+            const authRequired = document.getElementById('auth-required');
+            const submitForm = document.getElementById('submit-form');
+            const submitResult = document.getElementById('submit-result');
+            const submitAuthBtn = document.getElementById('submit-auth-btn');
+            const authModal = document.getElementById('auth-modal');
+
+            // Show form if authenticated
+            auth.onAuthChange((user) => {
+                if (user) {
+                    authRequired.style.display = 'none';
+                    submitForm.style.display = 'block';
+                } else {
+                    authRequired.style.display = 'block';
+                    submitForm.style.display = 'none';
+                }
+            });
+
+            // Auth button on submit page
+            submitAuthBtn?.addEventListener('click', () => {
+                authModal.classList.add('active');
+            });
+
+            // Form submission
+            submitForm?.addEventListener('submit', async (e) => {
+                e.preventDefault();
+
+                const title = document.getElementById('title').value;
+                const description = document.getElementById('description').value;
+                const category = document.getElementById('category').value;
+                const severity = document.getElementById('severity').value;
+                const valence = document.querySelector('input[name="valence"]:checked').value;
+
+                try {
+                    const client = initSupabase();
+                    const { data: { session } } = await client.auth.getSession();
+
+                    const response = await fetch(`${CONFIG.SUPABASE_URL}/functions/v1/submit_use_case`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${session.access_token}`
+                        },
+                        body: JSON.stringify({
+                            title,
+                            description,
+                            category: category || null,
+                            severity: parseInt(severity),
+                            mint_valence: valence
+                        })
+                    });
+
+                    const result = await response.json();
+
+                    if (!response.ok) {
+                        throw new Error(result.error || 'Submission failed');
+                    }
+
+                    // Show result
+                    submitForm.style.display = 'none';
+                    submitResult.style.display = 'block';
+
+                    if (result.existing) {
+                        submitResult.className = 'submit-result';
+                        submitResult.innerHTML = `
+                            <h3>This bad idea already exists!</h3>
+                            <p>${result.message}</p>
+                            <div class="coin-display">
+                                <span class="valence-badge ${result.coin.current_valence}">${result.coin.current_valence}</span>
+                                <span>${result.use_case.title}</span>
+                            </div>
+                            <a href="/use-case.html?id=${result.use_case.id}" class="btn btn-outline">View Existing</a>
+                        `;
+                    } else {
+                        submitResult.className = 'submit-result success';
+                        submitResult.innerHTML = `
+                            <h3>🪙 Coin Minted!</h3>
+                            <p>Your bad idea has been added to the record.</p>
+                            <div class="coin-display">
+                                <span class="valence-badge ${result.coin.current_valence}">${result.coin.current_valence}</span>
+                                <span>${result.use_case.title}</span>
+                            </div>
+                            <p>+1 Braincoin earned!</p>
+                            <a href="/use-case.html?id=${result.use_case.id}" class="btn btn-primary">View Your Coin</a>
+                        `;
+
+                        // Reload profile to update balance
+                        await auth.loadProfile();
+                        document.getElementById('nav-balance').textContent = auth.getBalance();
+                    }
+
+                } catch (error) {
+                    submitResult.style.display = 'block';
+                    submitResult.className = 'submit-result error';
+                    submitResult.innerHTML = `
+                        <h3>Submission Failed</h3>
+                        <p>${error.message}</p>
+                        <button class="btn btn-outline" onclick="location.reload()">Try Again</button>
+                    `;
+                }
+            });
+        });
+    </script>
+</body>
+</html>

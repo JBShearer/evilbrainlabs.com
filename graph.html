@@ -1,0 +1,518 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Graph | The Registry</title>
+    <meta name="description" content="Explore the knowledge graph of bad AI use cases.">
+    <link rel="icon" type="image/x-icon" href="/favicon.ico">
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="container">
+            <a href="/" class="logo">
+                <span class="logo-icon">🧠</span>
+                <div class="logo-text">
+                    <h1>The Registry</h1>
+                    <span class="tagline">Third worst in AI.</span>
+                </div>
+            </a>
+            <nav class="nav">
+                <a href="/">Browse</a>
+                <a href="/graph.html">The Graph</a>
+                <a href="/submit.html">Submit</a>
+                <a href="/profile.html" class="nav-profile" id="nav-profile" style="display: none;">
+                    <span class="braincoin-icon">🪙</span>
+                    <span id="nav-balance">0</span>
+                </a>
+                <button class="btn btn-outline" id="auth-btn">Sign In</button>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Graph Page -->
+    <section class="graph-page">
+        <div class="graph-header">
+            <div class="container">
+                <h2>The Knowledge Graph</h2>
+                <p>Entities connected by predicates. Solid lines are asserted facts (ink). Dashed lines are inferences (pencil).</p>
+            </div>
+        </div>
+        <div class="graph-container">
+            <svg id="graph"></svg>
+            <div id="graph-loading" class="loading">Loading graph...</div>
+            <div id="graph-empty" class="graph-empty" style="display: none;">
+                <p>The graph is empty.</p>
+                <p>Submit use cases and add triples to populate it.</p>
+                <a href="/submit.html" class="btn btn-primary">Submit a Bad Idea</a>
+            </div>
+        </div>
+        <div class="graph-legend">
+            <div class="legend-item">
+                <span class="legend-line solid"></span>
+                <span>Asserted (ink)</span>
+            </div>
+            <div class="legend-item">
+                <span class="legend-line dashed"></span>
+                <span>Inferred (pencil)</span>
+            </div>
+            <div class="legend-item">
+                <span class="legend-node"></span>
+                <span>Entity</span>
+            </div>
+        </div>
+    </section>
+
+    <!-- Node Detail Panel -->
+    <div class="node-panel" id="node-panel">
+        <button class="panel-close" id="panel-close">&times;</button>
+        <h3 id="panel-title">Entity</h3>
+        <div id="panel-content"></div>
+    </div>
+
+    <!-- Auth Modal -->
+    <div class="modal" id="auth-modal">
+        <div class="modal-content">
+            <button class="modal-close" id="modal-close">&times;</button>
+            <h3>Sign In</h3>
+            <form id="auth-form">
+                <input type="email" id="auth-email" class="input" placeholder="villain@example.com" required>
+                <button type="submit" class="btn btn-primary btn-block">Send Magic Link</button>
+            </form>
+            <div id="auth-message" class="auth-message"></div>
+        </div>
+    </div>
+
+    <style>
+        .graph-page {
+            min-height: calc(100vh - 200px);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .graph-header {
+            padding: var(--space-xl) 0;
+            border-bottom: 1px solid var(--paper-shadow);
+        }
+
+        .graph-header h2 {
+            margin-bottom: var(--space-sm);
+        }
+
+        .graph-header p {
+            color: var(--ink-muted);
+        }
+
+        .graph-container {
+            flex: 1;
+            position: relative;
+            min-height: 500px;
+            background: var(--paper);
+        }
+
+        #graph {
+            width: 100%;
+            height: 100%;
+            min-height: 500px;
+        }
+
+        .graph-empty {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+            color: var(--ink-muted);
+        }
+
+        .graph-empty p {
+            margin-bottom: var(--space-md);
+        }
+
+        .graph-legend {
+            display: flex;
+            justify-content: center;
+            gap: var(--space-xl);
+            padding: var(--space-lg);
+            border-top: 1px solid var(--paper-shadow);
+            background: var(--paper-dark);
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: var(--space-sm);
+            font-size: 0.9rem;
+        }
+
+        .legend-line {
+            width: 30px;
+            height: 2px;
+            background: var(--ink);
+        }
+
+        .legend-line.dashed {
+            background: repeating-linear-gradient(
+                90deg,
+                var(--pencil) 0,
+                var(--pencil) 5px,
+                transparent 5px,
+                transparent 10px
+            );
+        }
+
+        .legend-node {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: var(--ink);
+        }
+
+        /* D3 Styles */
+        .node circle {
+            fill: var(--paper);
+            stroke: var(--ink);
+            stroke-width: 2px;
+            cursor: pointer;
+        }
+
+        .node circle:hover {
+            fill: var(--paper-dark);
+        }
+
+        .node text {
+            font-family: var(--font-hand);
+            font-size: 12px;
+            fill: var(--ink);
+            pointer-events: none;
+        }
+
+        .link {
+            fill: none;
+            stroke: var(--ink);
+            stroke-width: 1.5px;
+        }
+
+        .link.inferred {
+            stroke: var(--pencil);
+            stroke-dasharray: 5, 5;
+        }
+
+        .link-label {
+            font-family: var(--font-mono);
+            font-size: 10px;
+            fill: var(--ink-muted);
+        }
+
+        .meta-edge {
+            fill: none;
+            stroke: var(--ink);
+            stroke-width: 3px;
+        }
+
+        /* Node Panel */
+        .node-panel {
+            position: fixed;
+            top: 80px;
+            right: -400px;
+            width: 350px;
+            max-height: calc(100vh - 100px);
+            background: var(--paper);
+            border: 2px solid var(--ink);
+            border-right: none;
+            padding: var(--space-lg);
+            overflow-y: auto;
+            transition: right 0.3s ease;
+            z-index: 100;
+        }
+
+        .node-panel.active {
+            right: 0;
+        }
+
+        .panel-close {
+            position: absolute;
+            top: var(--space-sm);
+            right: var(--space-sm);
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+        }
+
+        #panel-title {
+            margin-bottom: var(--space-lg);
+            padding-bottom: var(--space-sm);
+            border-bottom: 1px solid var(--paper-shadow);
+        }
+
+        .panel-section {
+            margin-bottom: var(--space-lg);
+        }
+
+        .panel-section h4 {
+            font-size: 0.9rem;
+            margin-bottom: var(--space-sm);
+            color: var(--ink-muted);
+        }
+
+        .triple-item {
+            padding: var(--space-sm);
+            background: var(--paper-dark);
+            border-radius: var(--border-radius);
+            margin-bottom: var(--space-sm);
+            font-size: 0.9rem;
+        }
+
+        .triple-predicate {
+            font-family: var(--font-mono);
+            color: var(--ink-muted);
+        }
+    </style>
+
+    <script src="/js/config.js"></script>
+    <script src="/js/auth.js"></script>
+    <script>
+        let graphData = { nodes: [], links: [] };
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            initSupabase();
+            await auth.init();
+            setupAuthUI();
+
+            await loadGraphData();
+            renderGraph();
+
+            // Panel close
+            document.getElementById('panel-close').addEventListener('click', () => {
+                document.getElementById('node-panel').classList.remove('active');
+            });
+        });
+
+        async function loadGraphData() {
+            const client = initSupabase();
+            const loading = document.getElementById('graph-loading');
+            const empty = document.getElementById('graph-empty');
+
+            try {
+                // Load entities
+                const { data: entities } = await client
+                    .from('entities')
+                    .select('*');
+
+                // Load triples with predicates
+                const { data: triples } = await client
+                    .from('triples')
+                    .select(`
+                        *,
+                        predicates (label),
+                        subject:entities!triples_subject_id_fkey (id, canonical_name),
+                        object:entities!triples_object_id_fkey (id, canonical_name)
+                    `);
+
+                // Load inferences (for pencil edges)
+                const { data: inferences } = await client
+                    .from('inferences')
+                    .select('*')
+                    .eq('status', 'active')
+                    .eq('target_kind', 'triple');
+
+                // Load meta-edges
+                const { data: metaEdges } = await client
+                    .from('meta_edges')
+                    .select(`
+                        *,
+                        predicates (label)
+                    `);
+
+                // Build graph data
+                const nodeMap = new Map();
+
+                // Add entities as nodes
+                (entities || []).forEach(e => {
+                    nodeMap.set(e.id, {
+                        id: e.id,
+                        name: e.canonical_name,
+                        kind: e.entity_kind
+                    });
+                });
+
+                // Build links from triples
+                const links = (triples || []).map(t => ({
+                    id: t.id,
+                    source: t.subject_id,
+                    target: t.object_id,
+                    predicate: t.predicates?.label || 'relates',
+                    inferred: false
+                }));
+
+                graphData = {
+                    nodes: Array.from(nodeMap.values()),
+                    links
+                };
+
+                loading.style.display = 'none';
+
+                if (graphData.nodes.length === 0) {
+                    empty.style.display = 'block';
+                }
+
+            } catch (error) {
+                console.error('Error loading graph:', error);
+                loading.textContent = 'Error loading graph';
+            }
+        }
+
+        function renderGraph() {
+            if (graphData.nodes.length === 0) return;
+
+            const container = document.querySelector('.graph-container');
+            const width = container.clientWidth;
+            const height = Math.max(500, container.clientHeight);
+
+            const svg = d3.select('#graph')
+                .attr('width', width)
+                .attr('height', height);
+
+            // Clear previous
+            svg.selectAll('*').remove();
+
+            // Create simulation
+            const simulation = d3.forceSimulation(graphData.nodes)
+                .force('link', d3.forceLink(graphData.links).id(d => d.id).distance(150))
+                .force('charge', d3.forceManyBody().strength(-300))
+                .force('center', d3.forceCenter(width / 2, height / 2))
+                .force('collision', d3.forceCollide().radius(50));
+
+            // Add links
+            const link = svg.append('g')
+                .selectAll('line')
+                .data(graphData.links)
+                .join('line')
+                .attr('class', d => `link ${d.inferred ? 'inferred' : ''}`);
+
+            // Add link labels
+            const linkLabel = svg.append('g')
+                .selectAll('text')
+                .data(graphData.links)
+                .join('text')
+                .attr('class', 'link-label')
+                .text(d => d.predicate);
+
+            // Add nodes
+            const node = svg.append('g')
+                .selectAll('g')
+                .data(graphData.nodes)
+                .join('g')
+                .attr('class', 'node')
+                .call(d3.drag()
+                    .on('start', dragstarted)
+                    .on('drag', dragged)
+                    .on('end', dragended));
+
+            node.append('circle')
+                .attr('r', 20)
+                .on('click', (event, d) => showNodePanel(d));
+
+            node.append('text')
+                .attr('dy', 35)
+                .attr('text-anchor', 'middle')
+                .text(d => d.name.length > 15 ? d.name.slice(0, 12) + '...' : d.name);
+
+            // Simulation tick
+            simulation.on('tick', () => {
+                link
+                    .attr('x1', d => d.source.x)
+                    .attr('y1', d => d.source.y)
+                    .attr('x2', d => d.target.x)
+                    .attr('y2', d => d.target.y);
+
+                linkLabel
+                    .attr('x', d => (d.source.x + d.target.x) / 2)
+                    .attr('y', d => (d.source.y + d.target.y) / 2);
+
+                node.attr('transform', d => `translate(${d.x},${d.y})`);
+            });
+
+            function dragstarted(event) {
+                if (!event.active) simulation.alphaTarget(0.3).restart();
+                event.subject.fx = event.subject.x;
+                event.subject.fy = event.subject.y;
+            }
+
+            function dragged(event) {
+                event.subject.fx = event.x;
+                event.subject.fy = event.y;
+            }
+
+            function dragended(event) {
+                if (!event.active) simulation.alphaTarget(0);
+                event.subject.fx = null;
+                event.subject.fy = null;
+            }
+        }
+
+        async function showNodePanel(node) {
+            const panel = document.getElementById('node-panel');
+            const title = document.getElementById('panel-title');
+            const content = document.getElementById('panel-content');
+
+            title.textContent = node.name;
+
+            // Find all triples involving this node
+            const asSubject = graphData.links.filter(l =>
+                (typeof l.source === 'object' ? l.source.id : l.source) === node.id
+            );
+            const asObject = graphData.links.filter(l =>
+                (typeof l.target === 'object' ? l.target.id : l.target) === node.id
+            );
+
+            const getNodeName = (ref) => {
+                if (typeof ref === 'object') return ref.name;
+                const n = graphData.nodes.find(node => node.id === ref);
+                return n ? n.name : 'Unknown';
+            };
+
+            let html = '';
+
+            if (node.kind) {
+                html += `<p><strong>Type:</strong> ${node.kind}</p>`;
+            }
+
+            if (asSubject.length > 0) {
+                html += `<div class="panel-section"><h4>As Subject</h4>`;
+                asSubject.forEach(l => {
+                    html += `<div class="triple-item">${node.name} <span class="triple-predicate">${l.predicate}</span> ${getNodeName(l.target)}</div>`;
+                });
+                html += `</div>`;
+            }
+
+            if (asObject.length > 0) {
+                html += `<div class="panel-section"><h4>As Object</h4>`;
+                asObject.forEach(l => {
+                    html += `<div class="triple-item">${getNodeName(l.source)} <span class="triple-predicate">${l.predicate}</span> ${node.name}</div>`;
+                });
+                html += `</div>`;
+            }
+
+            if (asSubject.length === 0 && asObject.length === 0) {
+                html = '<p>No triples involve this entity yet.</p>';
+            }
+
+            content.innerHTML = html;
+            panel.classList.add('active');
+        }
+
+        // Resize handler
+        window.addEventListener('resize', () => {
+            if (graphData.nodes.length > 0) {
+                renderGraph();
+            }
+        });
+    </script>
+</body>
+</html>

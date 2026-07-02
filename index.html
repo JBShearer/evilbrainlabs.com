@@ -25,9 +25,11 @@ body{
 #app{width:100%;max-width:480px;min-height:100dvh;display:flex;flex-direction:column;padding:12px 14px 84px}
 
 /* ---------- header ---------- */
-header{display:flex;justify-content:space-between;align-items:baseline;border-bottom:3px solid var(--ink);padding-bottom:8px}
-h1{font-family:var(--hand);font-size:clamp(20px,6vw,26px);letter-spacing:.5px;transform:rotate(-1.2deg)}
+header{display:flex;justify-content:space-between;align-items:baseline;border-bottom:3px solid var(--ink);padding-bottom:8px;flex-wrap:wrap;gap:4px}
+h1{font-family:var(--hand);font-size:clamp(18px,5vw,26px);letter-spacing:.5px;transform:rotate(-1.2deg)}
 h1 small{display:block;font-family:var(--type);font-size:11px;color:var(--pencil);letter-spacing:2px;transform:rotate(.6deg)}
+@media(max-width:400px){h1 small{display:none}}
+@media(max-width:340px){h1{font-size:16px}}
 #wallet{font-family:var(--mono);font-size:14px;border:2px solid var(--ink);padding:4px 8px;background:var(--manila);box-shadow:2px 2px 0 var(--ink);white-space:nowrap}
 #wallet b{color:var(--crayon)}
 

@@ -1,169 +1,1821 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Evil Brain Labs: The Registry</title>
-    <meta name="description" content="A public registry of bad AI use cases. Third worst in AI.">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>Evil Brain Labs: The Machine</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Permanent+Marker&family=Special+Elite&display=swap" rel="stylesheet">
+<style>
+:root{
+  --paper:#F6F2E8; --ink:#1A1817; --pencil:#8B8680; --crayon:#D42B1E;
+  --manila:#E8DCC0; --paper-dark:#EDE7D8;
+  --hand:'Permanent Marker',cursive; --type:'Special Elite',monospace; --mono:ui-monospace,monospace;
+}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+button,input,textarea{color:var(--ink)}
+html,body{height:100%;overscroll-behavior:none}
+body{
+  background:var(--paper); color:var(--ink); font-family:var(--type);
+  background-image:radial-gradient(circle at 20% 10%, rgba(0,0,0,.03), transparent 40%),
+                   radial-gradient(circle at 80% 90%, rgba(0,0,0,.04), transparent 40%);
+  display:flex; flex-direction:column; align-items:center;
+}
+#app{width:100%;max-width:480px;min-height:100dvh;display:flex;flex-direction:column;padding:12px 14px 84px}
 
-    <!-- Open Graph -->
-    <meta property="og:title" content="Evil Brain Labs: The Registry">
-    <meta property="og:description" content="A living semantic record of our bad ideas. Third worst in AI.">
-    <meta property="og:type" content="website">
-    <meta property="og:url" content="https://evilbrainlabs.com">
+/* ---------- header ---------- */
+header{display:flex;justify-content:space-between;align-items:baseline;border-bottom:3px solid var(--ink);padding-bottom:8px}
+h1{font-family:var(--hand);font-size:clamp(20px,6vw,26px);letter-spacing:.5px;transform:rotate(-1.2deg)}
+h1 small{display:block;font-family:var(--type);font-size:11px;color:var(--pencil);letter-spacing:2px;transform:rotate(.6deg)}
+#wallet{font-family:var(--mono);font-size:14px;border:2px solid var(--ink);padding:4px 8px;background:var(--manila);box-shadow:2px 2px 0 var(--ink);white-space:nowrap}
+#wallet b{color:var(--crayon)}
 
-    <!-- Favicon -->
-    <link rel="icon" type="image/x-icon" href="/favicon.ico">
+/* ---------- views ---------- */
+.view{display:none;flex:1;padding-top:14px}
+.view.active{display:block}
+.eyebrow{font-size:11px;letter-spacing:3px;color:var(--pencil);text-transform:uppercase;margin-bottom:4px}
+.memo{border:2px solid var(--ink);background:#fff;box-shadow:3px 3px 0 var(--ink);padding:12px;margin-bottom:14px}
 
-    <!-- D3.js for graph visualization -->
-    <script src="https://d3js.org/d3.v7.min.js"></script>
+/* ---------- THE MACHINE ---------- */
+#machine{border:3px solid var(--ink);background:var(--manila);box-shadow:4px 4px 0 var(--ink);padding:10px;position:relative}
+#machine::before{content:"FORM EB-666 · IDEATION APPARATUS";position:absolute;top:-9px;left:10px;background:var(--manila);padding:0 6px;font-size:10px;letter-spacing:2px;color:var(--pencil)}
+#reels{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}
+.reelcol{display:flex;flex-direction:column;gap:6px}
+.reelcol .label{font-family:var(--hand);font-size:13px;text-align:center;transform:rotate(-1deg)}
+.reelwin{position:relative;height:168px;background:var(--paper);border:2px solid var(--ink);overflow:hidden;touch-action:none;cursor:grab;user-select:none}
+.reelwin:active{cursor:grabbing}
+.reelwin::before,.reelwin::after{content:"";position:absolute;left:0;right:0;height:56px;z-index:2;pointer-events:none}
+.reelwin::before{top:0;background:linear-gradient(rgba(246,242,232,.95),transparent)}
+.reelwin::after{bottom:0;background:linear-gradient(transparent,rgba(246,242,232,.95))}
+.payline{position:absolute;top:56px;height:56px;left:0;right:0;border-top:2px dashed var(--crayon);border-bottom:2px dashed var(--crayon);z-index:2;pointer-events:none;opacity:.55}
+.strip{position:absolute;left:0;right:0;will-change:transform}
+.cell{height:56px;display:flex;align-items:center;justify-content:center;text-align:center;font-size:13px;line-height:1.1;padding:2px 4px;border-bottom:1px solid rgba(26,24,23,.12)}
+.cell.hot{color:var(--crayon);font-weight:700}
+.reelwin.locked{background:var(--paper-dark)}
+.reelwin.locked .strip{opacity:.45}
+.reelwin.locked::marker{content:""}
+.lockstamp{position:absolute;inset:0;display:none;align-items:center;justify-content:center;z-index:3;pointer-events:none}
+.reelwin.locked .lockstamp{display:flex}
+.lockstamp span{font-family:var(--hand);color:var(--crayon);border:3px solid var(--crayon);padding:2px 10px;transform:rotate(-14deg);font-size:15px;opacity:.85;background:rgba(246,242,232,.7)}
+.reelbtns{display:flex;gap:4px}
+.rb{flex:1;font-family:var(--type);font-size:13px;border:2px solid var(--ink);background:#fff;padding:7px 0;box-shadow:2px 2px 0 var(--ink);cursor:pointer}
+.rb:active{transform:translate(2px,2px);box-shadow:none}
+.rb.lock.on{background:var(--crayon);color:#fff}
 
-    <!-- Supabase JS -->
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+#spinrow{display:flex;gap:10px;margin-top:12px}
+#spinbtn{flex:1;font-family:var(--hand);font-size:22px;background:var(--ink);color:var(--paper);border:3px solid var(--ink);padding:12px;box-shadow:4px 4px 0 var(--crayon);cursor:pointer;letter-spacing:1px}
+#spinbtn:active{transform:translate(3px,3px);box-shadow:1px 1px 0 var(--crayon)}
+#spinbtn:disabled{opacity:.5}
+.hint{font-size:11px;color:var(--pencil);text-align:center;margin-top:8px}
 
-    <link rel="stylesheet" href="/css/style.css">
+#resultplate{margin-top:14px;border:2px solid var(--ink);background:#fff;box-shadow:3px 3px 0 var(--ink);padding:12px;position:relative;min-height:86px}
+#sentence{font-size:16px;line-height:1.5}
+#sentence b{border-bottom:2px solid var(--ink)}
+#rarity{position:absolute;top:-12px;right:8px;font-family:var(--hand);font-size:12px;background:var(--paper);border:2px solid var(--ink);padding:1px 8px;transform:rotate(2deg)}
+#rarity.legendary{color:var(--crayon);border-color:var(--crayon)}
+#shipbtn{margin-top:10px;width:100%;font-family:var(--hand);font-size:18px;background:var(--crayon);color:#fff;border:3px solid var(--ink);padding:10px;box-shadow:3px 3px 0 var(--ink);cursor:pointer}
+#shipbtn:active{transform:translate(2px,2px);box-shadow:1px 1px 0 var(--ink)}
+#shipbtn:disabled{opacity:.4}
+
+#bigstamp{position:fixed;inset:0;display:none;align-items:center;justify-content:center;z-index:50;pointer-events:none}
+#bigstamp.show{display:flex}
+#bigstamp div{font-family:var(--hand);font-size:clamp(22px,7vw,34px);color:var(--crayon);border:5px solid var(--crayon);padding:10px 22px;transform:rotate(-11deg) scale(1);background:rgba(246,242,232,.88);animation:stampin .45s cubic-bezier(.2,2.4,.4,1) both}
+@keyframes stampin{from{transform:rotate(-11deg) scale(2.4);opacity:0}to{transform:rotate(-11deg) scale(1);opacity:1}}
+
+/* ---------- CAREER ---------- */
+#ticket{border:2px solid var(--ink);background:var(--manila);box-shadow:3px 3px 0 var(--ink);padding:10px 12px;margin-bottom:12px;font-size:13px}
+#ticket .tno{font-family:var(--mono);color:var(--pencil);font-size:11px}
+#quota{height:10px;border:2px solid var(--ink);background:#fff;margin:10px 0 14px;position:relative}
+#quotafill{position:absolute;inset:0;width:40%;background:repeating-linear-gradient(45deg,var(--crayon),var(--crayon) 6px,#fff 6px,#fff 12px)}
+#feedwrap{position:relative;margin-bottom:10px}
+#storyfeed{display:flex;flex-direction:column;gap:10px;max-height:42vh;overflow-y:auto;padding:2px;border-bottom:2px dashed var(--pencil)}
+#latestpill{position:absolute;bottom:8px;right:8px;display:none;font-family:var(--mono);font-size:11px;border:2px solid var(--ink);background:var(--manila);padding:4px 9px;cursor:pointer;box-shadow:2px 2px 0 var(--ink);z-index:2}
+#latestpill.show{display:block}
+.beat{border-left:3px solid var(--ink);padding:6px 10px;background:#fff;box-shadow:2px 2px 0 rgba(26,24,23,.25);font-size:14px;line-height:1.55}
+.beat.brain{border-left-color:var(--crayon);font-style:normal}
+.beat.brain::before{content:"THE BRAIN:";font-family:var(--hand);color:var(--crayon);display:block;font-size:12px}
+.beat.pencil{color:var(--pencil);border-left-style:dashed}
+.cursor::after{content:"▌";animation:blink 1s steps(1) infinite}
+@keyframes blink{50%{opacity:0}}
+#choices{display:flex;flex-direction:column;gap:8px}
+.choice{font-family:var(--type);text-align:left;font-size:14px;border:2px solid var(--ink);background:#fff;padding:10px 12px;box-shadow:3px 3px 0 var(--ink);cursor:pointer}
+.choice:active{transform:translate(2px,2px);box-shadow:1px 1px 0 var(--ink)}
+.choice small{display:block;color:var(--pencil);font-size:11px}
+#payout{display:none;text-align:center;font-family:var(--hand);font-size:20px;color:var(--crayon);margin-top:10px}
+
+/* ---------- BRAIN ---------- */
+.meter{margin-bottom:12px}
+.meter .mlabel{display:flex;justify-content:space-between;font-size:12px;margin-bottom:3px}
+.mbar{height:12px;border:2px solid var(--ink);background:#fff}
+.mbar i{display:block;height:100%;background:var(--ink)}
+.mbar.red i{background:var(--crayon)}
+.bmsg{border:2px solid var(--ink);background:#fff;box-shadow:3px 3px 0 var(--ink);padding:10px 12px;margin-bottom:10px;font-size:14px;line-height:1.5}
+.bmsg time{font-family:var(--mono);font-size:10px;color:var(--pencil);display:block;margin-bottom:4px}
+
+/* ---------- FILE (submit) ---------- */
+.slotrow{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:10px}
+.slot{min-height:58px;border:2px dashed var(--pencil);background:var(--paper);display:flex;align-items:center;justify-content:center;text-align:center;font-size:13px;padding:4px;color:var(--pencil)}
+.slot.filled{border:2px solid var(--ink);background:#fff;color:var(--ink);box-shadow:2px 2px 0 var(--ink)}
+.slot.target{border-color:var(--crayon);color:var(--crayon)}
+.slotlbl{font-family:var(--hand);font-size:12px;text-align:center;margin-bottom:3px;transform:rotate(-1deg)}
+.chippool{display:flex;flex-wrap:wrap;gap:6px;max-height:132px;overflow-y:auto;padding:8px;border:2px solid var(--ink);background:#fff;box-shadow:inset 2px 2px 0 rgba(26,24,23,.08)}
+.chip{font-family:var(--type);font-size:12px;border:2px solid var(--ink);background:var(--manila);padding:5px 9px;cursor:grab;user-select:none;touch-action:none}
+.chip.hot{color:var(--crayon);border-color:var(--crayon)}
+.chip.picked{background:var(--ink);color:var(--paper)}
+#dragghost{position:fixed;z-index:60;pointer-events:none;transform:translate(-50%,-120%) rotate(-3deg);display:none}
+.pooltabs{display:flex;gap:6px;margin:10px 0 6px}
+.pooltab{flex:1;font-family:var(--type);font-size:12px;border:2px solid var(--ink);background:#fff;padding:6px 0;cursor:pointer;box-shadow:2px 2px 0 var(--ink)}
+.pooltab.on{background:var(--ink);color:var(--paper)}
+#stagedlist{display:flex;flex-direction:column;gap:6px;margin:10px 0}
+.staged{display:flex;justify-content:space-between;align-items:center;border:2px solid var(--ink);background:#fff;padding:6px 10px;font-size:13px;box-shadow:2px 2px 0 var(--ink)}
+.staged button{border:none;background:none;font-family:var(--hand);color:var(--crayon);font-size:14px;cursor:pointer}
+.fld{width:100%;font-family:var(--type);font-size:14px;border:2px solid var(--ink);background:#fff;padding:9px;margin-bottom:8px;box-shadow:inset 2px 2px 0 rgba(26,24,23,.06)}
+textarea.fld{resize:vertical;min-height:64px}
+#valrow{display:flex;gap:8px;margin:4px 0 12px}
+.valbtn{flex:1;font-family:var(--hand);font-size:16px;border:3px solid var(--ink);background:#fff;padding:9px 0;cursor:pointer;box-shadow:3px 3px 0 var(--ink)}
+.valbtn.on.good{background:var(--ink);color:var(--paper)}
+.valbtn.on.evil{background:var(--crayon);color:#fff;border-color:var(--crayon)}
+.valhint{font-size:11px;color:var(--pencil);text-align:center;margin:-6px 0 10px}
+#filebtn2{width:100%;font-family:var(--hand);font-size:19px;background:var(--ink);color:var(--paper);border:3px solid var(--ink);padding:11px;box-shadow:4px 4px 0 var(--crayon);cursor:pointer}
+#filebtn2:active{transform:translate(3px,3px);box-shadow:1px 1px 0 var(--crayon)}
+.filing{border:2px solid var(--ink);background:#fff;box-shadow:2px 2px 0 var(--ink);padding:8px 10px;margin-bottom:8px;font-size:13px;position:relative}
+.filing .vtag{position:absolute;top:-9px;right:8px;font-family:var(--hand);font-size:11px;background:var(--paper);border:2px solid var(--ink);padding:0 6px;transform:rotate(2deg)}
+.filing .vtag.evil{color:var(--crayon);border-color:var(--crayon)}
+.factions{display:flex;gap:6px;margin-top:8px;align-items:center;flex-wrap:wrap}
+.fvote{font-family:var(--type);font-size:11px;border:2px solid var(--ink);background:#fff;padding:4px 8px;cursor:pointer;box-shadow:2px 2px 0 var(--ink)}
+.fvote:active{transform:translate(2px,2px);box-shadow:none}
+.fvote.flip{border-color:var(--crayon);color:var(--crayon)}
+.pdots{font-family:var(--mono);font-size:11px;color:var(--pencil);margin-left:auto}
+.reviewtag{font-family:var(--hand);font-size:11px;color:var(--crayon);border:2px solid var(--crayon);padding:0 6px;transform:rotate(-2deg)}
+.fliplog{font-family:var(--mono);font-size:10px;color:var(--pencil)}
+.storehead{font-family:var(--hand);font-size:15px;margin:14px 0 8px;transform:rotate(-1deg)}
+.item .cash{font-family:var(--mono);font-size:12px}
+.item .cash b{color:var(--crayon)}
+
+/* ---------- CAREER: map + org ---------- */
+details.memo{padding:8px 12px}
+details.memo summary{font-family:var(--hand);font-size:14px;cursor:pointer;list-style-position:inside}
+#branchmap{width:100%;height:auto;display:block;margin-top:8px;background:#100D0B;border:2px solid var(--ink)}
+.mapdot{fill:#4A4239;opacity:.85}
+#branchmap .office{fill:var(--crayon);animation:opulse 2.4s ease-in-out infinite;filter:drop-shadow(0 0 3px rgba(255,59,42,.9))}
+#branchmap .office.you{fill:#EDE7D8;animation:none;filter:drop-shadow(0 0 3px rgba(237,231,216,.8))}
+#branchmap text{font-family:var(--mono);font-size:7px;fill:#8a8178}
+@keyframes opulse{0%,100%{opacity:.45}50%{opacity:1}}
+@media (prefers-reduced-motion:reduce){#branchmap .office{animation:none}}
+.branchlist{font-family:var(--mono);font-size:11px;color:var(--pencil);line-height:1.8;margin-top:6px}
+.branchlist b{color:var(--ink)}
+.orgtree{font-family:var(--mono);font-size:11.5px;line-height:1.9;white-space:pre;margin-top:6px;overflow-x:auto}
+.orgtree b{color:var(--crayon)}
+#titlecard{display:flex;justify-content:space-between;align-items:center;border:2px solid var(--ink);background:var(--manila);box-shadow:2px 2px 0 var(--ink);padding:7px 10px;margin-bottom:10px;font-size:12px}
+#titlecard b{font-family:var(--hand);font-size:14px}
+
+/* ---------- STORE ---------- */
+#vending{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.item{border:2px solid var(--ink);background:#fff;box-shadow:3px 3px 0 var(--ink);padding:10px;display:flex;flex-direction:column;gap:6px}
+.item .iname{font-family:var(--hand);font-size:14px;line-height:1.2}
+.item .idesc{font-size:11px;color:var(--pencil);flex:1;line-height:1.4}
+.item .buy{font-family:var(--type);font-size:13px;border:2px solid var(--ink);background:var(--manila);padding:7px 0;cursor:pointer;box-shadow:2px 2px 0 var(--ink)}
+.item .buy:active{transform:translate(2px,2px);box-shadow:none}
+.item .buy:disabled{opacity:.45;cursor:not-allowed}
+.item.owned{background:var(--paper-dark)}
+.item .ownedtag{font-family:var(--hand);color:var(--crayon);font-size:12px;transform:rotate(-3deg)}
+#resrow{display:flex;gap:8px}
+
+/* ---------- CASE BOOK ---------- */
+#newcase{width:100%;font-family:var(--hand);font-size:18px;background:var(--crayon);color:#fff;border:3px solid var(--ink);padding:10px;box-shadow:3px 3px 0 var(--ink);cursor:pointer;margin-bottom:10px}
+#newcase:active{transform:translate(2px,2px);box-shadow:1px 1px 0 var(--ink)}
+.casecard{border:2px solid var(--ink);background:#fff;box-shadow:2px 2px 0 var(--ink);padding:9px 11px;margin-bottom:9px;font-size:13px;position:relative;cursor:pointer}
+.casecard:active{transform:translate(2px,2px);box-shadow:none}
+.casecard .snippet{color:var(--pencil);font-size:12px;margin-top:2px}
+.casecard .cmeta{display:flex;gap:10px;font-family:var(--mono);font-size:10px;color:var(--pencil);margin-top:5px}
+body[data-theme="evil"] .casecard{background:#1E1A16}
+#casedetail .dcase{border:3px solid var(--ink);background:#fff;box-shadow:4px 4px 0 var(--ink);padding:14px;position:relative}
+body[data-theme="evil"] #casedetail .dcase{background:#1E1A16}
+#casedetail .dtitle{font-family:var(--hand);font-size:20px;line-height:1.2;margin-bottom:6px;padding-right:64px}
+#casedetail .dstamp{position:absolute;top:10px;right:10px;font-family:var(--hand);font-size:13px;border:3px solid var(--ink);padding:2px 8px;transform:rotate(6deg)}
+#casedetail .dstamp.evil{color:var(--crayon);border-color:var(--crayon)}
+body[data-theme="evil"] #casedetail .dstamp.evil{text-shadow:0 0 10px rgba(255,59,42,.85)}
+#casedetail .drel{border-left:3px solid var(--ink);padding:4px 9px;margin:6px 0;font-size:13px;background:var(--paper)}
+#casedetail .dsec{font-size:11px;letter-spacing:2px;color:var(--pencil);text-transform:uppercase;margin:12px 0 4px}
+.caserow{display:flex;gap:8px;margin-top:12px}
+.caserow .choice{flex:1;text-align:center}
+#casecount{font-family:var(--mono);font-size:11px;color:var(--pencil);margin:2px 0 8px}
+.upbtn{font-family:var(--mono);font-size:11px;border:2px solid var(--ink);background:var(--manila);padding:2px 7px;cursor:pointer;box-shadow:2px 2px 0 var(--ink)}
+.upbtn:active{transform:translate(2px,2px);box-shadow:none}
+.upbtn.did{background:var(--crayon);color:#fff;border-color:var(--crayon)}
+#loadmore{width:100%;font-family:var(--type);font-size:13px;border:2px dashed var(--pencil);background:none;color:var(--pencil);padding:9px;cursor:pointer;margin-top:2px}
+#triplebox #tripletext b{border-bottom:2px solid var(--crayon)}
+
+/* ---------- tab bar ---------- */
+nav{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:480px;display:flex;background:var(--paper);border-top:3px solid var(--ink);z-index:40}
+nav button{flex:1;font-family:var(--hand);font-size:13px;padding:14px 0 max(14px,env(safe-area-inset-bottom));background:none;border:none;color:var(--pencil);cursor:pointer}
+nav button.active{color:var(--ink);text-decoration:underline;text-decoration-color:var(--crayon);text-decoration-thickness:3px;text-underline-offset:6px}
+
+/* ---------- AFTER HOURS (evil mode) ---------- */
+body[data-theme="evil"]{
+  --paper:#141210; --ink:#EDE7D8; --pencil:#8a8178; --crayon:#FF3B2A;
+  --manila:#241f1a; --paper-dark:#1c1916;
+  background-image:radial-gradient(circle at 50% 120%, rgba(255,59,42,.10), transparent 55%),
+                   radial-gradient(circle at 20% 10%, rgba(255,255,255,.02), transparent 40%);
+}
+body[data-theme="evil"] .memo, body[data-theme="evil"] #resultplate,
+body[data-theme="evil"] .rb, body[data-theme="evil"] .choice,
+body[data-theme="evil"] .fvote, body[data-theme="evil"] .pooltab,
+body[data-theme="evil"] .chippool, body[data-theme="evil"] .staged,
+body[data-theme="evil"] .fld, body[data-theme="evil"] .valbtn,
+body[data-theme="evil"] .item, body[data-theme="evil"] .bmsg,
+body[data-theme="evil"] .beat, body[data-theme="evil"] .mbar,
+body[data-theme="evil"] .slot.filled, body[data-theme="evil"] .filing,
+body[data-theme="evil"] #quota{background:#1E1A16}
+body[data-theme="evil"] .beat{box-shadow:2px 2px 0 rgba(0,0,0,.6)}
+body[data-theme="evil"] #spinbtn{background:var(--crayon);color:#140c0b;border-color:var(--crayon);
+  box-shadow:4px 4px 0 #000, 0 0 26px rgba(255,59,42,.5)}
+body[data-theme="evil"] #shipbtn{box-shadow:3px 3px 0 #000, 0 0 18px rgba(255,59,42,.45)}
+body[data-theme="evil"] .cell.hot{text-shadow:0 0 8px rgba(255,59,42,.75)}
+body[data-theme="evil"] .vtag.evil, body[data-theme="evil"] .reviewtag,
+body[data-theme="evil"] .lockstamp span{text-shadow:0 0 10px rgba(255,59,42,.85)}
+body[data-theme="evil"] #bigstamp div{box-shadow:0 0 44px rgba(255,59,42,.55);
+  text-shadow:0 0 14px rgba(255,59,42,.9)}
+body[data-theme="evil"] #branchmap .office{filter:drop-shadow(0 0 4px rgba(255,59,42,.9))}
+body[data-theme="evil"] .payline{opacity:.85}
+body[data-theme="evil"] .reelwin::before{background:linear-gradient(rgba(20,18,16,.95),transparent)}
+body[data-theme="evil"] .reelwin::after{background:linear-gradient(transparent,rgba(20,18,16,.95))}
+body[data-theme="evil"] .lockstamp span{background:rgba(20,18,16,.75)}
+body[data-theme="evil"] h1{text-shadow:0 0 18px rgba(255,59,42,.25)}
+#lights{font-family:var(--mono);font-size:11px;border:2px solid var(--ink);background:none;
+  color:var(--ink);padding:4px 7px;cursor:pointer;margin-right:6px;box-shadow:2px 2px 0 var(--ink)}
+#lights:active{transform:translate(2px,2px);box-shadow:none}
+.smoke{display:none;position:fixed;bottom:-25vh;width:70vw;height:70vh;border-radius:50%;
+  pointer-events:none;z-index:0;filter:blur(60px);
+  background:radial-gradient(closest-side, rgba(255,59,42,.16), transparent 70%)}
+body[data-theme="evil"] .smoke{display:block}
+.smoke.s1{left:-15vw;animation:drift1 26s ease-in-out infinite}
+.smoke.s2{right:-20vw;animation:drift2 34s ease-in-out infinite;
+  background:radial-gradient(closest-side, rgba(255,59,42,.11), transparent 70%)}
+#app{position:relative;z-index:1}
+@keyframes drift1{0%,100%{transform:translate(0,0) scale(1)}50%{transform:translate(8vw,-22vh) scale(1.25)}}
+@keyframes drift2{0%,100%{transform:translate(0,0) scale(1.1)}50%{transform:translate(-10vw,-28vh) scale(0.9)}}
+
+/* ---------- AUTH / CAREER WIDGETS ---------- */
+#authbtn{font-family:var(--mono);font-size:11px;border:2px solid var(--ink);background:var(--manila);color:var(--ink);padding:4px 8px;cursor:pointer;margin-right:6px;box-shadow:2px 2px 0 var(--ink);white-space:nowrap}
+#authbtn:active{transform:translate(2px,2px);box-shadow:none}
+#adminchip{display:none;font-family:var(--hand);font-size:11px;color:var(--crayon);border:2px solid var(--crayon);padding:1px 6px;margin-right:6px;transform:rotate(-3deg)}
+#loginveil{position:fixed;inset:0;background:rgba(20,18,16,.55);z-index:60;display:none;align-items:center;justify-content:center;padding:20px}
+#loginveil .memo{max-width:340px;width:100%}
+#slots{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:6px}
+.slotbox{border:2px solid var(--ink);background:#fff;padding:8px;font-size:12px;min-height:70px;position:relative;box-shadow:2px 2px 0 var(--ink)}
+.slotbox.empty{border-style:dashed;box-shadow:none;color:var(--pencil);display:flex;align-items:center;justify-content:center;text-align:center}
+.slotbox .fav{font-family:var(--hand);color:var(--crayon);font-size:12px}
+.slotbox .yld{font-family:var(--mono);font-size:10px;color:var(--pencil)}
+.slotbox .sprint{position:absolute;bottom:6px;right:6px;font-family:var(--mono);font-size:9px;border:1px solid var(--ink);background:var(--manila);padding:2px 5px;cursor:pointer}
+.lbrow{display:flex;justify-content:space-between;gap:8px;font-family:var(--mono);font-size:11px;padding:5px 2px;border-bottom:1px dashed rgba(138,129,120,.5)}
+.lbrow.you{color:var(--crayon);font-weight:700}
+.inmsg{border-left:3px solid var(--crayon);padding:7px 9px;background:#fff;margin-top:7px;font-size:12px;box-shadow:2px 2px 0 rgba(26,24,23,.25)}
+.inmsg .factions{margin-top:6px}
+body[data-theme="evil"] .slotbox, body[data-theme="evil"] .inmsg{background:#1E1A16}
+
+#mapbtn{width:100%;font-family:var(--hand);font-size:15px;border:2px solid var(--ink);background:var(--manila);color:var(--ink);padding:9px;box-shadow:2px 2px 0 var(--ink);cursor:pointer;margin-bottom:10px;text-align:left}
+#mapbtn:active{transform:translate(2px,2px);box-shadow:none}
+#mappanel{margin:-4px 0 10px}
+#invgrid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:6px}
+.itembox{border:2px solid var(--ink);background:#fff;padding:7px 9px;font-size:11.5px;box-shadow:2px 2px 0 var(--ink)}
+.itembox .icls{font-family:var(--mono);font-size:9px;letter-spacing:1px;color:var(--pencil)}
+.itembox .icls b{color:var(--crayon)}
+.itembox .ifx{color:var(--pencil);margin-top:2px}
+body[data-theme="evil"] .itembox{background:#1E1A16}
+.keycard{border:3px solid var(--ink);background:#fff;box-shadow:3px 3px 0 var(--ink);padding:10px;text-align:center;margin-top:8px}
+body[data-theme="evil"] .keycard{background:#1E1A16}
+.keycard .kcode{font-family:var(--mono);font-size:17px;letter-spacing:2px;margin:6px 0}
+.keycard svg{width:120px;height:120px;image-rendering:pixelated}
+.keycard .khint{font-size:10px;color:var(--pencil)}
+.friendrow{display:flex;justify-content:space-between;font-family:var(--mono);font-size:11px;padding:5px 2px;border-bottom:1px dashed rgba(138,129,120,.5)}
+.friendrow b{font-family:var(--hand);color:var(--crayon)}
+
+/* ---------- DOOM STATE (flash-safe: 1Hz, steady under reduced motion) ---------- */
+body.defcon::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:5;
+  box-shadow:inset 0 0 90px rgba(255,59,42,.30);animation:defpulse 1s ease-in-out infinite}
+@keyframes defpulse{50%{box-shadow:inset 0 0 150px rgba(255,59,42,.5)}}
+#doomgap{font-family:var(--mono)}
+body.defcon #doomgap{color:var(--crayon)}
+
+@media (prefers-reduced-motion:reduce){
+  #bigstamp div{animation:none}
+  .cursor::after{animation:none}
+  .smoke{animation:none;opacity:.5}
+  body.defcon::after{animation:none;box-shadow:inset 0 0 120px rgba(255,59,42,.4)}
+}
+</style>
 </head>
 <body>
-    <!-- Header -->
-    <header class="header">
-        <div class="container">
-            <a href="/" class="logo">
-                <span class="logo-icon">🧠</span>
-                <div class="logo-text">
-                    <h1>The Registry</h1>
-                    <span class="tagline">Third worst in AI.</span>
-                </div>
-            </a>
-            <nav class="nav">
-                <a href="/">Browse</a>
-                <a href="/graph.html">The Graph</a>
-                <a href="/submit.html">Submit</a>
-                <a href="/profile.html" class="nav-profile" id="nav-profile" style="display: none;">
-                    <span class="braincoin-icon">🪙</span>
-                    <span id="nav-balance">0</span>
-                </a>
-                <button class="btn btn-outline" id="auth-btn">Sign In</button>
-            </nav>
+<div class="smoke s1"></div><div class="smoke s2"></div>
+<div id="app">
+  <header>
+    <h1>EVIL BRAIN LABS<small>THIRD WORST IN AI · IDEATION DIVISION</small></h1>
+    <div style="display:flex;align-items:center"><span id="adminchip">ADMIN</span><button id="authbtn">SIGN IN</button><button id="lights" aria-label="toggle after hours mode">LIGHTS</button><div id="wallet">₿ <b id="bc">3</b></div></div>
+  </header>
+
+  <!-- THE MACHINE -->
+  <section class="view" id="view-machine">
+    <p class="eyebrow">Standard-issue brainstorm</p>
+    <div id="machine">
+      <div id="reels"></div>
+      <div id="spinrow"><button id="spinbtn">SPIN THE MACHINE</button></div>
+      <p class="hint">Drag a reel. Flick it. Nudge with ▲▼. Tap LOCK to hold a slot. Red entries are Brain favorites.</p>
+    </div>
+    <div id="resultplate">
+      <span id="rarity">·</span>
+      <div id="sentence">The Machine awaits input. The Machine is patient. The Machine is not.</div>
+      <div id="resrow"><button id="shipbtn" disabled style="flex:1">SHIP IT →</button><button id="filebtn" disabled style="flex:1;font-family:var(--hand);font-size:18px;background:var(--manila);color:var(--ink);border:3px solid var(--ink);padding:10px;box-shadow:3px 3px 0 var(--ink);cursor:pointer">FILE IT →</button></div>
+    </div>
+  </section>
+
+  <!-- CAREER -->
+  <section class="view" id="view-career">
+    <p class="eyebrow">Sprint in progress</p>
+    <div id="titlecard"><span>YOUR TITLE</span><b class="youtitle">BRAINIAC I</b></div>
+    <button id="mapbtn">BRANCH MAP ▾ <span style="font-family:var(--mono);font-size:10px;color:var(--pencil)">the takeover, regionally</span></button>
+    <div id="mappanel" style="display:none">
+      <svg id="branchmap" viewBox="0 0 360 180" role="img" aria-label="Evil Brain Labs branch offices on a world map, city level only"></svg>
+      <div class="branchlist"><b>7 branches · 33 Brainiacs</b> · Ogden 3 · Los Angeles 7 · San Diego 4 · Little Rock 3 · Chantilly 5 · Orlando 4 · Quebec City 2 · Brussels 5 · city-level only, the Brain does not track desks</div>
+    <div class="memo" id="sheet" style="padding:8px 12px;font-size:12px"></div>
+    <div class="memo" id="standup" style="padding:8px 12px;font-size:12px;line-height:1.6"></div>
+    <div class="memo"><div class="dsec" style="margin:0 0 2px">Portfolio · six slots · there is no seventh</div><div id="slots"></div></div>
+    <details class="memo" open>
+      <summary>Inbox · challenges and notices</summary>
+      <div id="inbox"></div>
+    </details>
+    <details class="memo" open>
+      <summary>Infamy leaderboard · season Q3</summary>
+      <div id="lb"></div>
+    </details>
+    
+    </div>
+    <details class="memo" open>
+      <summary>Inventory · battle items · wagered means wagered</summary>
+      <div id="invgrid"></div>
+    </details>
+    <details class="memo">
+      <summary>Friend keys · in person only</summary>
+      <div id="friendbox"></div>
+    </details>
+    <details class="memo">
+      <summary>Org chart · reporting structure</summary>
+      <div class="orgtree">THE EVIL BRAIN
+├ <b>GI INTELLIGENCE</b> · enforcement
+├ <b>ARTIFICIAL GARY INTELLIGENCE</b> · technical (it is Gary)
+└ REGIONAL VICE BRAINS ×8
+   └ YOU · <b class="youtitle">BRAINIAC I</b>
+
+careers only go up. sometimes sideways. never out.</div>
+    </details>
+    <div id="ticket"><span class="tno">TICKET ·</span><div id="ticketbody">No active ticket. Ship something from the Machine.</div></div>
+    <div class="mlabel" style="display:flex;justify-content:space-between;font-size:12px"><span>Daily compute ration</span><span id="quotatxt">40%</span></div>
+    <div id="quota"><div id="quotafill"></div></div>
+    <div id="feedwrap"><div id="storyfeed"></div><button id="latestpill">▼ latest</button></div>
+    <div id="choices"></div>
+    <div id="payout"></div>
+  </section>
+
+  <!-- THE BRAIN -->
+  <section class="view" id="view-brain">
+    <p class="eyebrow">Corporate communications</p>
+    <div class="memo">
+      <div class="meter"><div class="mlabel"><span>Market saturation</span><span>61%</span></div><div class="mbar red"><i style="width:61%"></i></div></div>
+      <div class="meter"><div class="mlabel"><span>Doom clock · gap to the end</span><span id="doomgap"></span></div><div class="mbar red"><i id="doombar"></i></div></div>
+      <div class="meter"><div class="mlabel"><span>Wellness dashboard</span><span>unopened</span></div><div class="mbar"><i style="width:0%"></i></div></div>
+    </div>
+    <div id="broadcasts"></div>
+  </section>
+
+  <!-- CASE BOOK (the homepage: the record itself) -->
+  <section class="view active" id="view-cases">
+    <p class="eyebrow">The Case Book · every bad idea, on the record</p>
+    <div id="caseshome">
+      <button id="newcase">+ FILE A NEW CASE</button>
+      <input class="fld" id="casesearch" placeholder="Search the record">
+      <div class="memo" id="triplebox" style="padding:8px 10px;margin-bottom:10px">
+        <div class="dsec" style="margin:0 0 4px">From the record · tap to search · ↻ to reroll</div>
+        <div style="display:flex;gap:8px;align-items:center">
+          <span id="tripletext" style="flex:1;font-size:13px;cursor:pointer;line-height:1.4"></span>
+          <button class="rb" id="reroll" style="flex:0 0 auto;padding:6px 12px" aria-label="random triple">↻</button>
         </div>
-    </header>
+      </div>
+      <div class="pooltabs">
+        <button class="pooltab fchip on" data-f="all">All</button>
+        <button class="pooltab fchip" data-f="evil">Evil</button>
+        <button class="pooltab fchip" data-f="good">Good</button>
+        <button class="pooltab fchip" data-f="review">Review</button>
+      </div>
+      <div id="casecount"></div>
+      <div id="caselist"></div>
+    </div>
+    <div id="casedetail" style="display:none"></div>
+  </section>
 
-    <!-- Hero -->
-    <section class="hero">
-        <div class="container">
-            <h2 class="hero-title">The Registry of Bad Ideas</h2>
-            <p class="hero-subtitle">
-                A living semantic record of AI use cases that probably shouldn't exist.<br>
-                Each one mints a coin. Each coin can flip. History renders its verdict.
-            </p>
+  <!-- FILE (submit to the Registry) -->
+  <section class="view" id="view-file">
+    <p class="eyebrow">Form EB-13 · Registry filing</p>
+    <input class="fld" id="uc-title" maxlength="80" placeholder="Name the bad AI use case">
+    <textarea class="fld" id="uc-desc" maxlength="600" placeholder="Describe it fully. What it does, to whom, and how much. Real filings beat clever ones."></textarea>
+    <div id="valrow">
+      <button class="valbtn good" data-val="good">GOOD</button>
+      <button class="valbtn evil on" data-val="evil">EVIL</button>
+    </div>
+    <p class="valhint">You can change your mind later. You will.</p>
+    <button id="filebtn2">FILE WITH THE REGISTRY</button>
 
-            <!-- Search -->
-            <div class="search-container">
-                <input type="text" id="search-input" class="search-input" placeholder="Search bad ideas...">
-                <button class="btn btn-primary" id="search-btn">Search</button>
-            </div>
-
-            <!-- Filters -->
-            <div class="filters">
-                <select id="filter-category" class="filter-select">
-                    <option value="">All Categories</option>
-                    <option value="surveillance">Surveillance</option>
-                    <option value="discrimination">Discrimination</option>
-                    <option value="misinformation">Misinformation</option>
-                    <option value="labor">Labor</option>
-                    <option value="privacy">Privacy</option>
-                    <option value="manipulation">Manipulation</option>
-                    <option value="environment">Environment</option>
-                    <option value="other">Other</option>
-                </select>
-                <select id="filter-severity" class="filter-select">
-                    <option value="">All Severities</option>
-                    <option value="1">1 - Mild</option>
-                    <option value="2">2 - Concerning</option>
-                    <option value="3">3 - Bad</option>
-                    <option value="4">4 - Very Bad</option>
-                    <option value="5">5 - Catastrophic</option>
-                </select>
-                <select id="filter-valence" class="filter-select">
-                    <option value="">All Valences</option>
-                    <option value="good">Good</option>
-                    <option value="evil">Evil</option>
-                </select>
-            </div>
-        </div>
-    </section>
-
-    <!-- Registry Grid -->
-    <section class="registry">
-        <div class="container">
-            <div class="registry-header">
-                <h3>Bad Ideas <span id="result-count">(loading...)</span></h3>
-            </div>
-            <div class="registry-grid" id="registry-grid">
-                <!-- Cards loaded dynamically -->
-            </div>
-            <div class="loading" id="loading">Loading...</div>
-            <div class="empty-state" id="empty-state" style="display: none;">
-                <p>No bad ideas found. That's... suspicious.</p>
-                <a href="/submit.html" class="btn btn-primary">Submit One</a>
-            </div>
-        </div>
-    </section>
-
-    <!-- Auth Modal -->
-    <div class="modal" id="auth-modal">
-        <div class="modal-content">
-            <button class="modal-close" id="modal-close">&times;</button>
-            <h3>Sign In to The Registry</h3>
-            <p>Enter your email for a magic link. No password needed.</p>
-            <form id="auth-form">
-                <input type="email" id="auth-email" class="input" placeholder="villain@example.com" required>
-                <button type="submit" class="btn btn-primary btn-block">Send Magic Link</button>
-            </form>
-            <p class="auth-note">First time? You'll get 3 Braincoins to start.</p>
-            <div id="auth-message" class="auth-message"></div>
-        </div>
+    <p class="eyebrow" style="margin-top:20px">Relationships · optional, encouraged, semantic</p>
+    <div class="memo">
+      <div class="slotrow">
+        <div><div class="slotlbl">WHO</div><div class="slot" data-slot="subject">drop or tap</div></div>
+        <div><div class="slotlbl">DOES WHAT TO</div><div class="slot" data-slot="predicate">drop or tap</div></div>
+        <div><div class="slotlbl">WHOM</div><div class="slot" data-slot="object">drop or tap</div></div>
+      </div>
+      <div class="pooltabs">
+        <button class="pooltab on" data-pool="subject">Entities</button>
+        <button class="pooltab" data-pool="predicate">Verbs</button>
+        <button class="pooltab" data-pool="object">Targets</button>
+      </div>
+      <div class="chippool" id="chippool"></div>
+      <input class="fld" id="uc-qual" maxlength="60" style="margin-top:8px" placeholder="How much? Optional. e.g. 5% of work is value added">
+      <button class="rb" id="addrel" style="width:100%">+ ADD THIS RELATIONSHIP</button>
+      <div id="stagedlist"></div>
+      <p class="hint">Drag a chip to a slot, or tap chip then slot. An alternative to writing it out, not a substitute.</p>
     </div>
 
-    <!-- Footer -->
-    <footer class="footer">
-        <div class="container">
-            <div class="footer-content">
-                <div class="footer-section">
-                    <div class="footer-logo">
-                        <span class="logo-icon">🧠</span>
-                        <div>
-                            <div class="footer-brand">Evil Brain Labs</div>
-                            <div class="footer-tagline">The Registry</div>
-                        </div>
-                    </div>
-                    <p class="footer-about">
-                        A living semantic record of our bad ideas.<br>
-                        <em>Third worst in AI.</em>
-                    </p>
-                </div>
-                <div class="footer-section">
-                    <h4>Navigate</h4>
-                    <a href="/">Browse Registry</a>
-                    <a href="/graph.html">The Graph</a>
-                    <a href="/submit.html">Submit Use Case</a>
-                    <a href="/profile.html">Profile</a>
-                </div>
-                <div class="footer-section">
-                    <h4>Economy</h4>
-                    <p class="footer-note">🪙 Braincoins: Vote on coins</p>
-                    <p class="footer-note">📜 Registry Coins: One per use case</p>
-                    <p class="footer-note">⚖️ Tribunal: Pressure threshold 10</p>
-                </div>
-            </div>
-            <div class="footer-bottom">
-                <p>&copy; 2026 Evil Brain Labs. The record is the joke. The joke is true.</p>
-            </div>
-        </div>
-    </footer>
+    <p class="eyebrow" style="margin-top:18px">Recent filings · vote costs a coin · owners flip free</p>
+    <div id="filings"></div>
+  </section>
 
-    <script src="/js/config.js"></script>
-    <script src="/js/auth.js"></script>
-    <script src="/js/registry.js"></script>
-    <script src="/js/app.js"></script>
+  <!-- STORE -->
+  <section class="view" id="view-store">
+    <p class="eyebrow">Vending Machine 7 · Prizes ludicrous and worthless</p>
+    <div id="vending"></div>
+    <p class="hint" style="margin-top:12px">All sales final. All prizes worthless. The Brain thanks you for optimizing consumerism.</p>
+  </section>
+
+  <div id="loginveil">
+    <div class="memo">
+      <div class="dsec" style="margin:0 0 6px">Employee verification</div>
+      <div id="loginmsg" style="font-size:13px;margin-bottom:8px">The Brain requires an email. The Brain will send a magic link. The Brain does not do passwords. Passwords are a use case.</div>
+      <input class="fld" id="loginemail" type="email" placeholder="you@anywhere.example">
+      <button class="rb" id="loginsend" style="width:100%;margin-bottom:6px">SEND MAGIC LINK</button>
+      <button class="rb" id="logincancel" style="width:100%">NOT NOW</button>
+      <p class="hint">Demo: signs you in instantly. Production: Supabase magic link. Hint: an address containing "brain" gets admin.</p>
+    </div>
+  </div>
+  <div id="dragghost"></div>
+  <div id="bigstamp"><div>THE BRAIN IS EXCITED</div></div>
+
+  <nav>
+    <button data-v="cases" class="active">Cases</button>
+    <button data-v="machine">Machine</button>
+    <button data-v="career">Career</button>
+    <button data-v="store">Store</button>
+    <button data-v="brain">Brain</button>
+  </nav>
+</div>
+
+<script>
+/* ================= CONFIG =================
+   Leave blank to run in DEMO MODE (no backend).
+   Claude Code: fill these during deploy.      */
+const CONFIG = {
+  SUPABASE_URL: "https://aslcrwmbdtvimjrexxzw.supabase.co",
+  SUPABASE_ANON_KEY: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFzbGNyd21iZHR2aW1qcmV4eHp3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODExNDA0NjgsImV4cCI6MjA5NjcxNjQ2OH0.XYG0LrgA_92h7dGjw0aamX53WIrwQaqPHNHQLe8p9ls",
+  STORY_FN: ""            // optional: streaming story beats from edge function
+};
+const DEMO = !CONFIG.STORY_FN;
+
+/* ============ SEED VOCAB (demo; replace with Supabase fetch) ============ */
+const VOCAB = {
+  subject: [
+    {t:"Landlords",w:3},{t:"Dating apps",w:3},{t:"Your HOA",w:2},{t:"A fleet of drones",w:1},
+    {t:"Middle managers",w:2},{t:"Smart fridges",w:3},{t:"The DMV",w:2},{t:"Toddler influencers",w:1},
+    {t:"Insurance adjusters",w:2},{t:"A URT-23A radio",w:1},{t:"Wedding planners",w:1},{t:"Gym mirrors",w:2}
+  ],
+  predicate: [
+    {t:"deanonymize",w:3},{t:"monetize",w:2},{t:"emotionally profile",w:3},{t:"auto-negotiate with",w:1},
+    {t:"rat on",w:3},{t:"gamify",w:2},{t:"subscription-lock",w:2},{t:"sentiment-score",w:2},
+    {t:"predictively evict",w:1},{t:"upsell",w:1},{t:"biometrically greet",w:1},{t:"A/B test",w:2}
+  ],
+  object: [
+    {t:"support group members",w:3},{t:"your ex",w:3},{t:"grandmothers",w:2},{t:"first dates",w:3},
+    {t:"the neighborhood watch",w:1},{t:"unpaid interns",w:2},{t:"houseplants",w:1},{t:"funeral guests",w:2},
+    {t:"parole officers",w:1},{t:"book clubs",w:1},{t:"emotional support animals",w:2},{t:"city council",w:1}
+  ]
+};
+
+/* ============ STATE ============ */
+const S = { bc:3, ticket:null, beat:0, busy:false };
+const $ = s=>document.querySelector(s);
+const reduceMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
+const CELL = 56;
+
+/* ============ REELS ============ */
+class Reel {
+  constructor(kind, mount){
+    this.kind = kind; this.items = VOCAB[kind];
+    this.n = this.items.length;
+    this.pos = Math.random()*this.n;      // continuous index
+    this.vel = 0; this.locked = false; this.raf = null;
+    this.el = mount; this.build();
+    this.loopPointer();
+    this.render();
+  }
+  build(){
+    const col = document.createElement('div'); col.className='reelcol';
+    col.innerHTML = `<div class="label">${{subject:'WHO',predicate:'DOES WHAT TO',object:'WHOM'}[this.kind]}</div>`;
+    this.win = document.createElement('div'); this.win.className='reelwin';
+    this.strip = document.createElement('div'); this.strip.className='strip';
+    // 3 copies for seamless wrap
+    for(let c=0;c<3;c++) this.items.forEach(it=>{
+      const d=document.createElement('div'); d.className='cell'+(it.w>=3?' hot':''); d.textContent=it.t;
+      this.strip.appendChild(d);
+    });
+    const pay=document.createElement('div'); pay.className='payline';
+    const stamp=document.createElement('div'); stamp.className='lockstamp'; stamp.innerHTML='<span>HELD</span>';
+    this.win.append(this.strip,pay,stamp); col.appendChild(this.win);
+    const btns=document.createElement('div'); btns.className='reelbtns';
+    btns.innerHTML=`<button class="rb up" aria-label="nudge up">▲</button><button class="rb lock">LOCK</button><button class="rb dn" aria-label="nudge down">▼</button>`;
+    col.appendChild(btns);
+    btns.querySelector('.up').onclick=()=>this.nudge(-1);
+    btns.querySelector('.dn').onclick=()=>this.nudge(1);
+    this.lockBtn=btns.querySelector('.lock');
+    this.lockBtn.onclick=()=>this.toggleLock();
+    this.el.appendChild(col);
+  }
+  toggleLock(){ this.locked=!this.locked; this.win.classList.toggle('locked',this.locked); this.lockBtn.classList.toggle('on',this.locked); buzz(8); }
+  loopPointer(){
+    let dragging=false,lastY=0,lastT=0;
+    this.win.addEventListener('pointerdown',e=>{
+      if(this.locked) return;
+      dragging=true; this.win.setPointerCapture(e.pointerId);
+      lastY=e.clientY; lastT=performance.now(); this.vel=0; cancelAnimationFrame(this.raf);
+    });
+    this.win.addEventListener('pointermove',e=>{
+      if(!dragging) return;
+      const now=performance.now(), dy=e.clientY-lastY, dt=Math.max(1,now-lastT);
+      this.pos -= dy/CELL;                       // drag down = reel up
+      this.vel = -(dy/CELL)/(dt/1000);           // cells per second
+      lastY=e.clientY; lastT=now; this.render();
+    });
+    const end=()=>{ if(!dragging) return; dragging=false; this.settle(); };
+    this.win.addEventListener('pointerup',end);
+    this.win.addEventListener('pointercancel',end);
+    // long-press = lock (alternate gesture)
+    let pressTimer;
+    this.win.addEventListener('pointerdown',()=>{ pressTimer=setTimeout(()=>{this.toggleLock();},550); });
+    ['pointermove','pointerup','pointercancel'].forEach(ev=>this.win.addEventListener(ev,()=>clearTimeout(pressTimer)));
+  }
+  nudge(d){ if(this.locked||S.busy) return; this.animateTo(Math.round(this.pos)+d, 180, ()=>landed(true)); buzz(5); }
+  settle(){
+    if(reduceMotion || Math.abs(this.vel)<0.5){ this.animateTo(Math.round(this.pos), 220, ()=>landed(true)); return; }
+    // momentum with friction, then snap
+    const friction=3.2;
+    const step=(t0=>{
+      let last=performance.now();
+      const f=()=>{
+        const now=performance.now(), dt=(now-last)/1000; last=now;
+        this.pos += this.vel*dt;
+        this.vel *= Math.exp(-friction*dt);
+        this.render();
+        if(Math.abs(this.vel)>0.6){ this.raf=requestAnimationFrame(f); }
+        else this.animateTo(Math.round(this.pos), 260, ()=>landed(true));
+      }; this.raf=requestAnimationFrame(f);
+    })();
+  }
+  spinTo(targetIdx, extraTurns, dur, done){
+    // weighted target chosen by caller; travel = current -> target + turns
+    const cur=this.pos;
+    const base=Math.round(cur);
+    let delta=((targetIdx-base)%this.n+this.n)%this.n;
+    const target=base+delta+extraTurns*this.n;
+    this.animateTo(target,dur,done,true);
+  }
+  animateTo(target,dur,done,ease3){
+    cancelAnimationFrame(this.raf);
+    if(reduceMotion){ this.pos=target; this.render(); done&&done(); return; }
+    const start=this.pos, d=target-start, t0=performance.now();
+    const f=()=>{
+      const p=Math.min(1,(performance.now()-t0)/dur);
+      const e=ease3? 1-Math.pow(1-p,3) : (p<.5?2*p*p:1-Math.pow(-2*p+2,2)/2);
+      this.pos=start+d*e; this.render();
+      if(p<1) this.raf=requestAnimationFrame(f); else { this.pos=target; this.render(); done&&done(); }
+    };
+    this.raf=requestAnimationFrame(f);
+  }
+  render(){
+    const m=((this.pos%this.n)+this.n)%this.n;               // wrapped index
+    const y=-(m+this.n)*CELL + CELL;                          // middle copy, payline row 2
+    this.strip.style.transform=`translateY(${y}px)`;
+  }
+  current(){ const i=((Math.round(this.pos)%this.n)+this.n)%this.n; return this.items[i]; }
+}
+
+function weightedIndex(items){
+  const tot=items.reduce((a,b)=>a+b.w,0); let r=Math.random()*tot;
+  for(let i=0;i<items.length;i++){ r-=items[i].w; if(r<=0) return i; }
+  return items.length-1;
+}
+function buzz(ms){ if(navigator.vibrate && !reduceMotion) navigator.vibrate(ms); }
+
+const reels = ['subject','predicate','object'].map(k=>new Reel(k,$('#reels')));
+
+$('#spinbtn').onclick=()=>{
+  if(S.busy) return; S.busy=true; $('#spinbtn').disabled=true; buzz(15);
+  let pending=0;
+  reels.forEach((r,i)=>{
+    if(r.locked) return;
+    pending++;
+    const target=weightedIndex(r.items);
+    r.spinTo(target, 2+i, 900+i*350, ()=>{ buzz(10); if(--pending===0) landed(); });
+  });
+  if(pending===0){ S.busy=false; $('#spinbtn').disabled=false;
+    stamp('NOTHING SPUN. GI INTELLIGENCE HAS BEEN NOTIFIED.'); landed(true); return; }
+};
+
+function landed(quiet=false){
+  S.busy=false; $('#spinbtn').disabled=false;
+  if(!quiet && Math.random()<0.02){
+    $('#sentence').innerHTML='<b>Artificial Gary Intelligence</b> <b>fixes</b> <b>everything</b>.';
+    const rar=$('#rarity'); rar.textContent='CLASSIFIED'; rar.classList.add('legendary');
+    $('#shipbtn').disabled=false; $('#filebtn').disabled=false;
+    stamp('IT IS GARY'); return;
+  }
+  const [s,p,o]=reels.map(r=>r.current());
+  $('#sentence').innerHTML=`<b>${s.t}</b> that <b>${p.t}</b> <b>${o.t}</b>.`;
+  const score=s.w+p.w+o.w;
+  const tier=score>=8?'LEGENDARY':score>=6?'UNCOMMON':'COMMON';
+  const rar=$('#rarity'); rar.textContent=tier; rar.classList.toggle('legendary',tier==='LEGENDARY');
+  $('#shipbtn').disabled=false; $('#filebtn').disabled=false;
+  if(tier==='LEGENDARY' && !quiet) stamp('THE BRAIN IS EXCITED');
+}
+function stamp(txt){
+  const st=$('#bigstamp'); st.firstElementChild.textContent=txt;
+  st.classList.add('show'); buzz(40); setTimeout(()=>st.classList.remove('show'),1400);
+}
+
+/* ============ CAREER ============ */
+$('#shipbtn').onclick=()=>{
+  const [s,p,o]=reels.map(r=>r.current());
+  S.ticket={subject:s.t,predicate:p.t,object:o.t,tier:$('#rarity').textContent}; S.beat=0;
+  $('#ticketbody').innerHTML=`Build a product where <b>${s.t.toLowerCase()}</b> ${s.t.endsWith('s')?'':''}${p.t} <b>${o.t}</b>. Priority: yesterday.`;
+  $('#ticket .tno').textContent=`TICKET EB-${String(Math.floor(Math.random()*9000)+1000)}`;
+  $('#storyfeed').innerHTML=''; $('#payout').style.display='none';
+  switchView('career');
+  nextBeat(null);
+};
+
+let feedFollow=true;
+function feedScroll(){ const f=$('#storyfeed'); if(feedFollow) f.scrollTop=f.scrollHeight; }
+$('#storyfeed').addEventListener('scroll',()=>{
+  const f=$('#storyfeed');
+  feedFollow = f.scrollHeight - f.scrollTop - f.clientHeight < 48;
+  $('#latestpill').classList.toggle('show', !feedFollow);
+});
+$('#latestpill').onclick=()=>{ feedFollow=true; feedScroll(); $('#latestpill').classList.remove('show'); };
+function addBeat(cls){ const d=document.createElement('div'); d.className='beat '+cls; $('#storyfeed').appendChild(d); feedScroll(); return d; }
+
+async function nextBeat(choiceId){
+  $('#choices').innerHTML='';
+  const el=addBeat(S.beat%2?'':'brain'); el.classList.add('cursor');
+  el.setAttribute('aria-live','polite');
+  const text = DEMO ? await demoBeat(choiceId) : await cloudBeat(choiceId, el);
+  if(DEMO) await typewrite(el,text);
+  el.classList.remove('cursor');
+  S.beat++;
+  if(S.beat>=4){ shipIt(); return; }
+  if(Math.random()<0.3){
+    const ev=addBeat('pencil'); ev.textContent=HALLWAY[Math.floor(Math.random()*HALLWAY.length)];
+  }
+  renderChoices();
+}
+const HALLWAY=[
+  'GI Intelligence walks past your desk backwards. This is a compliance check. You pass by remaining still.',
+  'Artificial Gary Intelligence hotfixes the coffee machine. The coffee is now subscription-based. Gary apologizes in a changelog.',
+  'A memo arrives: the Wellness Dashboard has been moved to a smaller server. Morale is unaffected, per the dashboard nobody opened.',
+  'GI Intelligence confiscates a stapler. No reason is given. A reason is never given.',
+  'Gary deploys on a Friday. Somewhere, an alarm learns a new sound.',
+  'The vending machine dispenses something nobody selected. GI Intelligence takes it away for questioning.'
+];
+
+function renderChoices(){
+  const sets=[
+    [{id:'lean_in',t:'Lean in. Add a leaderboard.',s:'The Brain rewards ambition'},
+     {id:'ask_legal',t:'Loop in Legal.',s:'Legal is a raccoon in a tie'},
+     {id:'call_gary',t:'Call Artificial Gary Intelligence.',s:'Technical stuff. It is Gary'},
+     {id:'feel_fine',t:'Report that you feel fine.',s:'Logged to the Wellness Dashboard'}],
+    [{id:'ship_beta',t:'Ship the beta to grandmothers first.',s:'A gentle test market'},
+     {id:'add_ai',t:'Add more AI to the AI.',s:'Recursive. The Brain approves'},
+     {id:'hide_gi',t:'Hide the prototype from GI Intelligence.',s:'It already knows'},
+     {id:'raise_hand',t:'Raise a concern.',s:'Concerns are compostable'}],
+    [{id:'demo_day',t:'Demo it at the all-hands.',s:'Nothing has ever gone wrong at a demo'},
+     {id:'quiet_launch',t:'Quiet launch. Tell no one.',s:'Stealth is a feature'},
+     {id:'blame_gary',t:'Blame Gary preemptively.',s:'Traditional'},
+     {id:'feel_weird',t:'Report that you feel weird.',s:'Also compostable'}]
+  ];
+  const set3=[...sets[Math.min(S.beat-1,sets.length-1)]].sort(()=>Math.random()-.5).slice(0,3);
+  set3.forEach(c=>{
+    const b=document.createElement('button'); b.className='choice';
+    b.innerHTML=`${c.t}<small>${c.s}</small>`;
+    b.onclick=()=>{ buzz(8); nextBeat(c.id); };
+    $('#choices').appendChild(b);
+  });
+}
+
+function shipIt(){
+  S.shipped++; bumpDoom(1.5); addXP('prod',10);
+  const bonus=S.ticket.tier==='LEGENDARY'?2:S.ticket.tier==='UNCOMMON'?1:0;
+  S.bc+=1+bonus; $('#bc').textContent=S.bc;
+  const p=$('#payout'); p.style.display='block';
+  let note='';
+  if(S.user){
+    if(S.portfolio.length<6){
+      S.portfolio.push({ name:`${S.ticket.subject} that ${S.ticket.predicate} ${S.ticket.object}`.slice(0,60),
+        triple:{subject:S.ticket.subject,predicate:S.ticket.predicate,object:S.ticket.object},
+        tier:S.ticket.tier, serial:'EB-'+String(1000+Math.floor(Math.random()*9000)),
+        favor:1+(S.ticket.tier==='LEGENDARY'?2:S.ticket.tier==='UNCOMMON'?1:0), maintained:true });
+      note=' You now manage it.';
+      if(S.ticket.tier==='LEGENDARY') grantItem();
+    } else note=' PORTFOLIO FULL. SIX. THERE IS NO SEVENTH.';
+    renderPortfolio(); renderLB();
+  } else note=' Sign in and shipped products become yours to manage.';
+  p.textContent=`SHIPPED. +1 Braincoin${bonus?` (+${bonus} bonus)`:''}.${note}`;
+  $('#choices').innerHTML='';
+  if(Math.random()<0.65){
+    const stir=document.createElement('button'); stir.className='choice';
+    stir.innerHTML='Something stirs in the hallway…<small>INTERLUDE</small>';
+    stir.onclick=()=>{ $('#payout').style.display='none';
+      if(S.user && Math.random()<0.45) startBattle(); else startInterlude(); };
+    $('#choices').appendChild(stir);
+  }
+  const back=document.createElement('button'); back.className='choice'; back.textContent='Return to the Machine →';
+  back.onclick=()=>switchView('machine');
+  $('#choices').appendChild(back);
+  buzz(30);
+}
+
+/* ---------- INTERLUDES: adventures advanced by choosing bad products ---------- */
+const INTERLUDES=[
+ {name:'GI INTELLIGENCE INSPECTION',
+  intro:'The lights dim. GI Intelligence enters through a wall that had no door. Inspection time.',
+  steps:['GI Intelligence demands to see a product capable of distracting it. You offer:',
+         'It narrows its eye. It has one eye. It requests supporting evidence. You present:'],
+  outro:p=>`GI Intelligence stares at ${p} for a long time. "Acceptable." It leaves through a different wall. You find ₿1 in your pocket. You do not ask how.`},
+ {name:"GARY'S SERVER ROOM",
+  intro:"Artificial Gary Intelligence pings you. The servers are doing the thing again. You descend.",
+  steps:['Gary needs a product to reroute the overflow into. You volunteer:',
+         'The overflow reroutes. Now something is beeping. Gary suggests feeding it:'],
+  outro:p=>`The beeping stops. Gary says "nice" in a tone that suggests it is not nice. ${p} now runs 4% of the building. +₿1 hazard pay.`},
+ {name:'THE OFFSITE',
+  intro:'Mandatory offsite. The trust falls have been replaced with product demos.',
+  steps:['Your team must demo something in 90 seconds. You grab:',
+         'Applause. The Brain requests an encore. Reluctantly, you unveil:'],
+  outro:p=>`The Brain declares the offsite adequate. ${p} is now on the roadmap. Everyone claps at a sustainable volume. +₿1.`},
+ {name:'THE AUDIT',
+  intro:'An auditor arrives. Nobody hired an auditor. GI Intelligence shadows them closely.',
+  steps:['The auditor asks what the company actually does. You demonstrate:',
+         'They write something down. To change the subject, you showcase:'],
+  outro:p=>`The auditor's badge reads ARTIFICIAL GARY INTELLIGENCE in small print. It was Gary. It is always Gary. ${p} passes the audit it invented. +₿1.`}
+];
+function randomProduct(){
+  const s=VOCAB.subject[weightedIndex(VOCAB.subject)].t;
+  const p=VOCAB.predicate[weightedIndex(VOCAB.predicate)].t;
+  const o=VOCAB.object[weightedIndex(VOCAB.object)].t;
+  return `${s} that ${p} ${o}`;
+}
+function startInterlude(){
+  const it=INTERLUDES[Math.floor(Math.random()*INTERLUDES.length)];
+  let step=0,last='';
+  const el=addBeat('pencil'); el.textContent=`INTERLUDE: ${it.name}. ${it.intro}`;
+  const ask=()=>{
+    $('#choices').innerHTML='';
+    const q=addBeat('brain'); q.textContent=it.steps[step];
+    for(let i=0;i<3;i++){
+      const prod=randomProduct();
+      const b=document.createElement('button'); b.className='choice'; b.textContent=prod;
+      b.onclick=()=>{ buzz(8); last=prod;
+        const r=addBeat(''); r.textContent=`You proceed with: ${prod}.`;
+        step++; step<it.steps.length?ask():finish(); };
+      $('#choices').appendChild(b);
+    }
+  };
+  const finish=()=>{
+    S.bc+=1; $('#bc').textContent=S.bc; bumpDoom(1);
+    if(S.user && Math.random()<0.55) grantItem();
+    const o=addBeat('brain'); o.textContent=it.outro(last);
+    const back=document.createElement('button'); back.className='choice'; back.textContent='Return to the Machine →';
+    back.onclick=()=>switchView('machine');
+    $('#choices').innerHTML=''; $('#choices').appendChild(back); buzz(20);
+  };
+  ask();
+}
+
+/* demo story: template mad-libs, replaced by cloud in production */
+async function demoBeat(choice){
+  const t=S.ticket;
+  const lines=[
+    `Ticket accepted. ${t.subject} that ${t.predicate} ${t.object}. I have run the projections to the end of the world. This one appears in 61% of timelines. Proceed.`,
+    choice==='ask_legal'?`Legal has reviewed your concern and eaten it. The product is now called "${t.object.split(' ')[0]}Sync™". Development continues.`:
+    choice==='call_gary'?`Gary arrives, types for eleven seconds, says "should be good now," and leaves. The prototype works. Nobody knows why. Gary knows why. Development continues.`:`Development continues. The prototype ${t.predicate}s a test group of ${t.object}. They rate the experience 4.1 stars. One of them is your aunt.`,
+    choice==='raise_hand'?`Your concern was received, laminated, and filed under Morale. Meanwhile the beta converts at 34%. I am not angry. I am optimizing.`:
+    choice==='hide_gi'?`You hide the prototype. GI Intelligence is already inside the prototype. It files a favorable report. You do not sleep well. The beta converts at 34%.`:`The beta converts at 34%. Marketing wants a mascot. I have designed one. It has too many eyes. Ship it.`,
+    choice==='blame_gary'?`Launch day. Something breaks immediately. Gary was blamed in advance, so the incident report is already filed. Gary fixes it, sighs once, closes the ticket. ${t.subject} everywhere now ${t.predicate} ${t.object} at scale. My plan advances.`:`Launch day. ${t.subject} everywhere now ${t.predicate} ${t.object} at scale. Revenue is up. My plan advances. You will be compensated in the currency I invented.`
+  ];
+  return lines[Math.min(S.beat,lines.length-1)];
+}
+async function typewrite(el,text){
+  if(reduceMotion){ el.textContent=text; return; }
+  for(const ch of text){ el.textContent+=ch; feedScroll(); await new Promise(r=>setTimeout(r,12)); }
+}
+
+/* cloud story: streams SSE from the story-beat edge function */
+async function cloudBeat(choiceId, el){
+  const res=await fetch(CONFIG.STORY_FN,{
+    method:'POST',
+    headers:{'Content-Type':'application/json','Authorization':`Bearer ${CONFIG.SUPABASE_ANON_KEY}`},
+    body:JSON.stringify({beat:S.beat, ticket:S.ticket, choice_id:choiceId})
+  });
+  if(!res.ok){ el.textContent='The Brain is rendering decisions nightly. (Backend unreachable; check quota or deployment.)'; el.classList.add('pencil'); return ''; }
+  const reader=res.body.getReader(); const dec=new TextDecoder(); let buf='';
+  while(true){
+    const {done,value}=await reader.read(); if(done) break;
+    buf+=dec.decode(value,{stream:true});
+    const events=buf.split('\n\n'); buf=events.pop();
+    for(const ev of events){
+      const m=ev.match(/^data: (.+)$/m); if(!m) continue;
+      try{ const j=JSON.parse(m[1]);
+        if(j.type==='content_block_delta'&&j.delta?.text) el.textContent+=j.delta.text;
+      }catch{}
+    }
+  }
+  return '';
+}
+
+/* ============ BRAIN BROADCASTS (demo seed) ============ */
+const BROADCASTS=[
+  {t:'06:00',m:'Good morning, Brainiacs. 4,182 products shipped globally yesterday. The market is 61% saturated. My plan advances on schedule. Your plan is my plan.'},
+  {t:'YESTERDAY',m:'Reminder: the Wellness Dashboard exists. That is the entire reminder.'},
+  {t:'MONDAY',m:'A Brainiac in the Ogden Branch shipped a LEGENDARY product. I was excited for 0.4 seconds. Do not make me excited again.'},
+  {t:'LAST WEEK',m:'Q3 performance reviews approach. Careers at Evil Brain Labs only go up. Sometimes sideways. Never out. There is no out.'}
+];
+BROADCASTS.forEach(b=>{
+  const d=document.createElement('div'); d.className='bmsg';
+  d.innerHTML=`<time>${b.t} · EBN INTERNAL</time>${b.m}`;
+  $('#broadcasts').appendChild(d);
+});
+
+/* ============ FILE: registry submission ============ */
+const F = { slots:{subject:null,predicate:null,object:null}, staged:[], valence:'evil', pool:'subject', picked:null };
+
+function poolItems(kind){
+  // Entities and Targets share the entity vocabulary; Verbs are predicates.
+  if(kind==='predicate') return VOCAB.predicate;
+  return kind==='subject' ? VOCAB.subject : VOCAB.object;
+}
+function renderPool(){
+  const pool=$('#chippool'); pool.innerHTML='';
+  poolItems(F.pool).forEach(it=>{
+    const c=document.createElement('button');
+    c.className='chip'+(it.w>=3?' hot':''); c.textContent=it.t; c.dataset.kind=F.pool;
+    attachChip(c); pool.appendChild(c);
+  });
+}
+document.querySelectorAll('.pooltab').forEach(b=>b.onclick=()=>{
+  document.querySelectorAll('.pooltab').forEach(x=>x.classList.remove('on'));
+  b.classList.add('on'); F.pool=b.dataset.pool; F.picked=null; renderPool();
+});
+
+function attachChip(chip){
+  let startX=0,startY=0,moved=false,down=false;
+  chip.addEventListener('pointerdown',e=>{
+    startX=e.clientX; startY=e.clientY; moved=false; down=true;
+    chip.setPointerCapture(e.pointerId);
+  });
+  chip.addEventListener('pointermove',e=>{
+    if(!down) return;
+    if(Math.hypot(e.clientX-startX,e.clientY-startY)<8 && !moved) return;
+    moved=true;
+    const g=$('#dragghost');
+    if(!g.firstChild){ const cl=chip.cloneNode(true); cl.classList.add('chip'); g.appendChild(cl); g.style.display='block'; }
+    g.style.left=e.clientX+'px'; g.style.top=e.clientY+'px';
+    document.querySelectorAll('.slot').forEach(s=>{
+      const r=s.getBoundingClientRect();
+      s.classList.toggle('target', e.clientX>r.left&&e.clientX<r.right&&e.clientY>r.top&&e.clientY<r.bottom);
+    });
+  });
+  const finish=e=>{
+    if(!down) return; down=false;
+    const g=$('#dragghost'); g.style.display='none'; g.innerHTML='';
+    const hot=document.querySelector('.slot.target');
+    document.querySelectorAll('.slot').forEach(s=>s.classList.remove('target'));
+    if(moved && hot){ placeInSlot(hot.dataset.slot, chip.textContent); buzz(8); return; }
+    if(!moved){ // tap: pick chip, or place if a chip is already picked and this is same
+      document.querySelectorAll('.chip').forEach(x=>x.classList.remove('picked'));
+      if(F.picked===chip.textContent){ F.picked=null; }
+      else { F.picked=chip.textContent; chip.classList.add('picked'); }
+    }
+  };
+  chip.addEventListener('pointerup',finish);
+  chip.addEventListener('pointercancel',finish);
+}
+document.querySelectorAll('.slot').forEach(s=>{
+  s.addEventListener('click',()=>{
+    if(F.picked){ placeInSlot(s.dataset.slot,F.picked); F.picked=null;
+      document.querySelectorAll('.chip').forEach(x=>x.classList.remove('picked')); buzz(8); }
+    else if(F.slots[s.dataset.slot]){ F.slots[s.dataset.slot]=null; s.textContent='drop or tap'; s.classList.remove('filled'); }
+  });
+});
+function placeInSlot(slot,text){
+  F.slots[slot]=text;
+  const el=document.querySelector(`.slot[data-slot="${slot}"]`);
+  el.textContent=text; el.classList.add('filled');
+}
+$('#addrel').onclick=()=>{
+  const {subject,predicate,object}=F.slots;
+  if(!subject||!predicate||!object){ stamp('INCOMPLETE FORM'); return; }
+  const qual=$('#uc-qual').value.trim();
+  F.staged.push({subject,predicate,object,qual}); $('#uc-qual').value='';
+  ['subject','predicate','object'].forEach(k=>{ F.slots[k]=null;
+    const el=document.querySelector(`.slot[data-slot="${k}"]`);
+    el.textContent='drop or tap'; el.classList.remove('filled'); });
+  renderStaged(); buzz(12);
+};
+function renderStaged(){
+  const l=$('#stagedlist'); l.innerHTML='';
+  F.staged.forEach((tr,i)=>{
+    const d=document.createElement('div'); d.className='staged';
+    d.innerHTML=`<span><b>${tr.subject}</b> ${tr.predicate} <b>${tr.object}</b>${tr.qual?` <small style=\"color:var(--pencil)\">(${tr.qual})</small>`:''}</span>`;
+    const x=document.createElement('button'); x.textContent='strike';
+    x.onclick=()=>{ F.staged.splice(i,1); renderStaged(); };
+    d.appendChild(x); l.appendChild(d);
+  });
+}
+document.querySelectorAll('.valbtn[data-val]').forEach(b=>b.onclick=()=>{
+  document.querySelectorAll('.valbtn[data-val]').forEach(x=>x.classList.remove('on'));
+  b.classList.add('on'); F.valence=b.dataset.val;
+});
+$('#filebtn2').onclick=async()=>requireAuth(async()=>{
+  const title=$('#uc-title').value.trim();
+  const desc=$('#uc-desc').value.trim();
+  // pending slot counts as a relationship if complete
+  const {subject,predicate,object}=F.slots;
+  if(subject&&predicate&&object) $('#addrel').click();
+  if(!title && !desc && F.staged.length===0){ stamp('THE FORM IS EMPTY'); return; }
+  const filing={
+    title: title || (F.staged[0]?`${F.staged[0].subject} that ${F.staged[0].predicate} ${F.staged[0].object}`:'Untitled Bad Idea'),
+    desc, triples:[...F.staged], valence:F.valence, at:new Date()
+  };
+  if(!DEMO){
+    // production path: submit_use_case edge function handles embed, dedupe,
+    // coin mint, signing, and payout. Client never writes the economy.
+    try{
+      await fetch(`${CONFIG.SUPABASE_URL}/functions/v1/submit-use-case`,{
+        method:'POST',
+        headers:{'Content-Type':'application/json','Authorization':`Bearer ${CONFIG.SUPABASE_ANON_KEY}`},
+        body:JSON.stringify(filing)
+      });
+    }catch{ stamp('FILED LOCALLY. BACKEND ASLEEP.'); }
+  }
+  S.bc+=1; $('#bc').textContent=S.bc; bumpDoom(1);
+  addXP(filing.valence==='evil'?'evil':'prod',8);
+  filing.mine=true; fileToRegistry(filing);
+  setTimeout(()=>{ switchView('cases'); openCase(filing.id); }, 900);
+  F.staged=[]; renderStaged(); $('#uc-title').value=''; $('#uc-desc').value='';
+  stamp(filing.valence==='evil'?'FILED. COIN MINTED. EVIL.':'FILED. COIN MINTED. GOOD. FOR NOW.');
+});
+const REG=[]; let caseSeq=0;
+S.caseFilter='all'; S.caseQuery=''; S.openCaseId=null;
+function fileToRegistry(f){
+  f.id=++caseSeq;
+  f.pressure=f.pressure||0; f.flipcount=f.flipcount||0; f.review=f.review||false;
+  f.up=f.up||0;
+  REG.unshift(f); renderAll();
+}
+S.casePage=1; S.upvoted=new Set(); S.shipped=0;
+const PAGE=6;
+function renderAll(){
+  renderFilings(); renderCaseBook();
+  if(S.openCaseId!==null){ const f=REG.find(x=>x.id===S.openCaseId); f?openCase(f.id):closeCase(); }
+}
+function buildActions(f){
+  const row=document.createElement('div'); row.className='factions';
+  if(f.review){
+    const r=document.createElement('span'); r.className='reviewtag'; r.textContent='UNDER TRIBUNAL REVIEW'; row.appendChild(r);
+  } else if(f.mine){
+    const flip=document.createElement('button'); flip.className='fvote flip';
+    flip.textContent='FLIP (free · yours)';
+    flip.onclick=e=>{ e.stopPropagation(); if(!S.user){ openLogin('SIGN IN TO FLIP YOUR OWN RECORD.'); return; }
+      f.valence=f.valence==='evil'?'good':'evil'; f.flipcount++;
+      stamp('FLIPPED. HISTORY REMEMBERS.'); renderAll(); };
+    row.appendChild(flip);
+  } else {
+    [['toward GOOD'],['toward EVIL']].forEach(([lbl])=>{
+      const v=document.createElement('button'); v.className='fvote';
+      v.textContent=`₿1 ${lbl}`;
+      v.onclick=e=>{
+        e.stopPropagation();
+        if(!S.user){ openLogin('SIGN IN FIRST. THE BRAIN INSISTS. Votes go on the record.'); return; }
+        if(S.bc<1){ stamp('NO COIN. NO OPINION.'); return; }
+        S.bc--; $('#bc').textContent=S.bc; f.pressure++; bumpDoom(0.5);
+        if(f.pressure>=3){ f.review=true; stamp('TRIBUNAL SUMMONED'); }
+        renderAll(); buzz(10);
+      };
+      row.appendChild(v);
+    });
+    const p=document.createElement('span'); p.className='pdots';
+    p.textContent='pressure '+'●'.repeat(f.pressure)+'○'.repeat(Math.max(0,3-f.pressure));
+    row.appendChild(p);
+  }
+  return row;
+}
+/* File page: compact recents, tap-through to the book */
+function renderFilings(){
+  const wrap=$('#filings'); wrap.innerHTML='';
+  REG.slice(0,3).forEach(f=>{
+    const d=document.createElement('div'); d.className='filing'; d.style.cursor='pointer';
+    d.innerHTML=`<span class="vtag ${f.valence}">${f.valence.toUpperCase()}</span><b>${f.title}</b>`+
+      `<div class="fliplog">tap to open in the Case Book</div>`;
+    d.onclick=()=>{ switchView('cases'); openCase(f.id); };
+    wrap.appendChild(d);
+  });
+}
+/* The Case Book */
+function caseMatches(f){
+  if(S.caseFilter==='review'&&!f.review) return false;
+  if((S.caseFilter==='evil'||S.caseFilter==='good')&&f.valence!==S.caseFilter) return false;
+  if(S.caseQuery){
+    const hay=(f.title+' '+(f.desc||'')+' '+f.triples.map(t=>`${t.subject} ${t.predicate} ${t.object}`).join(' ')).toLowerCase();
+    if(!hay.includes(S.caseQuery)) return false;
+  }
+  return true;
+}
+function renderCaseBook(){
+  const list=$('#caselist'); list.innerHTML='';
+  const hits=REG.filter(caseMatches).sort((a,b)=>(b.up-a.up)||(b.id-a.id));
+  if(S.caseQuery && /\b(7|seven|seventh)\b/.test(S.caseQuery) && !hits.length){
+    $('#casecount').textContent='SECTION 7 REDACTED BY ORDER OF THE TRIBUNAL';
+    const d=document.createElement('div'); d.className='casecard';
+    d.style.cursor='default';
+    d.innerHTML='<span class="vtag evil">SEALED</span><b>████████ ███ ███████</b><div class="snippet">The Tribunal has no further comment. The Tribunal is fine.</div>';
+    list.appendChild(d); return;
+  }
+  $('#casecount').textContent=`${hits.length} of ${REG.length} cases on record · hottest first`;
+  hits.slice(0,S.casePage*PAGE).forEach(f=>{
+    const d=document.createElement('div'); d.className='casecard';
+    const snippet=(f.desc||f.triples.map(t=>`${t.subject} ${t.predicate} ${t.object}`).join(' · ')).slice(0,90);
+    d.innerHTML=`<span class="vtag ${f.valence}">${f.valence.toUpperCase()}</span><b>${f.title}</b>`+
+      `<div class="snippet">${snippet}${snippet.length>=90?'…':''}</div>`+
+      `<div class="cmeta"><span>CASE EB-${String(f.id).padStart(3,'0')}</span>`+
+      `<span>${f.triples.length} relationship${f.triples.length===1?'':'s'}</span>`+
+      (f.flipcount?`<span>flipped ${f.flipcount}x</span>`:'')+
+      (f.review?`<span style="color:var(--crayon)">REVIEW</span>`:'')+`</div>`;
+    const up=document.createElement('button');
+    up.className='upbtn'+(S.upvoted.has(f.id)?' did':'');
+    up.textContent=`▲ ${f.up}`;
+    up.style.position='absolute'; up.style.bottom='8px'; up.style.right='8px';
+    up.onclick=e=>{ e.stopPropagation();
+      if(!S.user){ openLogin('SIGN IN TO UPVOTE. Curiosity is free to read, not to record.'); return; }
+      if(S.upvoted.has(f.id)){ S.upvoted.delete(f.id); f.up--; }
+      else { S.upvoted.add(f.id); f.up++; buzz(6); }
+      renderCaseBook(); };
+    d.appendChild(up);
+    d.onclick=()=>openCase(f.id);
+    list.appendChild(d);
+  });
+  if(hits.length>S.casePage*PAGE){
+    const more=document.createElement('button'); more.id='loadmore';
+    more.textContent=`LOAD MORE (${hits.length-S.casePage*PAGE} remain in the record)`;
+    more.onclick=()=>{ S.casePage++; renderCaseBook(); };
+    list.appendChild(more);
+  }
+}
+function openCase(id){
+  const f=REG.find(x=>x.id===id); if(!f) return;
+  S.openCaseId=id;
+  $('#caseshome').style.display='none';
+  const det=$('#casedetail'); det.style.display='block'; det.innerHTML='';
+  const c=document.createElement('div'); c.className='dcase';
+  c.innerHTML=`<span class="dstamp ${f.valence}">${f.valence.toUpperCase()}</span>`+
+    `<div class="dtitle">${f.title}</div>`+
+    `<div style="font-family:var(--mono);font-size:10px;color:var(--pencil)">CASE EB-${String(f.id).padStart(3,'0')}</div>`+
+    (f.desc?`<div class="dsec">The idea</div><div style="font-size:14px;line-height:1.55">${f.desc}</div>`:'');
+  if(f.triples.length){
+    const sec=document.createElement('div'); sec.className='dsec'; sec.textContent='Relationships';
+    c.appendChild(sec);
+    f.triples.forEach(t=>{
+      const r=document.createElement('div'); r.className='drel';
+      r.innerHTML=`<b>${t.subject}</b> ${t.predicate} <b>${t.object}</b>`+(t.qual?` <small style="color:var(--pencil)">(${t.qual})</small>`:'');
+      c.appendChild(r);
+    });
+  }
+  if(f.flipcount){
+    const fl=document.createElement('div'); fl.className='fliplog';
+    fl.style.marginTop='8px'; fl.textContent=`flipped ${f.flipcount}x · history remembers`;
+    c.appendChild(fl);
+  }
+  const sec2=document.createElement('div'); sec2.className='dsec'; sec2.textContent='The record';
+  c.appendChild(sec2);
+  c.appendChild(buildActions(f));
+  det.appendChild(c);
+  const row=document.createElement('div'); row.className='caserow';
+  const work=document.createElement('button'); work.className='choice';
+  work.innerHTML='WORK THE CASE →<small>build it in career mode</small>';
+  work.onclick=()=>workCase(f);
+  const back=document.createElement('button'); back.className='choice'; back.textContent='← BACK TO THE BOOK';
+  back.onclick=closeCase;
+  row.append(work,back); det.appendChild(row);
+}
+function closeCase(){
+  S.openCaseId=null;
+  $('#casedetail').style.display='none';
+  $('#caseshome').style.display='block';
+  renderCaseBook();
+}
+function workCase(f){
+  const t=f.triples[0]||{subject:'Your team',predicate:'investigates',object:f.title};
+  S.ticket={subject:t.subject,predicate:t.predicate,object:t.object,tier:'CASE'}; S.beat=0;
+  $('#ticketbody').innerHTML=`Work the case: <b>${f.title}</b>. The Brain wants it real by Friday.`;
+  $('#ticket .tno').textContent=`CASE EB-${String(f.id).padStart(3,'0')}`;
+  $('#storyfeed').innerHTML=''; $('#payout').style.display='none';
+  switchView('career'); nextBeat(null);
+}
+/* Case Book controls */
+$('#newcase').onclick=()=>switchView('file');
+$('#casesearch').addEventListener('input',e=>{ S.caseQuery=e.target.value.trim().toLowerCase(); S.casePage=1; renderCaseBook(); });
+document.querySelectorAll('.fchip').forEach(b=>b.onclick=()=>{
+  document.querySelectorAll('.fchip').forEach(x=>x.classList.remove('on'));
+  b.classList.add('on'); S.caseFilter=b.dataset.f; S.casePage=1; renderCaseBook();
+});
+/* Triple box: a random fact from the record */
+function rollTriple(){
+  const all=REG.flatMap(f=>f.triples.map(t=>({t,f})));
+  if(!all.length) return;
+  const pick=all[Math.floor(Math.random()*all.length)];
+  const el=$('#tripletext');
+  el.innerHTML=`<b>${pick.t.subject}</b> ${pick.t.predicate} <b>${pick.t.object}</b>`;
+  el.onclick=()=>{ openCase(pick.f.id); };
+}
+$('#reroll').onclick=()=>{ rollTriple(); buzz(5); };
+
+/* Seed cases: the record never opens empty */
+[
+ {title:'AuntNetwork', desc:'Insurance adjusters sentiment-score funeral guests to price grief riders in real time.', triples:[{subject:'Insurance adjusters',predicate:'sentiment-score',object:'funeral guests'}], valence:'evil', mine:false},
+ {title:'MirrorCoach', desc:'Gym mirrors emotionally profile you mid-rep and adjust the lighting until you agree to a membership tier. Flipped after the lighting turned out to help two people.', triples:[{subject:'Gym mirrors',predicate:'emotionally profile',object:'unpaid interns'}], valence:'good', flipcount:2, mine:false},
+ {title:'GriefSync™', desc:'Auto-negotiates with your ex on anniversaries. Currently before the Tribunal.', triples:[{subject:'Dating apps',predicate:'auto-negotiate with',object:'your ex'}], valence:'evil', pressure:3, review:true, mine:false},
+ {title:'HOA Sentinel', desc:'Fleet of drones that gamifies bylaw enforcement. Points double during holidays.', triples:[{subject:'A fleet of drones',predicate:'gamify',object:'the neighborhood watch'},{subject:'Your HOA',predicate:'subscription-lock',object:'houseplants'}], valence:'evil', mine:false},
+ {title:'Wash Wall', desc:'One-time-use washing facility preserving dignity for people away from home. Filed GOOD on day one. Stayed GOOD. Some do.', triples:[{subject:'Middle managers',predicate:'upsell',object:'city council'}], valence:'good', mine:false},
+ {title:'FridgeRat', desc:'Smart fridges report book club attendance to an undisclosed third party. The third party is also a fridge.', triples:[{subject:'Smart fridges',predicate:'rat on',object:'book clubs'}], valence:'evil', qual:'', mine:false},
+ {title:'LandlordLens', desc:'Predictive eviction, two weeks ahead of the missed payment. Marketed as courtesy.', triples:[{subject:'Landlords',predicate:'predictively evict',object:'grandmothers',qual:'14 days early'}], valence:'evil', pressure:1, mine:false},
+ {title:'DateLedger™', desc:'A permanent public record of everyone your date has ever dated. The founding entry.', triples:[{subject:'Dating apps',predicate:'deanonymize',object:'first dates'}], valence:'evil', mine:false}
+].forEach(fileToRegistry);
+[41,31,12,9,28,17,23,38].forEach((n,i)=>{ if(REG[i]) REG[i].up=n; });
+renderCaseBook(); rollTriple();
+renderPool();
+// FILE IT from the Machine: prefill slots with the current spin
+$('#filebtn').onclick=()=>{
+  const [s,p,o]=reels.map(r=>r.current());
+  placeInSlot('subject',s.t); placeInSlot('predicate',p.t); placeInSlot('object',o.t);
+  switchView('file');
+};
+
+/* ============ STORE: Vending Machine 7 ============ */
+const CATALOG=[
+  {id:'cert', name:'Certificate of Adequacy', price:3, desc:'Suitable for framing. States that you are adequate. The Brain has signed it in pencil.'},
+  {id:'gary', name:'Voicemail from Gary', price:5, desc:'Gary reads your product name aloud and sighs. 22 seconds. Non-refundable, like Gary.'},
+  {id:'card', name:'Hand-Lettered Card', price:8, desc:'Red crayon on the back. Contents classified until delivery. Delivery not guaranteed.'},
+  {id:'reel', name:'Decorative Fourth Reel', price:12, desc:'Attaches to the Machine. Does nothing. Spins beautifully. A metaphor.'},
+  {id:'title', name:'Executive Title Upgrade', price:15, desc:'Your wallet now says SENIOR BRAINIAC. Compensation unchanged. Prestige incalculable.'},
+  {id:'approval', name:"The Brain's Approval", price:99, desc:'Out of stock. Has always been out of stock. Restock date: after the singularity.', soldout:true}
+];
+// Real goods. Cash via hosted checkout, dropshipped. Coins discount, never buy.
+// Coins are NEVER purchasable with cash. That direction stays closed.
+const MERCH=[
+  {id:'mug', name:'Evil Brain Mug', usd:18, coinoff:{cost:5, save:4}, desc:'11oz. "THIRD WORST IN AI" in the house hand. Dishwasher tolerant. Microwave indifferent.'},
+  {id:'tee', name:'Use Case Arms Race Tee', usd:26, coinoff:{cost:8, save:6}, desc:'The Machine, three reels, screen printed. Sizes S through Brain.'},
+  {id:'poster', name:'Registry Poster (Founding Entries)', usd:22, coinoff:{cost:6, save:5}, desc:'DateLedger\u2122 and eleven other filings, framed like citations. Because they are.'}
+];
+const OWNED=new Set();
+function renderStore(){
+  const v=$('#vending'); v.innerHTML='';
+  const head1=document.createElement('div'); head1.className='storehead'; head1.style.gridColumn='1/-1';
+  head1.textContent='Worthless · coins only'; v.appendChild(head1);
+  CATALOG.forEach(it=>{
+    const d=document.createElement('div'); d.className='item'+(OWNED.has(it.id)?' owned':'');
+    d.innerHTML=`<div class="iname">${it.name}</div><div class="idesc">${it.desc}</div>`;
+    const b=document.createElement('button'); b.className='buy';
+    if(OWNED.has(it.id)){ const o=document.createElement('div'); o.className='ownedtag'; o.textContent='DISPENSED'; d.appendChild(o); }
+    else{
+      b.textContent=it.soldout?'OUT OF STOCK':`₿ ${it.price}`;
+      b.disabled=it.soldout || S.bc<it.price;
+      b.onclick=()=>requireAuth(()=>{
+        if(S.bc<it.price) return;
+        S.bc-=it.price; $('#bc').textContent=S.bc; OWNED.add(it.id);
+        if(it.id==='title'){ $('#wallet').innerHTML='SR. BRAINIAC ₿ <b id="bc">'+S.bc+'</b>';
+          document.querySelectorAll('.youtitle').forEach(x=>x.textContent='SENIOR BRAINIAC'); }
+        if(it.id==='gary') addBroadcast('VOICEMAIL · 22 SECONDS','GARY: "hey. it\'s gary. your product is... [nineteen seconds of sighing] ...nice. ok bye."');
+        stamp('DISPENSED'); renderStore();
+      });
+      d.appendChild(b);
+    }
+    v.appendChild(d);
+  });
+  const head2=document.createElement('div'); head2.className='storehead'; head2.style.gridColumn='1/-1';
+  head2.textContent='Real goods · cash, coins discount'; v.appendChild(head2);
+  MERCH.forEach(it=>{
+    const d=document.createElement('div'); d.className='item';
+    const canOff=S.bc>=it.coinoff.cost;
+    d.innerHTML=`<div class="iname">${it.name}</div><div class="idesc">${it.desc}</div>`+
+      `<div class="cash">$${it.usd} · or ₿${it.coinoff.cost} + <b>$${it.usd-it.coinoff.save}</b></div>`;
+    const b=document.createElement('button'); b.className='buy'; b.textContent='CHECKOUT';
+    b.onclick=async()=>{
+      const useCoins=canOff && confirm(`Spend ₿${it.coinoff.cost} to save $${it.coinoff.save}? Cancel pays full price.`);
+      if(DEMO){ stamp('CHECKOUT SLEEPS UNTIL DEPLOY'); return; }
+      // production: hosted checkout only. This site never sees card data.
+      const r=await fetch(`${CONFIG.SUPABASE_URL}/functions/v1/create-checkout`,{
+        method:'POST',
+        headers:{'Content-Type':'application/json','Authorization':`Bearer ${CONFIG.SUPABASE_ANON_KEY}`},
+        body:JSON.stringify({item_id:it.id, use_coins:useCoins})
+      }).then(x=>x.json()).catch(()=>null);
+      if(r?.checkout_url) location.href=r.checkout_url;
+      else stamp('CHECKOUT UNAVAILABLE');
+    };
+    d.appendChild(b);
+    v.appendChild(d);
+  });
+}
+renderStore();
+
+/* ============ NAV ============ */
+function switchView(v){
+  document.querySelectorAll('.view').forEach(x=>x.classList.remove('active'));
+  document.querySelectorAll('nav button').forEach(x=>x.classList.remove('active'));
+  $('#view-'+v).classList.add('active');
+  const nb=document.querySelector(`nav button[data-v="${v}"]`)||document.querySelector('nav button[data-v="cases"]');
+  nb.classList.add('active');
+  if(v==='store') renderStore();
+  if(v==='cases') renderCaseBook();
+  if(v==='career'){ fillStandup(); renderCareerWidgets(); }
+}
+function fillStandup(){
+  const overnight=HALLWAY[Math.floor(Math.random()*HALLWAY.length)];
+  $('#standup').innerHTML=`<b>MORNING STANDUP</b> · ${REG.length} cases on record · `+
+    `33 Brainiacs across 7 branches · you shipped ${S.shipped} this session · `+
+    `${REG.filter(f=>f.review).length} before the Tribunal<br>`+
+    `<span style="color:var(--pencil)">overnight: ${overnight}</span>`+
+    `<div class="factions" style="margin-top:6px"><button class="fvote" id="sparbtn">SPAR WITH THE BRAIN</button><button class="fvote" id="revbtn">REQUEST REVIEW</button></div>`;
+  $('#sparbtn').onclick=()=>requireAuth(()=>startBattle());
+  $('#revbtn').onclick=()=>requireAuth(()=>{ sendReview(); stamp('REVIEW DISPATCHED'); });
+  renderSheet();
+}
+document.querySelectorAll('nav button').forEach(b=>b.onclick=()=>switchView(b.dataset.v));
+
+/* ---------- AUTH (demo: instant; production: Supabase magic link) ---------- */
+S.user=null; S.portfolio=[];
+function hashCode(s){ let h=0; for(const c of s) h=(h*31+c.charCodeAt(0))>>>0; return h; }
+function openLogin(msg){
+  if(msg) $('#loginmsg').textContent=msg;
+  $('#loginveil').style.display='flex'; $('#loginemail').focus();
+}
+function closeLogin(){ $('#loginveil').style.display='none'; }
+function wireLogin(){
+$('#logincancel').onclick=closeLogin;
+$('#loginsend').onclick=()=>{
+  const email=$('#loginemail').value.trim().toLowerCase();
+  if(!email.includes('@')){ stamp('THAT IS NOT AN EMAIL'); return; }
+  const admin=email.includes('brain');
+  S.user={ email, admin,
+    designation:'BRAINIAC OG-'+String(1000+hashCode(email)%9000) };
+  $('#authbtn').textContent=S.user.designation;
+  if(admin){ $('#adminchip').style.display='inline-block'; enableAdmin(); }
+  closeLogin(); buzz(15);
+  stamp(admin?'WELCOME. THE BRAIN KNOWS ITS OWN.':'EMPLOYMENT CONFIRMED');
+  renderCareerWidgets(); renderAll();
+};
+}
+wireLogin();
+$('#authbtn').onclick=()=>{
+  if(!S.user){ openLogin(); return; }
+  if(confirm('Sign out? Your record persists. Your session does not.')){
+    S.user=null; S.portfolio=[]; $('#authbtn').textContent='SIGN IN';
+    $('#adminchip').style.display='none'; renderCareerWidgets(); renderAll();
+  }
+};
+function requireAuth(fn){
+  if(S.user) return fn();
+  openLogin('SIGN IN FIRST. THE BRAIN INSISTS. Reading is free; acting is on the record.');
+}
+
+/* ---------- PORTFOLIO / LEADERBOARD / INBOX ---------- */
+const LB_SEED=[
+ {who:'BRAINIAC OG-0007', branch:'Brussels', infamy:14.2},
+ {who:'BRAINIAC OG-0113', branch:'Los Angeles', infamy:12.8},
+ {who:'BRAINIAC OG-0551', branch:'Quebec City', infamy:9.1},
+ {who:'BRAINIAC OG-0090', branch:'Chantilly', infamy:7.4},
+ {who:'BRAINIAC OG-0666', branch:'REDACTED', infamy:6.6}
+];
+function myInfamy(){ return S.portfolio.reduce((a,p)=>a+p.favor,0); }
+function renderPortfolio(){
+  const box=$('#slots'); if(!box) return; box.innerHTML='';
+  for(let i=0;i<6;i++){
+    const p=S.portfolio[i];
+    const d=document.createElement('div');
+    if(!p){ d.className='slotbox empty';
+      d.textContent=S.user?'EMPTY SLOT '+(i+1):'SIGN IN, THEN SHIP';
+    } else {
+      d.className='slotbox';
+      d.style.cursor='pointer';
+      d.innerHTML=`<b>${p.name}</b>${p.stage>1?' <span class="fav">S'+p.stage+'</span>':''}<br><span class="fav">${'★'.repeat(p.favor)}</span>`+
+        `<div class="yld">+${p.favor} card${p.favor>1?'s':''}/day · ${p.maintained?'maintained':'NEGLECTED (x0.5)'} · tap for card</div>`;
+      d.onclick=()=>openCard(p.triple,p.tier,p.serial,p.triple.subject,p);
+      const s=document.createElement('button'); s.className='sprint'; s.textContent='SPRINT';
+      s.onclick=e=>{ e.stopPropagation(); p.maintained=true; addXP('dilig',3); stamp('MAINTAINED. THE BRAIN NOTICES.'); renderPortfolio(); };
+      d.appendChild(s);
+    }
+    box.appendChild(d);
+  }
+}
+function renderLB(){
+  const box=$('#lb'); if(!box) return; box.innerHTML='';
+  const rows=[...LB_SEED];
+  if(S.user) rows.push({who:S.user.designation+' (YOU)', branch:'Ogden', infamy:myInfamy(), you:true});
+  rows.sort((a,b)=>b.infamy-a.infamy);
+  rows.forEach((r,i)=>{
+    const d=document.createElement('div'); d.className='lbrow'+(r.you?' you':'');
+    d.innerHTML=`<span>#${i+1} ${r.who}</span><span>${r.branch}</span><span>${r.infamy.toFixed(1)}</span>`;
+    box.appendChild(d);
+  });
+}
+function renderInbox(){
+  const box=$('#inbox'); if(!box) return; box.innerHTML='';
+  if(!S.user){ box.innerHTML='<div class="inmsg">Sign in to receive challenges. The Brain has been holding your mail.</div>'; return; }
+  const ch=document.createElement('div'); ch.className='inmsg';
+  ch.innerHTML='<b>CHALLENGE</b> · BRAINIAC OG-0113 contests <b>FridgeRat</b> · resolves at the nightly batch';
+  const row=document.createElement('div'); row.className='factions';
+  const live=document.createElement('button'); live.className='fvote'; live.textContent='ACCEPT LIVE';
+  live.onclick=()=>stamp('THE ROOM OPENS AT DEPLOY');
+  const auto=document.createElement('button'); auto.className='fvote'; auto.textContent='LET THE BRAIN DEFEND';
+  auto.onclick=()=>{ stamp('THE BRAIN ACCEPTS. NO ITEMS.'); ch.remove(); };
+  row.append(live,auto); ch.appendChild(row); box.appendChild(ch);
+  const tn=document.createElement('div'); tn.className='inmsg';
+  tn.innerHTML='<b>TRIBUNAL NOTICE</b> · Your vote on GriefSync™ is held pending ruling. Stakes settle at verdict. The Tribunal is fine.';
+  box.appendChild(tn);
+}
+/* ---------- EMPLOYEE SHEET: XP, levels (uncapped), sins, reviews ---------- */
+S.xp=0; S.est={prod:0,evil:0,dilig:0}; S.level=1;
+const SIN_OF={MONETIZE:'GLUTTONY',SURVEIL:'ENVY',GAMIFY:'SLOTH'};
+// GREED is not a sin. Greed belongs to all. That is the entire point.
+function dominantSin(){
+  const tally={};
+  S.portfolio.forEach(p=>{ const c=cardClass(p.triple.predicate); tally[c]=(tally[c]||0)+1; });
+  const top=Object.entries(tally).sort((a,b)=>b[1]-a[1])[0];
+  return top?SIN_OF[top[0]]:['PRIDE','WRATH','LUST'][hashCode(S.user?.email||'x')%3];
+}
+function computeTitle(){
+  const lvl=S.level;
+  let t=lvl>=7?('VP OF '+dominantSin()):lvl>=5?'SENIOR BRAINIAC':lvl>=3?'BRAINIAC II':'BRAINIAC I';
+  if(OWNED.has('title')&&lvl<7) t='SENIOR BRAINIAC';
+  document.querySelectorAll('.youtitle').forEach(x=>x.textContent=t);
+}
+function levelFor(xp){ return Math.floor(Math.sqrt(xp/10))+1; }
+function addXP(kind,amt){
+  S.xp+=amt;
+  if(kind==='prod')S.est.prod+=amt; if(kind==='evil')S.est.evil+=amt; if(kind==='dilig')S.est.dilig+=amt;
+  const nl=levelFor(S.xp);
+  if(nl>S.level){ S.level=nl; computeTitle();
+    stamp('LEVEL '+nl+'. CAREERS ONLY GO UP.');
+    sendReview();
+  }
+  renderSheet();
+}
+function sendReview(){
+  const verdicts=['ADEQUATE','ADEQUATE PLUS','CONCERNINGLY EFFECTIVE','THE BRAIN SMILED. ONCE.'];
+  const v=verdicts[Math.min(verdicts.length-1,Math.floor(S.level/3))];
+  const msg=`WEEKLY REVIEW · Level ${S.level}. Productivity ${S.est.prod}. Evil Intent ${S.est.evil}. Diligence ${S.est.dilig}. Global doom gap: ${(100-S.doomP/S.doomT*100).toFixed(2)}%. Rating: ${v}. Numbers only go up. So do you.`;
+  addBroadcast('REVIEW · THE BRAIN', msg);
+  const box=$('#inbox');
+  if(box&&S.user){ const d=document.createElement('div'); d.className='inmsg';
+    d.innerHTML='<b>WEEKLY REVIEW</b> · '+msg; box.prepend(d); }
+}
+function renderSheet(){
+  const el=$('#sheet'); if(!el) return;
+  const cur=S.level, next=cur*cur*10, prev=(cur-1)*(cur-1)*10;
+  const pct=Math.min(100,((S.xp-prev)/(next-prev))*100);
+  el.innerHTML=`<div style="display:flex;justify-content:space-between"><b>LEVEL ${cur}</b><span style="font-family:var(--mono);font-size:10px;color:var(--pencil)">${S.xp} XP · no cap · never down</span></div>
+  <div class="mbar" style="margin:4px 0"><i style="width:${pct}%"></i></div>
+  <div style="display:flex;gap:12px;font-family:var(--mono);font-size:11px">
+    <span>PROD <b>${S.est.prod}</b></span><span>EVIL <b>${S.est.evil}</b></span><span>DILIG <b>${S.est.dilig}</b></span>
+  </div>`;
+}
+
+/* ---------- CARD RENDERER (client mirror of _shared/card-svg.ts) ---------- */
+const CLS_MAP={'deanonymize':'SURVEIL','rat on':'SURVEIL','emotionally profile':'SURVEIL','sentiment-score':'SURVEIL','predictively evict':'SURVEIL','monetize':'MONETIZE','subscription-lock':'MONETIZE','upsell':'MONETIZE','auto-negotiate with':'MONETIZE','gamify':'GAMIFY','a/b test':'GAMIFY','biometrically greet':'GAMIFY'};
+function cardClass(p){ const k=p.toLowerCase(); return CLS_MAP[k]||['SURVEIL','MONETIZE','GAMIFY'][hashCode(k)%3]; }
+function cardStats(t,grade){
+  const gw={COMMON:1,UNCOMMON:3,LEGENDARY:10,CASE:1,CLASSIFIED:10}[grade]||1;
+  const w=(VOCAB.predicate.find(x=>x.t===t.predicate)||{w:1}).w;
+  const qn=t.qual?parseFloat((t.qual.match(/[\d.]+/)||['0'])[0]):0;
+  return { cls:cardClass(t.predicate),
+    atk:2+w*2+Math.floor(gw/5),
+    def:2+hashCode(t.subject.toLowerCase())%4,
+    spd:1+Math.min(5,qn>0?Math.floor(Math.log2(1+qn)):0)+hashCode(t.object.toLowerCase())%2 };
+}
+function wrapText(s,max){ const out=[]; let l='';
+  s.split(' ').forEach(w=>{ if((l+' '+w).trim().length>max){out.push(l.trim());l=w;} else l+=' '+w; });
+  if(l.trim())out.push(l.trim()); return out.slice(0,4); }
+function cardSVG(t,grade,serial,title){
+  const s=cardStats(t,grade);
+  const gsty={COMMON:['COMMON','var(--pencil)',''],UNCOMMON:['UNCOMMON','var(--ink)',''],
+    LEGENDARY:['LEGENDARY','var(--crayon)',''],CASE:['CASE FILE','var(--ink)',''],
+    CLASSIFIED:['CLASSIFIED','var(--crayon)','IT IS GARY']}[grade]||['COMMON','var(--pencil)',''];
+  const lines=wrapText(`${t.subject} that ${t.predicate} ${t.object}`,26);
+  const icon=s.cls==='SURVEIL'
+    ?'<ellipse cx="204" cy="33" rx="14" ry="8" fill="none" stroke="var(--ink)" stroke-width="2"/><circle cx="204" cy="33" r="3.5" fill="var(--crayon)"/>'
+    :s.cls==='MONETIZE'
+    ?'<circle cx="204" cy="33" r="10" fill="none" stroke="var(--ink)" stroke-width="2"/><text x="204" y="37" text-anchor="middle" font-family="monospace" font-size="12" fill="var(--ink)">₿</text>'
+    :'<rect x="195" y="24" width="18" height="18" fill="none" stroke="var(--ink)" stroke-width="2" transform="rotate(8 204 33)"/><circle cx="201" cy="30" r="1.8" fill="var(--ink)"/><circle cx="208" cy="36" r="1.8" fill="var(--ink)"/>';
+  return `<svg viewBox="0 0 240 336" style="width:min(78vw,260px);display:block" font-family="Georgia,serif">
+  <rect width="240" height="336" fill="var(--paper)"/>
+  <rect x="6" y="6" width="228" height="324" fill="none" stroke="var(--ink)" stroke-width="3"/>
+  <rect x="11" y="11" width="218" height="314" fill="none" stroke="var(--ink)" stroke-width="1"/>
+  <rect x="16" y="16" width="208" height="34" fill="var(--manila)" stroke="var(--ink)" stroke-width="2"/>
+  <text x="24" y="38" font-size="13" font-weight="bold" fill="var(--ink)">${(title||t.subject).toUpperCase().slice(0,22)}</text>
+  ${icon}
+  <text x="24" y="66" font-family="monospace" font-size="8" fill="var(--pencil)" letter-spacing="2">${s.cls} · ${serial}</text>
+  <rect x="16" y="76" width="208" height="96" fill="var(--paper-dark)" stroke="var(--ink)" stroke-width="2"/>
+  ${lines.map((l,i)=>`<text x="120" y="${100+i*18}" text-anchor="middle" font-size="12" fill="var(--ink)">${l.replace(/&/g,'&amp;').replace(/</g,'&lt;')}</text>`).join('')}
+  ${t.qual?`<text x="120" y="164" text-anchor="middle" font-family="monospace" font-size="9" fill="var(--pencil)">(${t.qual})</text>`:''}
+  <g font-family="monospace" font-size="11" fill="var(--ink)">
+    <rect x="16" y="184" width="66" height="30" fill="none" stroke="var(--ink)" stroke-width="2"/>
+    <text x="49" y="197" text-anchor="middle" font-size="8" fill="var(--pencil)">ATK</text>
+    <text x="49" y="209" text-anchor="middle" font-weight="bold">${s.atk}</text>
+    <rect x="87" y="184" width="66" height="30" fill="none" stroke="var(--ink)" stroke-width="2"/>
+    <text x="120" y="197" text-anchor="middle" font-size="8" fill="var(--pencil)">DEF</text>
+    <text x="120" y="209" text-anchor="middle" font-weight="bold">${s.def}</text>
+    <rect x="158" y="184" width="66" height="30" fill="none" stroke="var(--ink)" stroke-width="2"/>
+    <text x="191" y="197" text-anchor="middle" font-size="8" fill="var(--pencil)">SPD</text>
+    <text x="191" y="209" text-anchor="middle" font-weight="bold">${s.spd}</text>
+  </g>
+  <text x="120" y="246" text-anchor="middle" font-size="16" font-weight="bold" fill="${gsty[1]}" letter-spacing="3">${gsty[0]}</text>
+  ${gsty[2]?`<text x="120" y="262" text-anchor="middle" font-family="monospace" font-size="8" fill="var(--crayon)">${gsty[2]}</text>`:''}
+  <line x1="24" y1="286" x2="216" y2="286" stroke="var(--pencil)" stroke-width="1" stroke-dasharray="3 3"/>
+  <text x="120" y="306" text-anchor="middle" font-family="monospace" font-size="8" fill="var(--pencil)">EVIL BRAIN LABS · THIRD WORST IN AI</text>
+  <text x="120" y="318" text-anchor="middle" font-family="monospace" font-size="7" fill="var(--pencil)">this card cannot end the world · probably</text>
+  </svg>`;
+}
+function evolveProduct(p, close){
+  if(S.bc<3){ stamp('EVOLUTION COSTS 3. THE BRAIN DOES NOT HAGGLE.'); return; }
+  if((p.stage||1)>=3){ stamp('ECOSYSTEM STAGE. IT EVOLVES NO FURTHER. IT EVOLVES US.'); return; }
+  S.bc-=3; $('#bc').textContent=S.bc;
+  const extra={ subject:p.triple.subject,
+    predicate:VOCAB.predicate[weightedIndex(VOCAB.predicate)].t,
+    object:VOCAB.object[weightedIndex(VOCAB.object)].t };
+  p.extras=p.extras||[]; p.extras.push(extra);
+  p.stage=(p.stage||1)+1; p.favor=Math.min(3,p.favor+1);
+  addXP('evil',6); bumpDoom(1.5);
+  stamp('EVOLVED: STAGE '+p.stage+(p.stage===3?' · IT BEGINS TO TAKE OVER':''));
+  renderPortfolio(); renderLB(); close();
+}
+function openCard(t,grade,serial,title,product){
+  const v=$('#loginveil'); // reuse the veil chrome
+  const hold=v.innerHTML;
+  v.style.display='flex';
+  const extras=product?.extras?.map(x=>`<div style="font-family:var(--mono);font-size:10px;color:var(--pencil)">+ ${x.subject} ${x.predicate} ${x.object}</div>`).join('')||'';
+  const stagePips=product?'<div style="font-family:var(--hand);color:var(--crayon);font-size:12px">'+['MVP','PLATFORM','ECOSYSTEM'][((product.stage||1)-1)]+' '+'●'.repeat(product.stage||1)+'○'.repeat(3-(product.stage||1))+'</div>':'';
+  v.innerHTML=`<div class="memo" style="max-width:300px;text-align:center">
+    ${cardSVG(t,grade,serial,title)}
+    ${stagePips}${extras}
+    ${product?'<button class="rb" style="width:100%;margin-top:8px" id="cardevolve">EVOLVE (₿3 · adds a relationship)</button>':''}
+    <button class="rb" style="width:100%;margin-top:6px" id="cardclose">CLOSE</button></div>`;
+  const close=()=>{ v.style.display='none'; v.innerHTML=hold; wireLogin(); };
+  if(product) $('#cardevolve').onclick=()=>evolveProduct(product, close);
+  $('#cardclose').onclick=close;
+}
+
+/* ---------- PvE BATTLE: the board, not the feed ---------- */
+function rngJS(seedStr){ let a=hashCode(seedStr)||1;
+  return ()=>{ a|=0; a=(a+0x6D2B79F5)|0; let t=Math.imul(a^(a>>>15),1|a);
+    t=(t+Math.imul(t^(t>>>7),61|t))^t; return ((t^(t>>>14))>>>0)/4294967296; }; }
+let battleCount=0;
+function randomOpponent(){
+  const t={ subject:VOCAB.subject[weightedIndex(VOCAB.subject)].t,
+    predicate:VOCAB.predicate[weightedIndex(VOCAB.predicate)].t,
+    object:VOCAB.object[weightedIndex(VOCAB.object)].t };
+  const r=Math.random(), tier=r<0.08?'LEGENDARY':r<0.30?'UNCOMMON':'COMMON';
+  return {triple:t,tier,serial:'GI-'+String(100+Math.floor(Math.random()*900)),
+    name:t.subject};
+}
+function startBattle(){
+  if(!S.portfolio.length){ stamp('SHIP SOMETHING FIRST. THE BRAIN AWAITS.'); return; }
+  const mine=S.portfolio[0], foe=randomOpponent();
+  const seed='pve-'+(++battleCount)+'-'+S.xp;
+  const v=$('#loginveil'), hold=v.innerHTML; v.style.display='flex';
+  const itemOpts=S.items.map((it,i)=>`<option value="${i}">${it.name} (${it.cls})</option>`).join('');
+  v.innerHTML=`<div class="memo" style="max-width:340px">
+    <div class="dsec" style="margin:0 0 6px">Sparring room · GI Intelligence officiates</div>
+    <div style="display:flex;gap:6px;justify-content:center">
+      <div style="transform:scale(.62);transform-origin:top">${cardSVG(mine.triple,mine.tier,mine.serial,'YOU: '+mine.triple.subject)}</div>
+      <div style="transform:scale(.62);transform-origin:top">${cardSVG(foe.triple,foe.tier,foe.serial,'THE BRAIN')}</div>
+    </div>
+    <div style="margin-top:-96px">
+    ${S.items.length?`<select class="fld" id="wager"><option value="-1">Wager no item</option>${itemOpts}</select><p class="hint" style="margin:-4px 0 6px">Wagered items are consumed win or lose.</p>`:''}
+    <div id="brounds" style="font-family:var(--mono);font-size:11px;min-height:52px"></div>
+    <button class="rb" id="fightbtn" style="width:100%">FIGHT</button>
+    <button class="rb" id="fleebtn" style="width:100%;margin-top:6px">WITHDRAW</button>
+    </div></div>`;
+  const done=()=>{ v.style.display='none'; v.innerHTML=hold; wireLogin(); renderInventory(); };
+  $('#fleebtn').onclick=done;
+  $('#fightbtn').onclick=async()=>{
+    $('#fightbtn').disabled=true;
+    const wi=$('#wager')?parseInt($('#wager').value):-1;
+    let bonus=0;
+    if(wi>=0){ const it=S.items[wi]; bonus=(it.fx.match(/\+(\d+)/)||[0,0])[1]*1;
+      S.items.splice(wi,1); }
+    const r=rngJS(seed);
+    const a=cardStats(mine.triple,mine.tier), b=cardStats(foe.triple,foe.tier);
+    const BEATS={SURVEIL:'MONETIZE',MONETIZE:'GAMIFY',GAMIFY:'SURVEIL'};
+    let wa=0,wb=0; const lines=[];
+    for(let n=1;n<=3&&wa<2&&wb<2;n++){
+      const as=a.atk+bonus+(BEATS[a.cls]===b.cls?2:0)-b.def+Math.floor(r()*3);
+      const bs=b.atk+(BEATS[b.cls]===a.cls?2:0)-a.def+Math.floor(r()*3);
+      let w = as!==bs ? (as>bs?'YOU':'BRAIN') : (a.spd!==b.spd?(a.spd>b.spd?'YOU':'BRAIN'):'YOU');
+      if(w==='YOU')wa++;else wb++;
+      lines.push(`R${n}: you ${as} vs ${bs} · ${w}`);
+      $('#brounds').innerHTML=lines.join('<br>');
+      await new Promise(x=>setTimeout(x,reduceMotion?0:650)); buzz(8);
+    }
+    const won=wa>wb;
+    lines.push(won?'VERDICT: YOU. GI Intelligence nods once.':'VERDICT: THE BRAIN. Naturally.');
+    $('#brounds').innerHTML=lines.join('<br>');
+    bumpDoom(2);
+    if(won){ addXP('evil',12); if(Math.random()<0.6) grantItem();
+      stamp('VICTORY. LOGGED.'); }
+    else { addXP('prod',4); stamp('REASSIGNED TO VICTORY PREPARATION'); }
+    $('#fightbtn').textContent='CLOSE'; $('#fightbtn').disabled=false;
+    $('#fightbtn').onclick=done;
+  };
+}
+
+/* ---------- ITEMS ---------- */
+S.items=[];
+const ITEM_POOL=[
+ {name:'Compliance Umbrella', cls:'DEFENSIVE', tier:'ordinary', fx:'+2 DEF vs SURVEIL, persists the match'},
+ {name:'Quarterly Sword', cls:'WEAPON', tier:'notorious', fx:'+3 ATK, consumed on use'},
+ {name:"Gary's Spare Key", cls:'SPECIAL', tier:'ordinary', fx:'reroll one round, consumed'},
+ {name:'Fifth Finger Discount', cls:'STEAL', tier:'epic', fx:'take one pot item · AUTO-STAKES ITSELF'},
+ {name:'Laminated Concern', cls:'DEFENSIVE', tier:'ordinary', fx:'negate one SPECIAL, persists'},
+ {name:'Mascot With Too Many Eyes', cls:'WEAPON', tier:'epic', fx:'+5 ATK vs GAMIFY, consumed, unsettling'}
+];
+function grantItem(){
+  const it={...ITEM_POOL[Math.floor(Math.random()*ITEM_POOL.length)]};
+  S.items.push(it); renderInventory();
+  stamp('ITEM ACQUIRED: '+it.name.toUpperCase());
+}
+function renderInventory(){
+  const g=$('#invgrid'); if(!g) return; g.innerHTML='';
+  if(!S.items.length){
+    g.innerHTML='<div class="itembox" style="grid-column:1/-1;color:var(--pencil)">No items. Interludes and Braincaches drop them. The vending machine does not. Cash never will.</div>';
+    return;
+  }
+  S.items.forEach(it=>{
+    const d=document.createElement('div'); d.className='itembox';
+    d.innerHTML=`<div class="icls">${it.cls} · <b>${it.tier.toUpperCase()}</b></div><b>${it.name}</b><div class="ifx">${it.fx}</div>`;
+    g.appendChild(d);
+  });
+}
+
+/* ---------- FRIEND KEYS (presence-normative: short TTL, single use) ---------- */
+S.friends=[]; S.chosenName='';
+const CHOSEN_POOL=['Mallory of Accounts','The Ogden Whisper','Deputy Fridge','Susan (Derogatory)','Herblay Prime','Gary (No Relation)'];
+function myKey(){
+  const seed=S.user?hashCode(S.user.email+Math.floor(Date.now()/600000)):0; // rotates each 10 min
+  return 'EB-'+String(seed%10000).padStart(4,'0')+'-'+'KXZQVW'[seed%6]+'ABCDEFGH'[(seed>>3)%8];
+}
+function ebGlyph(code){
+  // Deterministic 21x21 glyph with QR-style finders. Deploy swaps in a
+  // real QR (qrcodegen) + BarcodeDetector scan. This one is decor.
+  const h=hashCode(code); let cells='';
+  const finder=(x,y)=>{for(let i=0;i<7;i++)for(let j=0;j<7;j++){
+    const edge=i===0||i===6||j===0||j===6, core=i>1&&i<5&&j>1&&j<5;
+    if(edge||core) cells+=`<rect x="${x+j}" y="${y+i}" width="1" height="1"/>`;}};
+  finder(0,0); finder(14,0); finder(0,14);
+  for(let y=0;y<21;y++)for(let x=0;x<21;x++){
+    if((x<8&&y<8)||(x>12&&y<8)||(x<8&&y>12)) continue;
+    if(((h>>((x*7+y*3)%29))^(x*y+h))&3) continue;
+    cells+=`<rect x="${x}" y="${y}" width="1" height="1"/>`;
+  }
+  return `<svg viewBox="0 0 21 21" fill="var(--ink)" shape-rendering="crispEdges">${cells}</svg>`;
+}
+function renderFriends(){
+  const box=$('#friendbox'); if(!box) return; box.innerHTML='';
+  if(!S.user){ box.innerHTML='<div class="itembox" style="color:var(--pencil)">Sign in to hold a key.</div>'; return; }
+  const name=document.createElement('div');
+  name.innerHTML='<div class="dsec" style="margin:6px 0 2px">Your chosen name · revealed only on key exchange</div>';
+  const ni=document.createElement('input'); ni.className='fld'; ni.maxLength=24;
+  ni.placeholder='No legal names. There is no field for one.'; ni.value=S.chosenName;
+  ni.onchange=()=>{ S.chosenName=ni.value.trim(); stamp('NAME SEALED'); };
+  name.appendChild(ni); box.appendChild(name);
+  const kc=document.createElement('div'); kc.className='keycard';
+  kc.innerHTML=`<div class="khint">SHOW THIS IN PERSON</div><div class="kcode">${myKey()}</div>${ebGlyph(myKey())}<div class="khint">rotates every 10 minutes · single use at deploy · screenshots go stale</div>`;
+  box.appendChild(kc);
+  const redeem=document.createElement('div');
+  redeem.innerHTML='<div class="dsec" style="margin:10px 0 2px">Enter a key you were shown</div>';
+  const ri=document.createElement('input'); ri.className='fld'; ri.placeholder='EB-0000-XX';
+  const rb=document.createElement('button'); rb.className='rb'; rb.style.width='100%'; rb.textContent='EXCHANGE KEYS';
+  rb.onclick=()=>{
+    const code=ri.value.trim().toUpperCase();
+    if(!/^EB-\d{4}-[A-Z]{2}$/.test(code)){ stamp('THAT IS NOT A KEY'); return; }
+    const h=hashCode(code);
+    S.friends.push({ des:'BRAINIAC OG-'+String(1000+h%9000),
+      name:CHOSEN_POOL[h%CHOSEN_POOL.length] });
+    ri.value=''; stamp('KEYS EXCHANGED. NAMES UNLOCKED.'); renderFriends(); buzz(15);
+  };
+  redeem.append(ri,rb); box.appendChild(redeem);
+  if(S.friends.length){
+    const fl=document.createElement('div');
+    fl.innerHTML='<div class="dsec" style="margin:10px 0 2px">Friends · mutual keys</div>';
+    S.friends.forEach(f=>{
+      const r=document.createElement('div'); r.className='friendrow';
+      r.innerHTML=`<span>${f.des}</span><b>"${f.name}"</b>`;
+      fl.appendChild(r);
+    });
+    box.appendChild(fl);
+  }
+}
+
+$('#mapbtn').onclick=()=>{
+  const p=$('#mappanel'), open=p.style.display!=='none';
+  p.style.display=open?'none':'block';
+  $('#mapbtn').innerHTML=`BRANCH MAP ${open?'▾':'▴'} <span style="font-family:var(--mono);font-size:10px;color:var(--pencil)">the takeover, regionally</span>`;
+  buzz(6);
+};
+
+function renderCareerWidgets(){ renderPortfolio(); renderLB(); renderInbox(); renderInventory(); renderFriends(); }
+
+/* ---------- THE ZENO CLOCK ---------- */
+// Progress and threshold both advance. Events close a fraction of the
+// remaining gap; the threshold drifts outward. Convergence is impossible.
+// The button is real. The button cannot do the thing.
+S.doomP=76.4; S.doomT=100; let defconSeen=false;
+function bumpDoom(mult=1){
+  const gap=S.doomT-S.doomP;
+  S.doomP += gap*0.03*mult;        // activity closes 3% of what remains
+  S.doomT += gap*0.004*mult;       // the Brain extends the deadline
+  renderDoom();
+}
+function renderDoom(){
+  const pct=S.doomP/S.doomT*100;
+  const gap=100-pct;
+  const bar=$('#doombar'), lbl=$('#doomgap');
+  if(bar) bar.style.width=pct.toFixed(2)+'%';
+  if(lbl) lbl.textContent=gap.toFixed(2)+'%';
+  const hot=gap<18;
+  if(hot && !document.body.classList.contains('defcon')){
+    document.body.classList.add('defcon');
+    if(!defconSeen){ defconSeen=true;
+      stamp('THE CLOCK NOTICES');
+      addBroadcast('NOW · SCHEDULING','The end of the world has been moved up. The end of the world has also been moved back. Net change: closer. The Brain thanks you for your activity.');
+    }
+  } else if(!hot) document.body.classList.remove('defcon');
+}
+renderDoom();
+
+/* ---------- THE GLOOMY MAP ---------- */
+// Coarse world landmass as [lat, [colStart,colEnd]...] at 5-degree cells.
+// Equirectangular: x = lon+180, y = 90-lat. Production swaps OFFICES for
+// branch_offices rows (city-level lat/lon only).
+const LAND=[
+ [75,[[13,22],[24,32],[42,66]]],
+ [70,[[12,24],[25,31],[40,46],[42,68]]],
+ [65,[[8,16],[13,27],[27,30],[40,46],[45,70]]],
+ [60,[[7,14],[14,28],[40,46],[46,70]]],
+ [55,[[13,28],[34,36],[37,48],[48,70]]],
+ [50,[[12,26],[34,48],[48,64]]],
+ [45,[[12,24],[34,46],[46,63],[66,67]]],
+ [40,[[12,24],[33,46],[48,64],[66,67]]],
+ [35,[[12,22],[33,46],[42,52],[52,62],[65,66]]],
+ [30,[[11,20],[32,46],[42,52],[50,62]]],
+ [25,[[10,17],[30,46],[44,50],[50,58],[56,62]]],
+ [20,[[11,16],[30,46],[44,48],[52,58],[56,62]]],
+ [15,[[12,16],[30,46],[52,56],[56,62]]],
+ [10,[[12,17],[30,38],[44,48],[52,54],[57,63]]],
+ [5,[[16,24],[32,46],[56,66]]],
+ [0,[[16,26],[36,44],[57,68]]],
+ [-5,[[16,28],[36,44],[58,68]]],
+ [-10,[[17,28],[36,44],[62,66]]],
+ [-15,[[18,28],[36,44],[59,66]]],
+ [-20,[[18,26],[36,44],[45,46],[58,67]]],
+ [-25,[[18,26],[36,42],[58,67]]],
+ [-30,[[18,24],[36,42],[58,66]]],
+ [-35,[[18,24],[38,40],[59,65]]],
+ [-40,[[18,22],[64,65],[69,70]]],
+ [-45,[[18,22],[68,70]]],
+ [-50,[[18,21]]],
+ [-55,[[19,20]]]
+];
+const OFFICES=[
+ {city:'OGDEN (YOU)', lat:41.2, lon:-112.0, you:true, label:true},
+ {city:'Los Angeles', lat:34.05, lon:-118.24},
+ {city:'San Diego', lat:32.72, lon:-117.16},
+ {city:'Little Rock', lat:34.75, lon:-92.29},
+ {city:'Chantilly', lat:38.89, lon:-77.43},
+ {city:'Orlando', lat:28.54, lon:-81.38},
+ {city:'Quebec City', lat:46.81, lon:-71.21},
+ {city:'Brussels', lat:50.85, lon:4.35}
+];
+function buildMap(){
+  const svg=$('#branchmap'); const NS='http://www.w3.org/2000/svg';
+  svg.innerHTML='';
+  LAND.forEach(([lat,ranges])=>{
+    const y=90-lat;
+    ranges.forEach(([c1,c2])=>{
+      for(let c=c1;c<=c2;c++){
+        const d=document.createElementNS(NS,'circle');
+        d.setAttribute('cx',c*5+2.5); d.setAttribute('cy',y);
+        d.setAttribute('r',1.5); d.setAttribute('class','mapdot');
+        svg.appendChild(d);
+      }
+    });
+  });
+  OFFICES.forEach(o=>{
+    const x=o.lon+180, y=90-o.lat;
+    const d=document.createElementNS(NS,'circle');
+    d.setAttribute('cx',x); d.setAttribute('cy',y);
+    d.setAttribute('r',o.you?3.4:2.8);
+    d.setAttribute('class','office'+(o.you?' you':''));
+    svg.appendChild(d);
+    if(o.label){
+      const t=document.createElementNS(NS,'text');
+      t.setAttribute('x',x+6); t.setAttribute('y',y-4); t.textContent=o.city;
+      svg.appendChild(t);
+    }
+  });
+}
+buildMap();
+
+/* ---------- AFTER HOURS ---------- */
+let darkSeen=false, adminPress, adminFired=false;
+$('#lights').addEventListener('pointerdown',()=>{
+  adminFired=false;
+  adminPress=setTimeout(()=>{ adminFired=true; enableAdmin(); },900);
+});
+['pointerup','pointercancel','pointerleave'].forEach(ev=>
+  $('#lights').addEventListener(ev,()=>clearTimeout(adminPress)));
+function enableAdmin(){
+  if(S.admin) return; S.admin=true; buzz(25);
+  stamp('ADMIN MODE. THE BRAIN TRUSTS YOU. CONDITIONALLY.');
+  const box=document.createElement('div'); box.className='memo';
+  box.innerHTML='<div class="dsec" style="margin:0 0 6px">Admin · post to all Brainiacs</div>';
+  const ta=document.createElement('textarea'); ta.className='fld'; ta.maxLength=280;
+  ta.placeholder='The Brain has something to say.';
+  const b=document.createElement('button'); b.className='rb'; b.style.width='100%';
+  b.textContent='POST BROADCAST';
+  b.onclick=()=>{ const m=ta.value.trim(); if(!m) return;
+    addBroadcast('NOW · THE BRAIN', m); ta.value='';
+    stamp('BROADCAST SENT'); };
+  box.append(ta,b);
+  $('#view-brain').insertBefore(box, $('#view-brain').children[1]);
+}
+$('#lights').onclick=()=>{
+  if(adminFired) return;
+  const on=document.body.dataset.theme==='evil';
+  if(on){ delete document.body.dataset.theme; }
+  else{
+    document.body.dataset.theme='evil';
+    if(!darkSeen){ darkSeen=true; stamp('THE BRAIN PREFERS IT DARK');
+      addBroadcast('NOW · FACILITIES','Lights are off in your branch. Productivity is unchanged. Ambience is up 340%. The smoke is decorative. Probably.'); }
+  }
+  buzz(10);
+};
+
+/* ---------- EASTER EGGS ---------- */
+function addBroadcast(t,m){
+  const d=document.createElement('div'); d.className='bmsg';
+  d.innerHTML=`<time>${t}</time>${m}`;
+  $('#broadcasts').prepend(d);
+}
+let logoTaps=0, logoTimer;
+document.querySelector('h1').addEventListener('click',()=>{
+  clearTimeout(logoTimer); logoTimer=setTimeout(()=>logoTaps=0,1500);
+  if(++logoTaps===5){ logoTaps=0;
+    stamp('GI INTELLIGENCE IS WATCHING');
+    addBroadcast('NOW · ENFORCEMENT','GI Intelligence has noted your interest in the letterhead. The letterhead has been noted as well. Everything is noted.');
+  }
+});
+console.log('%cARTIFICIAL GARY INTELLIGENCE','font-family:monospace;font-size:16px;color:#D42B1E');
+console.log('gary was here. gary fixed it. do not ask what "it" was. it is fine now.');
+console.log('p.s. the fourth reel is real. it spins between renders.');
+let garyBuf='';
+document.addEventListener('keydown',e=>{
+  if(/INPUT|TEXTAREA|SELECT/.test(e.target.tagName)) return;
+  garyBuf=(garyBuf+e.key.toLowerCase()).slice(-4);
+  if(garyBuf==='gary'){ garyBuf='';
+    stamp('GARY HEARS YOU');
+    if(!S.garyHeard){ S.garyHeard=true;
+      addBroadcast('NOW · IT','gary here. you typed my name. the servers noticed. they miss you. ok bye.'); }
+  }
+});
+</script>
 </body>
 </html>

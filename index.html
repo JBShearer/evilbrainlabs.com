@@ -1685,20 +1685,25 @@ function renderSheet(){
 /* ---------- CARD RENDERER (client mirror of _shared/card-svg.ts) ---------- */
 const CLS_MAP={'deanonymize':'SURVEIL','rat on':'SURVEIL','emotionally profile':'SURVEIL','sentiment-score':'SURVEIL','predictively evict':'SURVEIL','monetize':'MONETIZE','subscription-lock':'MONETIZE','upsell':'MONETIZE','auto-negotiate with':'MONETIZE','gamify':'GAMIFY','a/b test':'GAMIFY','biometrically greet':'GAMIFY'};
 function cardClass(p){ const k=p.toLowerCase(); return CLS_MAP[k]||['SURVEIL','MONETIZE','GAMIFY'][hashCode(k)%3]; }
-function cardStats(t,grade){
+function cardStats(t,grade,stage){
+  stage=stage||1;
   const gw={COMMON:1,UNCOMMON:3,LEGENDARY:10,CASE:1,CLASSIFIED:10}[grade]||1;
   const w=(VOCAB.predicate.find(x=>x.t===t.predicate)||{w:1}).w;
   const qn=t.qual?parseFloat((t.qual.match(/[\d.]+/)||['0'])[0]):0;
+  // Evolution bonuses: stage 2 = +1/+1/+1, stage 3 = +3/+2/+2 with special ability
+  const evoAtk=[0,0,1,3][stage], evoDef=[0,0,1,2][stage], evoSpd=[0,0,1,2][stage];
+  const special=stage===3?'ECOSYSTEM: Wins ties':'';
   return { cls:cardClass(t.predicate),
-    atk:2+w*2+Math.floor(gw/5),
-    def:2+hashCode(t.subject.toLowerCase())%4,
-    spd:1+Math.min(5,qn>0?Math.floor(Math.log2(1+qn)):0)+hashCode(t.object.toLowerCase())%2 };
+    atk:2+w*2+Math.floor(gw/5)+evoAtk,
+    def:2+hashCode(t.subject.toLowerCase())%4+evoDef,
+    spd:1+Math.min(5,qn>0?Math.floor(Math.log2(1+qn)):0)+hashCode(t.object.toLowerCase())%2+evoSpd,
+    special };
 }
 function wrapText(s,max){ const out=[]; let l='';
   s.split(' ').forEach(w=>{ if((l+' '+w).trim().length>max){out.push(l.trim());l=w;} else l+=' '+w; });
   if(l.trim())out.push(l.trim()); return out.slice(0,4); }
-function cardSVG(t,grade,serial,title){
-  const s=cardStats(t,grade);
+function cardSVG(t,grade,serial,title,stage){
+  const s=cardStats(t,grade,stage);
   const gsty={COMMON:['COMMON','var(--pencil)',''],UNCOMMON:['UNCOMMON','var(--ink)',''],
     LEGENDARY:['LEGENDARY','var(--crayon)',''],CASE:['CASE FILE','var(--ink)',''],
     CLASSIFIED:['CLASSIFIED','var(--crayon)','IT IS GARY']}[grade]||['COMMON','var(--pencil)',''];
@@ -1732,6 +1737,7 @@ function cardSVG(t,grade,serial,title){
   </g>
   <text x="120" y="246" text-anchor="middle" font-size="16" font-weight="bold" fill="${gsty[1]}" letter-spacing="3">${gsty[0]}</text>
   ${gsty[2]?`<text x="120" y="262" text-anchor="middle" font-family="monospace" font-size="8" fill="var(--crayon)">${gsty[2]}</text>`:''}
+  ${s.special?`<text x="120" y="274" text-anchor="middle" font-family="monospace" font-size="8" fill="var(--crayon)">⚡ ${s.special}</text>`:''}
   <line x1="24" y1="286" x2="216" y2="286" stroke="var(--pencil)" stroke-width="1" stroke-dasharray="3 3"/>
   <text x="120" y="306" text-anchor="middle" font-family="monospace" font-size="8" fill="var(--pencil)">EVIL BRAIN LABS · THIRD WORST IN AI</text>
   <text x="120" y="318" text-anchor="middle" font-family="monospace" font-size="7" fill="var(--pencil)">this card cannot end the world · probably</text>
@@ -1754,11 +1760,14 @@ function openCard(t,grade,serial,title,product){
   const v=$('#loginveil'); // reuse the veil chrome
   const hold=v.innerHTML;
   v.style.display='flex';
+  const stage=product?.stage||1;
   const extras=product?.extras?.map(x=>`<div style="font-family:var(--mono);font-size:10px;color:var(--pencil)">+ ${x.subject} ${x.predicate} ${x.object}</div>`).join('')||'';
   const stagePips=product?'<div style="font-family:var(--hand);color:var(--crayon);font-size:12px">'+['MVP','PLATFORM','ECOSYSTEM'][((product.stage||1)-1)]+' '+'●'.repeat(product.stage||1)+'○'.repeat(3-(product.stage||1))+'</div>':'';
+  const stats=cardStats(t,grade,stage);
+  const specialLine=stats.special?`<div style="font-family:var(--mono);font-size:10px;color:var(--crayon);margin-top:4px">⚡ ${stats.special}</div>`:'';
   v.innerHTML=`<div class="memo" style="max-width:300px;text-align:center">
-    ${cardSVG(t,grade,serial,title)}
-    ${stagePips}${extras}
+    ${cardSVG(t,grade,serial,title,stage)}
+    ${stagePips}${extras}${specialLine}
     ${product?'<button class="rb" style="width:100%;margin-top:8px" id="cardevolve">EVOLVE (₿3 · adds a relationship)</button>':''}
     <button class="rb" style="width:100%;margin-top:6px" id="cardclose">CLOSE</button></div>`;
   const close=()=>{ v.style.display='none'; v.innerHTML=hold; wireLogin(); };
@@ -1806,13 +1815,14 @@ function startBattle(){
     if(wi>=0){ const it=S.items[wi]; bonus=(it.fx.match(/\+(\d+)/)||[0,0])[1]*1;
       S.items.splice(wi,1); }
     const r=rngJS(seed);
-    const a=cardStats(mine.triple,mine.tier), b=cardStats(foe.triple,foe.tier);
+    const a=cardStats(mine.triple,mine.tier,mine.stage||1), b=cardStats(foe.triple,foe.tier,1);
     const BEATS={SURVEIL:'MONETIZE',MONETIZE:'GAMIFY',GAMIFY:'SURVEIL'};
     let wa=0,wb=0; const lines=[];
     for(let n=1;n<=3&&wa<2&&wb<2;n++){
       const as=a.atk+bonus+(BEATS[a.cls]===b.cls?2:0)-b.def+Math.floor(r()*3);
       const bs=b.atk+(BEATS[b.cls]===a.cls?2:0)-a.def+Math.floor(r()*3);
-      let w = as!==bs ? (as>bs?'YOU':'BRAIN') : (a.spd!==b.spd?(a.spd>b.spd?'YOU':'BRAIN'):'YOU');
+      // Stage 3 ECOSYSTEM special: wins ties
+      let w = as!==bs ? (as>bs?'YOU':'BRAIN') : (a.special?.includes('ties')?'YOU':a.spd!==b.spd?(a.spd>b.spd?'YOU':'BRAIN'):'YOU');
       if(w==='YOU')wa++;else wb++;
       lines.push(`R${n}: you ${as} vs ${bs} · ${w}`);
       $('#brounds').innerHTML=lines.join('<br>');

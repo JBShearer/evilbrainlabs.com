@@ -121,7 +121,9 @@ serve(async (req) => {
 
     if (useCaseError) throw useCaseError
 
-    // Mint coin
+    // Mint coin - determine if FOIL (4% chance)
+    const is_foil = Math.random() < 0.04;
+
     const coinPayload = {
       use_case_id: useCase.id,
       owner_id: user.id,
@@ -141,12 +143,29 @@ serve(async (req) => {
         mint_valence,
         current_valence: mint_valence,
         pressure: 0,
-        signature
+        signature,
+        is_foil,
+        vignette_status: 'pending'
       })
       .select()
       .single()
 
     if (coinError) throw coinError
+
+    // Trigger vignette generation asynchronously (fire and forget)
+    try {
+      const vignetteUrl = `${supabaseUrl}/functions/v1/generate_vignette`;
+      fetch(vignetteUrl, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${supabaseServiceKey}`,
+        },
+        body: JSON.stringify({ use_case_id: useCase.id }),
+      }).catch(e => console.error('Vignette generation failed:', e));
+    } catch (e) {
+      console.error('Failed to trigger vignette generation:', e);
+    }
 
     // Credit submitter 1 braincoin
     const { error: creditError } = await supabaseService
@@ -174,10 +193,11 @@ serve(async (req) => {
 
     return new Response(
       JSON.stringify({
-        message: 'Use case submitted and coin minted!',
+        message: is_foil ? '✨ FOIL MINT! Use case submitted and rare coin minted!' : 'Use case submitted and coin minted!',
         existing: false,
         use_case: useCase,
-        coin
+        coin,
+        is_foil
       }),
       { status: 201, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     )

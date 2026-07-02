@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Privacy Policy – Evil Brain Labs</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@500&family=Special+Elite&family=IBM+Plex+Mono:wght@500&display=swap" rel="stylesheet">
+  <style>
+    :root{--paper:#F5F0E6;--ink:#1A1817;--crayon:#D42B1E;--pencil:#888;--manila:#FFF8DC;--hand:'Caveat',cursive;--type:'Special Elite',monospace;--mono:'IBM Plex Mono',monospace}
+    *{box-sizing:border-box;margin:0;padding:0}
+    body{font-family:var(--type);background:var(--paper);color:var(--ink);padding:24px;max-width:720px;margin:0 auto;line-height:1.7}
+    h1{font-family:var(--hand);font-size:36px;margin-bottom:8px;transform:rotate(-1deg)}
+    h2{font-family:var(--hand);font-size:24px;margin-top:32px;margin-bottom:12px;color:var(--crayon)}
+    p{margin-bottom:16px}
+    ul{margin:16px 0 16px 24px}
+    li{margin-bottom:8px}
+    a{color:var(--crayon)}
+    .proud{font-family:var(--hand);font-size:28px;color:var(--crayon);margin:24px 0;text-align:center;transform:rotate(-1deg)}
+    .stamp{font-family:var(--mono);font-size:11px;border:2px solid var(--crayon);color:var(--crayon);padding:4px 8px;display:inline-block;transform:rotate(-2deg);margin-bottom:24px}
+    .back{margin-top:32px;display:inline-block;font-family:var(--hand);font-size:18px}
+    .box{border:3px solid var(--ink);padding:16px;margin:24px 0;background:var(--manila)}
+  </style>
+</head>
+<body>
+  <h1>Privacy Policy</h1>
+  <div class="stamp">LAST UPDATED: 2025-07-02</div>
+
+  <div class="proud">We don't track you. We're proud of it.</div>
+
+  <h2>What We Collect</h2>
+  <ul>
+    <li><strong>Email address</strong> – for magic link authentication only</li>
+    <li><strong>Your submissions</strong> – use cases, votes, and flips you choose to make</li>
+    <li><strong>Game state</strong> – Braincoins, career progress, battle history</li>
+  </ul>
+
+  <h2>What We Don't Collect</h2>
+  <div class="box">
+    <ul>
+      <li>No analytics trackers (no Google Analytics, no Mixpanel, no Segment)</li>
+      <li>No advertising pixels</li>
+      <li>No fingerprinting</li>
+      <li>No location data</li>
+      <li>No browsing history</li>
+      <li>No third-party cookies</li>
+    </ul>
+  </div>
+
+  <h2>Where Your Data Lives</h2>
+  <p>Your data is stored in Supabase (PostgreSQL database hosted on AWS). Authentication is handled by Supabase Auth using magic links – we never see or store passwords.</p>
+
+  <h2>Who Sees Your Data</h2>
+  <ul>
+    <li><strong>Public:</strong> Your submitted use cases, votes, and flip history are visible to all users</li>
+    <li><strong>Private:</strong> Your email address and Braincoin balance</li>
+    <li><strong>Never shared:</strong> We don't sell, rent, or trade your information</li>
+  </ul>
+
+  <h2>Data Export</h2>
+  <p>The public registry (use cases, triples, and coin metadata) is exported nightly as JSON. This is intentional – a citable registry is one researchers can download. Your personal email is never included in exports.</p>
+
+  <h2>Data Deletion</h2>
+  <p>Email us to delete your account. Your submitted use cases stay (they're part of the public record), but your personal information is removed. Registry coins minted by you remain in circulation with provenance intact but identity anonymized.</p>
+
+  <h2>Contact</h2>
+  <p>Questions? Concerns? Want to file a use case about our privacy policy?</p>
+  <p>Email: <a href="mailto:privacy@evilbrainlabs.com">privacy@evilbrainlabs.com</a></p>
+
+  <a href="index.html" class="back">← Back to The Machine</a>
+</body>
+</html>

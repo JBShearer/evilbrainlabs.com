@@ -307,6 +307,28 @@ body.defcon #doomgap{color:var(--crayon)}
 @keyframes foil-sheen{0%,100%{left:-100%}50%{left:100%}}
 .foil-badge{position:absolute;top:8px;right:8px;font-family:var(--mono);font-size:9px;background:linear-gradient(135deg,#FFD700,#FFA500);color:var(--ink);padding:2px 6px;border-radius:2px;font-weight:bold;letter-spacing:1px}
 
+/* ---------- CAREER DASHBOARD ---------- */
+.career-header{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;margin-bottom:14px}
+.career-header #titlecard{margin:0}
+.career-stats{display:flex;gap:10px}
+.stat-box{background:var(--manila);border:2px solid var(--ink);padding:8px 14px;text-align:center;box-shadow:2px 2px 0 var(--ink)}
+.stat-val{display:block;font-family:var(--hand);font-size:20px;font-weight:bold;color:var(--crayon)}
+.stat-label{font-family:var(--mono);font-size:9px;color:var(--pencil);letter-spacing:1px}
+.career-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px}
+@media(max-width:600px){.career-grid{grid-template-columns:1fr}}
+.career-col{display:flex;flex-direction:column;gap:10px}
+.rival-panel{min-height:100px}
+.rival-row{display:flex;justify-content:space-between;align-items:center;padding:6px 8px;border-bottom:1px dashed var(--pencil);font-size:12px}
+.rival-row:last-child{border-bottom:none}
+.rival-name{font-family:var(--hand);font-weight:bold}
+.rival-stats{font-family:var(--mono);font-size:10px;color:var(--pencil)}
+.rival-action{font-size:10px;padding:3px 8px;border:1px solid var(--ink);background:var(--paper);cursor:pointer;font-family:var(--mono)}
+.rival-action:hover{background:var(--manila)}
+.career-actions{display:flex;gap:8px;margin-bottom:14px}
+.action-btn{flex:1;font-family:var(--hand);font-size:14px;border:2px solid var(--ink);background:var(--manila);padding:10px;cursor:pointer;box-shadow:2px 2px 0 var(--ink)}
+.action-btn:active{transform:translate(2px,2px);box-shadow:none}
+.action-btn:hover{background:var(--paper)}
+
 @media (prefers-reduced-motion:reduce){
   #bigstamp div{animation:none}
   .cursor::after{animation:none}
@@ -341,46 +363,68 @@ body.defcon #doomgap{color:var(--crayon)}
 
   <!-- CAREER -->
   <section class="view active" id="view-career">
-    <p class="eyebrow">Sprint in progress</p>
-    <div id="titlecard"><span>YOUR TITLE</span><b class="youtitle">BRAINIAC I</b></div>
-    <button id="mapbtn">BRANCH MAP ▾ <span style="font-family:var(--mono);font-size:10px;color:var(--pencil)">the takeover, regionally</span></button>
+    <!-- Dashboard Header -->
+    <div class="career-header">
+      <div id="titlecard"><span>YOUR TITLE</span><b class="youtitle">BRAINIAC I</b></div>
+      <div class="career-stats">
+        <div class="stat-box"><span class="stat-val" id="career-level">1</span><span class="stat-label">LEVEL</span></div>
+        <div class="stat-box"><span class="stat-val" id="career-xp">0</span><span class="stat-label">XP</span></div>
+        <div class="stat-box"><span class="stat-val" id="career-wins">0</span><span class="stat-label">WINS</span></div>
+      </div>
+    </div>
+
+    <!-- Two Column Layout: Portfolio + Rivals/Leaderboard -->
+    <div class="career-grid">
+      <!-- Left: Portfolio -->
+      <div class="career-col">
+        <div class="memo"><div class="dsec" style="margin:0 0 6px">Portfolio · six slots</div><div id="slots"></div></div>
+        <div id="ticket" style="margin-top:10px"><span class="tno">TICKET ·</span><div id="ticketbody">No active ticket. Ship something from the Machine.</div></div>
+      </div>
+
+      <!-- Right: Leaderboard + Rivals -->
+      <div class="career-col">
+        <div class="memo rival-panel">
+          <div class="dsec" style="margin:0 0 6px">🏆 Infamy Leaderboard</div>
+          <div id="lb"></div>
+        </div>
+        <div class="memo rival-panel" style="margin-top:10px">
+          <div class="dsec" style="margin:0 0 6px">⚔️ Rival PMs</div>
+          <div id="rivals"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="career-actions">
+      <button class="action-btn" id="spar-quick">⚔️ SPAR</button>
+      <button class="action-btn" id="review-quick">📋 REVIEW</button>
+      <button class="action-btn" id="mapbtn">🗺️ MAP</button>
+    </div>
+
     <div id="mappanel" style="display:none">
-      <svg id="branchmap" viewBox="0 0 360 180" role="img" aria-label="Evil Brain Labs branch offices on a world map, city level only"></svg>
-      <div class="branchlist"><b>7 branches · 33 Brainiacs</b> · Ogden 3 · Los Angeles 7 · San Diego 4 · Little Rock 3 · Chantilly 5 · Orlando 4 · Quebec City 2 · Brussels 5 · city-level only, the Brain does not track desks</div>
-    <div class="memo" id="sheet" style="padding:8px 12px;font-size:12px"></div>
-    <div class="memo" id="standup" style="padding:8px 12px;font-size:12px;line-height:1.6"></div>
-    <div class="memo"><div class="dsec" style="margin:0 0 2px">Portfolio · six slots · there is no seventh</div><div id="slots"></div></div>
-    <details class="memo" open>
-      <summary>Inbox · challenges and notices</summary>
+      <svg id="branchmap" viewBox="0 0 360 180" role="img" aria-label="Evil Brain Labs branch offices"></svg>
+      <div class="branchlist"><b>7 branches · 33 Brainiacs</b> · Ogden 3 · LA 7 · San Diego 4 · Little Rock 3 · Chantilly 5 · Orlando 4 · Quebec 2 · Brussels 5</div>
+    </div>
+
+    <!-- Collapsible extras -->
+    <details class="memo" style="margin-top:12px">
+      <summary>📥 Inbox</summary>
       <div id="inbox"></div>
     </details>
-    <details class="memo" open>
-      <summary>Infamy leaderboard · season Q3</summary>
-      <div id="lb"></div>
-    </details>
-    
-    </div>
-    <details class="memo" open>
-      <summary>Inventory · battle items · wagered means wagered</summary>
+    <details class="memo">
+      <summary>🎒 Inventory</summary>
       <div id="invgrid"></div>
     </details>
     <details class="memo">
-      <summary>Friend keys · in person only</summary>
+      <summary>🤝 Friends</summary>
       <div id="friendbox"></div>
     </details>
-    <details class="memo">
-      <summary>Org chart · reporting structure</summary>
-      <div class="orgtree">THE EVIL BRAIN
-├ <b>GI INTELLIGENCE</b> · enforcement
-├ <b>ARTIFICIAL GARY INTELLIGENCE</b> · technical (it is Gary)
-└ REGIONAL VICE BRAINS ×8
-   └ YOU · <b class="youtitle">BRAINIAC I</b>
 
-careers only go up. sometimes sideways. never out.</div>
-    </details>
-    <div id="ticket"><span class="tno">TICKET ·</span><div id="ticketbody">No active ticket. Ship something from the Machine.</div></div>
-    <div class="mlabel" style="display:flex;justify-content:space-between;font-size:12px"><span>Daily compute ration</span><span id="quotatxt">40%</span></div>
-    <div id="quota"><div id="quotafill"></div></div>
+    <!-- Hidden state -->
+    <div class="memo" id="sheet" style="display:none"></div>
+    <div class="memo" id="standup" style="display:none"></div>
+    <div id="quota" style="display:none"><div id="quotafill"></div></div>
+    <div style="display:none"><span id="quotatxt">40%</span></div>
     <div id="feedwrap"><div id="storyfeed"></div><button id="latestpill">▼ latest</button></div>
     <div id="choices"></div>
     <div id="payout"></div>
@@ -1625,6 +1669,10 @@ function fillStandup(){
 }
 document.querySelectorAll('nav button').forEach(b=>b.onclick=()=>switchView(b.dataset.v));
 
+/* Quick action buttons on career dashboard */
+const sparQuick=$('#spar-quick'); if(sparQuick) sparQuick.onclick=()=>requireAuth(()=>startBattle());
+const reviewQuick=$('#review-quick'); if(reviewQuick) reviewQuick.onclick=()=>requireAuth(()=>{ sendReview(); stamp('REVIEW DISPATCHED'); });
+
 /* ---------- AUTH (demo: instant; production: Supabase magic link) ---------- */
 S.user=null; S.portfolio=[];
 function hashCode(s){ let h=0; for(const c of s) h=(h*31+c.charCodeAt(0))>>>0; return h; }
@@ -2529,11 +2577,43 @@ function renderFriends(){
 $('#mapbtn').onclick=()=>{
   const p=$('#mappanel'), open=p.style.display!=='none';
   p.style.display=open?'none':'block';
-  $('#mapbtn').innerHTML=`BRANCH MAP ${open?'▾':'▴'} <span style="font-family:var(--mono);font-size:10px;color:var(--pencil)">the takeover, regionally</span>`;
+  $('#mapbtn').innerHTML=open?'🗺️ MAP':'🗺️ MAP';
   buzz(6);
 };
 
-function renderCareerWidgets(){ renderPortfolio(); renderLB(); renderInbox(); renderInventory(); renderFriends(); }
+/* Rival PMs */
+const RIVAL_PMS=[
+ {name:'BRAINIAC OG-0007', title:'Sr. Optimizer', wins:12, branch:'Brussels'},
+ {name:'BRAINIAC OG-0113', title:'Gamification Lead', wins:8, branch:'Los Angeles'},
+ {name:'BRAINIAC OG-0666', title:'Shadow VP', wins:6, branch:'REDACTED'},
+ {name:'BRAINIAC OG-0551', title:'Engagement Mgr', wins:5, branch:'Quebec City'}
+];
+function renderRivals(){
+  const box=$('#rivals'); if(!box) return;
+  box.innerHTML=RIVAL_PMS.slice(0,4).map(r=>`
+    <div class="rival-row">
+      <div>
+        <div class="rival-name">${r.name}</div>
+        <div class="rival-stats">${r.title} · ${r.wins}W · ${r.branch}</div>
+      </div>
+      <button class="rival-action" onclick="challengeRival('${r.name}')">⚔️</button>
+    </div>
+  `).join('');
+}
+function challengeRival(name){
+  if(!S.portfolio.length){ stamp('SHIP SOMETHING FIRST'); return; }
+  stamp(`CHALLENGE SENT TO ${name}`);
+  startBattle(); // Uses random opponent for now
+}
+
+/* Career stats display */
+function updateCareerStats(){
+  const lvl=$('#career-level'); if(lvl) lvl.textContent=S.level||1;
+  const xp=$('#career-xp'); if(xp) xp.textContent=S.xp||0;
+  const wins=$('#career-wins'); if(wins) wins.textContent=battleCount||0;
+}
+
+function renderCareerWidgets(){ renderPortfolio(); renderLB(); renderInbox(); renderInventory(); renderFriends(); renderRivals(); updateCareerStats(); }
 
 /* ---------- THE ZENO CLOCK ---------- */
 // Progress and threshold both advance. Events close a fraction of the

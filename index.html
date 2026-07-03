@@ -90,21 +90,20 @@ h1 small{display:block;font-family:var(--type);font-size:11px;color:var(--pencil
 #ticket .tno{font-family:var(--mono);color:var(--pencil);font-size:11px}
 #quota{height:10px;border:2px solid var(--ink);background:#fff;margin:10px 0 14px;position:relative}
 #quotafill{position:absolute;inset:0;width:40%;background:repeating-linear-gradient(45deg,var(--crayon),var(--crayon) 6px,#fff 6px,#fff 12px)}
-#feedwrap{position:relative;margin-bottom:10px}
-#storyfeed{display:flex;flex-direction:column;gap:10px;max-height:42vh;overflow-y:auto;padding:2px;border-bottom:2px dashed var(--pencil)}
-#latestpill{position:absolute;bottom:8px;right:8px;display:none;font-family:var(--mono);font-size:11px;border:2px solid var(--ink);background:var(--manila);padding:4px 9px;cursor:pointer;box-shadow:2px 2px 0 var(--ink);z-index:2}
-#latestpill.show{display:block}
-.beat{border-left:3px solid var(--ink);padding:6px 10px;background:#fff;box-shadow:2px 2px 0 rgba(26,24,23,.25);font-size:14px;line-height:1.55}
-.beat.brain{border-left-color:var(--crayon);font-style:normal}
-.beat.brain::before{content:"THE BRAIN:";font-family:var(--hand);color:var(--crayon);display:block;font-size:12px}
-.beat.pencil{color:var(--pencil);border-left-style:dashed}
-.cursor::after{content:"▌";animation:blink 1s steps(1) infinite}
-@keyframes blink{50%{opacity:0}}
-#choices{display:flex;flex-direction:column;gap:8px}
-.choice{font-family:var(--type);text-align:left;font-size:14px;border:2px solid var(--ink);background:#fff;padding:10px 12px;box-shadow:3px 3px 0 var(--ink);cursor:pointer}
+#story-container{margin-top:14px}
+#story-beat-card{background:#fff;border:3px solid var(--ink);padding:16px;margin-bottom:14px;box-shadow:4px 4px 0 var(--ink);min-height:80px}
+#story-beat-card.brain{border-left:6px solid var(--crayon)}
+#story-beat-card .beat-label{font-family:var(--hand);font-size:12px;color:var(--crayon);margin-bottom:6px}
+#story-beat-card .beat-text{font-size:15px;line-height:1.6}
+#choices{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+@media(max-width:600px){#choices{grid-template-columns:1fr}}
+.choice{font-family:var(--type);text-align:center;font-size:14px;border:3px solid var(--ink);background:var(--manila);padding:16px 12px;box-shadow:3px 3px 0 var(--ink);cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:6px;min-height:100px;justify-content:center;transition:transform 0.1s}
+.choice:hover{background:var(--paper);transform:translateY(-2px)}
 .choice:active{transform:translate(2px,2px);box-shadow:1px 1px 0 var(--ink)}
-.choice small{display:block;color:var(--pencil);font-size:11px}
-#payout{display:none;text-align:center;font-family:var(--hand);font-size:20px;color:var(--crayon);margin-top:10px}
+.choice .choice-icon{font-size:28px}
+.choice .choice-text{font-weight:bold;font-size:13px}
+.choice small{color:var(--pencil);font-size:11px}
+#payout{display:none;text-align:center;font-family:var(--hand);font-size:22px;color:var(--crayon);margin-top:16px;padding:20px;background:var(--manila);border:3px solid var(--ink)}
 
 /* ---------- BRAIN ---------- */
 .meter{margin-bottom:12px}
@@ -420,14 +419,17 @@ body.defcon #doomgap{color:var(--crayon)}
       <div id="friendbox"></div>
     </details>
 
-    <!-- Hidden state -->
-    <div class="memo" id="sheet" style="display:none"></div>
-    <div class="memo" id="standup" style="display:none"></div>
+    <!-- Story Flow - Visual Card UI -->
+    <div id="story-container" style="display:none">
+      <div id="story-beat-card"></div>
+      <div id="choices"></div>
+    </div>
+    <div id="payout"></div>
+    <!-- Hidden state elements for JS compatibility -->
+    <div id="sheet" style="display:none"></div>
+    <div id="standup" style="display:none"></div>
     <div id="quota" style="display:none"><div id="quotafill"></div></div>
     <div style="display:none"><span id="quotatxt">40%</span></div>
-    <div id="feedwrap"><div id="storyfeed"></div><button id="latestpill">▼ latest</button></div>
-    <div id="choices"></div>
-    <div id="payout"></div>
   </section>
 
   <!-- THE BRAIN -->
@@ -677,6 +679,7 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 const DEMO = !CONFIG.SUPABASE_URL;
+const USE_CLOUD_STORY = CONFIG.STORY_FN && CONFIG.STORY_FN.length > 0;
 
 /* ============ SEED VOCAB (demo; replace with Supabase fetch) ============ */
 const VOCAB = {
@@ -853,33 +856,26 @@ $('#shipbtn').onclick=()=>{
   S.ticket={subject:s.t,predicate:p.t,object:o.t,tier:$('#rarity').textContent}; S.beat=0;
   $('#ticketbody').innerHTML=`Build a product where <b>${s.t.toLowerCase()}</b> ${s.t.endsWith('s')?'':''}${p.t} <b>${o.t}</b>. Priority: yesterday.`;
   $('#ticket .tno').textContent=`TICKET EB-${String(Math.floor(Math.random()*9000)+1000)}`;
-  $('#storyfeed').innerHTML=''; $('#payout').style.display='none';
+  $('#story-container').style.display='block';
+  $('#story-beat-card').innerHTML='';
+  $('#payout').style.display='none';
   switchView('career');
   nextBeat(null);
 };
 
-let feedFollow=true;
-function feedScroll(){ const f=$('#storyfeed'); if(feedFollow) f.scrollTop=f.scrollHeight; }
-$('#storyfeed').addEventListener('scroll',()=>{
-  const f=$('#storyfeed');
-  feedFollow = f.scrollHeight - f.scrollTop - f.clientHeight < 48;
-  $('#latestpill').classList.toggle('show', !feedFollow);
-});
-$('#latestpill').onclick=()=>{ feedFollow=true; feedScroll(); $('#latestpill').classList.remove('show'); };
-function addBeat(cls){ const d=document.createElement('div'); d.className='beat '+cls; $('#storyfeed').appendChild(d); feedScroll(); return d; }
+function showBeatCard(text, isBrain){
+  const card=$('#story-beat-card');
+  card.className=isBrain?'brain':'';
+  card.innerHTML=(isBrain?'<div class="beat-label">THE BRAIN:</div>':'')+`<div class="beat-text">${text}</div>`;
+}
 
 async function nextBeat(choiceId){
   $('#choices').innerHTML='';
-  const el=addBeat(S.beat%2?'':'brain'); el.classList.add('cursor');
-  el.setAttribute('aria-live','polite');
-  const text = DEMO ? await demoBeat(choiceId) : await cloudBeat(choiceId, el);
-  if(DEMO) await typewrite(el,text);
-  el.classList.remove('cursor');
+  const isBrain = S.beat%2===0;
+  const text = USE_CLOUD_STORY ? await cloudBeat(choiceId, $('#story-beat-card')) : await demoBeat(choiceId);
+  showBeatCard(text, isBrain);
   S.beat++;
   if(S.beat>=4){ shipIt(); return; }
-  if(Math.random()<0.3){
-    const ev=addBeat('pencil'); ev.textContent=HALLWAY[Math.floor(Math.random()*HALLWAY.length)];
-  }
   renderChoices();
 }
 const HALLWAY=[
@@ -893,22 +889,27 @@ const HALLWAY=[
 
 function renderChoices(){
   const sets=[
-    [{id:'lean_in',t:'Lean in. Add a leaderboard.',s:'The Brain rewards ambition'},
-     {id:'ask_legal',t:'Loop in Legal.',s:'Legal is a raccoon in a tie'},
-     {id:'call_gary',t:'Call Artificial Gary Intelligence.',s:'Technical stuff. It is Gary'},
-     {id:'feel_fine',t:'Report that you feel fine.',s:'Logged to the Wellness Dashboard'}],
-    [{id:'ship_beta',t:'Ship the beta to grandmothers first.',s:'A gentle test market'},
-     {id:'add_ai',t:'Add more AI to the AI.',s:'Recursive. The Brain approves'},
-     {id:'hide_gi',t:'Hide the prototype from GI Intelligence.',s:'It already knows'},
-     {id:'raise_hand',t:'Raise a concern.',s:'Concerns are compostable'}],
-    [{id:'demo_day',t:'Demo it at the all-hands.',s:'Nothing has ever gone wrong at a demo'},
-     {id:'quiet_launch',t:'Quiet launch. Tell no one.',s:'Stealth is a feature'},
-     {id:'blame_gary',t:'Blame Gary preemptively.',s:'Traditional'},
-     {id:'feel_weird',t:'Report that you feel weird.',s:'Also compostable'}]
+    [{id:'lean_in',t:'Add a leaderboard',s:'The Brain rewards ambition',icon:'📊'},
+     {id:'ask_legal',t:'Loop in Legal',s:'Legal is a raccoon in a tie',icon:'⚖️'},
+     {id:'call_gary',t:'Call Gary',s:'Technical stuff. It is Gary',icon:'🤖'},
+     {id:'feel_fine',t:'Feel fine',s:'Logged to the Wellness Dashboard',icon:'😌'}],
+    [{id:'ship_beta',t:'Ship to grandmas',s:'A gentle test market',icon:'👵'},
+     {id:'add_ai',t:'More AI',s:'Recursive. The Brain approves',icon:'🧠'},
+     {id:'hide_gi',t:'Hide from GI',s:'It already knows',icon:'🙈'},
+     {id:'raise_hand',t:'Raise a concern',s:'Concerns are compostable',icon:'✋'}],
+    [{id:'demo_day',t:'Demo at all-hands',s:'Nothing has ever gone wrong',icon:'📽️'},
+     {id:'quiet_launch',t:'Quiet launch',s:'Stealth is a feature',icon:'🤫'},
+     {id:'blame_gary',t:'Blame Gary',s:'Traditional',icon:'👉'},
+     {id:'feel_weird',t:'Feel weird',s:'Also compostable',icon:'😵‍💫'}]
   ];
   const set3=[...sets[Math.min(S.beat-1,sets.length-1)]].sort(()=>Math.random()-.5).slice(0,3);
   set3.forEach(c=>{
     const b=document.createElement('button'); b.className='choice';
+    b.innerHTML=`<span class="choice-icon">${c.icon}</span><span class="choice-text">${c.t}</span><small>${c.s}</small>`;
+    b.onclick=()=>{ buzz(8); nextBeat(c.id); };
+    $('#choices').appendChild(b);
+  });
+}
     b.innerHTML=`${c.t}<small>${c.s}</small>`;
     b.onclick=()=>{ buzz(8); nextBeat(c.id); };
     $('#choices').appendChild(b);
@@ -920,6 +921,7 @@ function shipIt(){
   const bonus=S.ticket.tier==='LEGENDARY'?2:S.ticket.tier==='UNCOMMON'?1:0;
   S.bc+=1+bonus; $('#bc').textContent=S.bc;
   const p=$('#payout'); p.style.display='block';
+  $('#story-beat-card').innerHTML='<div class="beat-text" style="text-align:center;font-size:18px">🚀 PRODUCT SHIPPED!</div>';
   let note='';
   const newProduct = { name:`${S.ticket.subject} that ${S.ticket.predicate} ${S.ticket.object}`.slice(0,60),
     triple:{subject:S.ticket.subject,predicate:S.ticket.predicate,object:S.ticket.object},
@@ -940,7 +942,7 @@ function shipIt(){
   // Add scratch-to-reveal button for new card
   if(S.user && S.portfolio.length<=6){
     const reveal=document.createElement('button'); reveal.className='choice';
-    reveal.innerHTML='🎴 Reveal your new card!<small>SCRATCH OFF</small>';
+    reveal.innerHTML='<span class="choice-icon">🎴</span><span class="choice-text">Reveal Card</span><small>Scratch to see</small>';
     reveal.onclick=()=>{
       revealCard(newProduct.triple, newProduct.tier, newProduct.serial, newProduct.triple.subject, isFoil);
     };
@@ -949,13 +951,14 @@ function shipIt(){
 
   if(Math.random()<0.65){
     const stir=document.createElement('button'); stir.className='choice';
-    stir.innerHTML='Something stirs in the hallway…<small>INTERLUDE</small>';
+    stir.innerHTML='<span class="choice-icon">👀</span><span class="choice-text">Hallway</span><small>Something stirs...</small>';
     stir.onclick=()=>{ $('#payout').style.display='none';
       if(S.user && Math.random()<0.45) startBattle(); else startInterlude(); };
     $('#choices').appendChild(stir);
   }
-  const back=document.createElement('button'); back.className='choice'; back.textContent='Return to the Machine →';
-  back.onclick=()=>switchView('machine');
+  const back=document.createElement('button'); back.className='choice';
+  back.innerHTML='<span class="choice-icon">🎰</span><span class="choice-text">Machine</span><small>Spin again</small>';
+  back.onclick=()=>{ $('#story-container').style.display='none'; switchView('machine'); };
   $('#choices').appendChild(back);
   buzz(30);
 }

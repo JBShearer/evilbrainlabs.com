@@ -107,6 +107,10 @@ h1 small{display:block;font-family:var(--type);font-size:11px;color:var(--pencil
 .story-scene{background:#fff;border:3px solid var(--ink);box-shadow:4px 4px 0 var(--ink);min-height:280px;display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden}
 .story-scene svg{width:100%;height:100%;max-height:320px}
 .story-scene .scene-loading{font-family:var(--hand);color:var(--pencil);font-size:14px}
+.story-scene.loading{background:linear-gradient(90deg, #fff 0%, #f0ede5 50%, #fff 100%);background-size:200% 100%;animation:shimmer 1.5s infinite}
+@keyframes shimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}
+.story-choices.loading{opacity:0.5;pointer-events:none;filter:blur(2px)}
+.story-choices{transition:opacity 0.3s, filter 0.3s}
 .story-sidebar{display:flex;flex-direction:column;gap:10px}
 @media(max-width:600px){.story-sidebar{flex-direction:row;flex-wrap:wrap}}
 .sidebar-box{background:#fff;border:2px solid var(--ink);padding:10px;font-size:12px}
@@ -1536,25 +1540,15 @@ async function advanceStory(choiceId){
   // Add choice to branch history for determinism
   if(choiceId) S.story.branch.push(choiceId);
 
-  // Show loading state
+  // Show loading state for scene
   const sceneEl = $('#story-scene');
   sceneEl.innerHTML = '<span class="scene-loading">🎨 Drawing scene...</span>';
+  sceneEl.classList.add('loading');
 
   // Generate node hash for canonical caching
   const nodeHash = sceneNodeHash(t, beat, choiceId, S.story.branch);
 
-  // Fetch or generate scene (with progressive render)
-  const sceneSvg = await fetchOrGenerateScene(nodeHash, t, beat, choiceId, S.story.branch);
-  await renderProgressiveSVG(sceneEl, sceneSvg);
-
-  // Preload next 3 potential scenes (fire-and-forget)
-  const nextChoiceSet = STORY_CHOICES[Math.min(beat, STORY_CHOICES.length-1)];
-  nextChoiceSet.slice(0,3).forEach(c => {
-    const nextHash = sceneNodeHash(t, beat+1, c.id, [...S.story.branch, c.id]);
-    fetchOrGenerateScene(nextHash, t, beat+1, c.id, [...S.story.branch, c.id]);
-  });
-
-  // Generate narrative text
+  // Show narrative and choices IMMEDIATELY (don't wait for scene)
   const narrativeFunc = STORY_BEATS[Math.min(beat, STORY_BEATS.length-1)];
   const narrative = narrativeFunc(t, choiceId);
   const isBrain = beat % 2 === 0;
@@ -1569,14 +1563,32 @@ async function advanceStory(choiceId){
   S.story.beat++;
   updateStoryStats();
 
+  // Render choices immediately (but dimmed while scene loads)
+  if(S.story.beat < 4){
+    renderStoryChoices();
+    $('#story-choices').classList.add('loading');
+  }
+
+  // Fetch scene in background (non-blocking)
+  fetchOrGenerateScene(nodeHash, t, beat, choiceId, S.story.branch).then(async sceneSvg => {
+    sceneEl.classList.remove('loading');
+    await renderProgressiveSVG(sceneEl, sceneSvg);
+    $('#story-choices').classList.remove('loading');
+
+    // Preload next 3 potential scenes (fire-and-forget)
+    const nextChoiceSet = STORY_CHOICES[Math.min(beat, STORY_CHOICES.length-1)];
+    nextChoiceSet.slice(0,3).forEach(c => {
+      const nextHash = sceneNodeHash(t, beat+1, c.id, [...S.story.branch, c.id]);
+      fetchOrGenerateScene(nextHash, t, beat+1, c.id, [...S.story.branch, c.id]);
+    });
+  });
+
   // Check if story ends
   if(S.story.beat >= 4){
     completeStory();
     return;
   }
-
-  // Render choices
-  renderStoryChoices();
+}
 }
 
 function renderStoryChoices(){

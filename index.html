@@ -111,6 +111,8 @@ h1 small{display:block;font-family:var(--type);font-size:11px;color:var(--pencil
 @keyframes shimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}
 .story-choices.loading{opacity:0.5;pointer-events:none;filter:blur(2px)}
 .story-choices{transition:opacity 0.3s, filter 0.3s}
+.story-narrative.loading{opacity:0.6;background:linear-gradient(90deg, #fff 0%, #f0ede5 50%, #fff 100%);background-size:200% 100%;animation:shimmer 1.5s infinite}
+.story-narrative{transition:opacity 0.3s}
 .story-sidebar{display:flex;flex-direction:column;gap:10px}
 @media(max-width:600px){.story-sidebar{flex-direction:row;flex-wrap:wrap}}
 .sidebar-box{background:#fff;border:2px solid var(--ink);padding:10px;font-size:12px}
@@ -695,8 +697,17 @@ const CONFIG = {
   SUPABASE_ANON_KEY: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFzbGNyd21iZHR2aW1qcmV4eHp3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODExNDA0NjgsImV4cCI6MjA5NjcxNjQ2OH0.XYG0LrgA_92h7dGjw0aamX53WIrwQaqPHNHQLe8p9ls",
   STORY_FN: "",            // optional: streaming story beats from edge function
   SCENE_FN: "generate_scene", // scene generation edge function
-  VIGNETTE_FN: "generate_vignette" // card vignette generation
+  VIGNETTE_FN: "generate_vignette", // card vignette generation
+  NARRATIVE_FN: "generate_narrative", // parallel narrative + choices generation
+  ENGAGEMENT_FN: "track_engagement", // fire-and-forget engagement tracking
+
+  // Feature flags for gradual rollout
+  USE_DYNAMIC_NARRATIVE: true, // Enable LLM-generated narrative (fallback to static if off/fails)
+  NARRATIVE_TIMEOUT_MS: 5000   // Max wait for narrative before falling back to static
 };
+
+// Session ID for anonymous engagement tracking
+const SESSION_ID = 'sess_' + Math.random().toString(36).slice(2) + Date.now().toString(36);
 
 /* ================= SUPABASE CLIENT ================= */
 let supabaseClient = null;
@@ -1086,9 +1097,13 @@ S.story = {
   items: [],
   beat: 0,
   scenes: {},   // Cached scenes by node hash
+  narratives: {}, // Cached narratives by node hash
   ticket: null,
   branch: [],   // Branch path for determinism
-  encounter: null // Active encounter/battle
+  encounter: null, // Active encounter/battle
+  currentChoices: null, // Currently displayed choice objects
+  patternsUsed: [], // Comedy patterns used in current narrative
+  choiceShownAt: null // Timestamp when choices were shown (for hesitation tracking)
 };
 
 // Scene node hashing for canonical lazy generation
@@ -1376,6 +1391,226 @@ Start with <svg and end with </svg>.`;
   }
 }
 
+// ============ PARALLEL NARRATIVE + CHOICES GENERATION ============
+
+// Generate narrative + choices (called in parallel with scene generation)
+async function generateBeatContent(ticket, beat, previousChoices, runningJokes) {
+  const nodeHash = sceneNodeHash(ticket, beat, previousChoices[previousChoices.length-1] || null, previousChoices);
+
+  // Check local cache first
+  if(S.story.narratives?.[nodeHash]){
+    console.log('Narrative from local cache:', nodeHash);
+    return S.story.narratives[nodeHash];
+  }
+
+  // Try edge function if enabled
+  if(CONFIG.USE_DYNAMIC_NARRATIVE && CONFIG.SUPABASE_URL && CONFIG.NARRATIVE_FN){
+    try {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), CONFIG.NARRATIVE_TIMEOUT_MS);
+
+      const response = await fetch(`${CONFIG.SUPABASE_URL}/functions/v1/${CONFIG.NARRATIVE_FN}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${CONFIG.SUPABASE_ANON_KEY}`
+        },
+        body: JSON.stringify({
+          node_hash: nodeHash,
+          ticket: ticket,
+          beat: beat,
+          choice: previousChoices[previousChoices.length-1] || null,
+          branch: previousChoices,
+          running_jokes: runningJokes || []
+        }),
+        signal: controller.signal
+      });
+
+      clearTimeout(timeoutId);
+
+      if(response.ok){
+        const result = await response.json();
+        console.log('Narrative generation result:', result.success, result.cached ? 'cached' : 'fresh');
+        if(result.narrative && result.choices){
+          const content = {
+            narrative: result.narrative,
+            choices: result.choices,
+            patterns_used: result.patterns_used || [],
+            callbacks_used: result.callbacks_used || [],
+            source: result.cached ? 'cache' : 'llm'
+          };
+          S.story.narratives[nodeHash] = content;
+          return content;
+        }
+      } else {
+        console.log('Narrative generation error:', response.status);
+      }
+    } catch(e){
+      if(e.name === 'AbortError'){
+        console.log('Narrative generation timed out, using fallback');
+      } else {
+        console.log('Narrative generation failed, using fallback:', e);
+      }
+    }
+  }
+
+  // Fallback to static content
+  console.log('Using static narrative fallback for beat:', beat);
+  return generateFallbackNarrative(ticket, beat, previousChoices[previousChoices.length-1] || null);
+}
+
+// Static fallback narrative generator (mirrors current STORY_BEATS/STORY_CHOICES)
+function generateFallbackNarrative(ticket, beat, choice){
+  const narratives = [
+    `Ticket accepted. ${ticket.subject} that ${ticket.predicate} ${ticket.object}. I have run the projections to the end of the world. This one appears in 61% of timelines. Proceed.`,
+    choice === 'ask_legal'
+      ? `Legal has reviewed your concern and eaten it. The product is now called "${ticket.object.split(' ')[0]}Sync™".`
+      : choice === 'call_gary'
+        ? `Gary arrives, types for eleven seconds, says "should be good now," and leaves. Nobody knows why it works.`
+        : `Development continues. The prototype ${ticket.predicate}s a test group. They rate the experience 4.1 stars.`,
+    choice === 'raise_hand'
+      ? `Your concern was received, laminated, and filed under Morale. Meanwhile the beta converts at 34%.`
+      : choice === 'hide_gi'
+        ? `You hide the prototype. GI Intelligence is already inside the prototype. It files a favorable report.`
+        : `The beta converts at 34%. Marketing wants a mascot. I have designed one. It has too many eyes.`,
+    choice === 'blame_gary'
+      ? `Launch day. Gary was blamed in advance, so the incident report is already filed. Gary fixes it, sighs once.`
+      : `Launch day. ${ticket.subject} everywhere now ${ticket.predicate} ${ticket.object} at scale. My plan advances.`
+  ];
+
+  const fallbackChoices = [
+    [
+      {id:'lean_in', text:'Add a leaderboard', desc:'The Brain rewards ambition', icon:'📊', hp:+2, item:null, encounter:0.1},
+      {id:'ask_legal', text:'Loop in Legal', desc:'Legal is a raccoon in a tie', icon:'⚖️', hp:-1, item:'Legal Waiver', encounter:0.15},
+      {id:'call_gary', text:'Call Gary', desc:'Technical stuff. It is Gary', icon:'🤖', hp:0, item:"Gary's Fix", encounter:0.2},
+      {id:'feel_fine', text:'Feel fine', desc:'Logged to the Wellness Dashboard', icon:'😌', hp:+1, item:null, encounter:0.05}
+    ],
+    [
+      {id:'ship_beta', text:'Ship to grandmas', desc:'A gentle test market', icon:'👵', hp:-2, item:'Beta Feedback', encounter:0.15},
+      {id:'add_ai', text:'More AI', desc:'Recursive. The Brain approves', icon:'🧠', hp:+3, item:null, encounter:0.25},
+      {id:'hide_gi', text:'Hide from GI', desc:'It already knows', icon:'🙈', hp:-3, item:'Incident Report', encounter:0.3},
+      {id:'raise_hand', text:'Raise a concern', desc:'Concerns are compostable', icon:'✋', hp:-1, item:null, encounter:0.1}
+    ],
+    [
+      {id:'demo_day', text:'Demo at all-hands', desc:'Nothing has ever gone wrong', icon:'📽️', hp:+4, item:'Demo Trophy', encounter:0.35},
+      {id:'quiet_launch', text:'Quiet launch', desc:'Stealth is a feature', icon:'🤫', hp:+1, item:null, encounter:0.1},
+      {id:'blame_gary', text:'Blame Gary', desc:'Traditional', icon:'👉', hp:0, item:"Gary's Sigh", encounter:0.15},
+      {id:'feel_weird', text:'Feel weird', desc:'Also compostable', icon:'😵‍💫', hp:-2, item:'Therapy Voucher', encounter:0.2}
+    ]
+  ];
+
+  return {
+    narrative: narratives[Math.min(beat, narratives.length - 1)],
+    choices: fallbackChoices[Math.min(beat, fallbackChoices.length - 1)],
+    patterns_used: ['fallback'],
+    callbacks_used: [],
+    source: 'static'
+  };
+}
+
+// Fire-and-forget engagement tracking
+function recordChoice(choiceId, beat, tripleHash, hesitationMs, choicesPresented, patternsShown){
+  if(!CONFIG.SUPABASE_URL || !CONFIG.ENGAGEMENT_FN) return;
+
+  // Don't block on analytics - fire and forget
+  fetch(`${CONFIG.SUPABASE_URL}/functions/v1/${CONFIG.ENGAGEMENT_FN}`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${CONFIG.SUPABASE_ANON_KEY}`
+    },
+    body: JSON.stringify({
+      session_id: SESSION_ID,
+      user_id: S.user?.id || null,
+      triple_hash: tripleHash,
+      beat: beat,
+      choice_id: choiceId,
+      time_to_choose_ms: hesitationMs,
+      choices_presented: choicesPresented,
+      hp_before: S.story.hp,
+      joke_patterns_shown: patternsShown
+    })
+  }).then(() => {
+    console.log('Engagement tracked:', choiceId, hesitationMs + 'ms');
+  }).catch(e => {
+    // Silently fail - don't break the game for analytics
+    console.log('Engagement tracking failed (non-critical):', e.message);
+  });
+}
+
+// Render dynamically generated choices (works with both LLM and fallback content)
+function renderDynamicChoices(choices){
+  if(S.story.encounter){
+    renderEncounterChoices();
+    return;
+  }
+
+  const container = $('#story-choices');
+  container.innerHTML = '';
+
+  // Shuffle and pick 3 (like current behavior)
+  const displayed = [...choices].sort(() => Math.random() - 0.5).slice(0, 3);
+
+  // Store displayed choices and timestamp for engagement tracking
+  S.story.currentChoices = displayed;
+  S.story.choiceShownAt = Date.now();
+
+  displayed.forEach(c => {
+    const div = document.createElement('div');
+    div.className = 'story-choice';
+    div.innerHTML = `
+      <span class="choice-icon">${c.icon}</span>
+      <span class="choice-title">${c.text}</span>
+      <span class="choice-desc">${c.desc}</span>
+      <span class="choice-effect ${c.hp >= 0 ? 'positive' : 'negative'}">
+        ${c.hp >= 0 ? '+' : ''}${c.hp} HP${c.item ? ' · 📦' : ''}
+      </span>
+    `;
+    div.onclick = () => makeDynamicChoice(c, displayed);
+    container.appendChild(div);
+  });
+}
+
+// Enhanced choice handler with engagement tracking
+function makeDynamicChoice(choice, allChoices){
+  buzz(10);
+
+  // Calculate hesitation time (engagement signal)
+  const hesitationMs = S.story.choiceShownAt ? Date.now() - S.story.choiceShownAt : 0;
+  const tripleHash = sceneNodeHash(S.story.ticket, 0, null, []);
+
+  // Fire-and-forget engagement tracking
+  recordChoice(
+    choice.id,
+    S.story.beat,
+    tripleHash,
+    hesitationMs,
+    allChoices.map(c => c.id),
+    S.story.patternsUsed
+  );
+
+  // Apply HP change
+  S.story.hp += choice.hp;
+
+  // Check for item drop
+  if(choice.item && Math.random() < 0.5){
+    S.story.items.push(choice.item);
+    stamp(`ITEM: ${choice.item}`);
+  }
+
+  // Check for encounter trigger
+  if(Math.random() < (choice.encounter || 0)){
+    updateStoryStats();
+    advanceStory(choice.id).then(() => {
+      setTimeout(triggerEncounter, 800);
+    });
+    return;
+  }
+
+  updateStoryStats();
+  advanceStory(choice.id);
+}
+
 // ENCOUNTER SYSTEM - battles, side quests, random events
 const ENCOUNTER_TYPES = {
   battle: {
@@ -1564,21 +1799,43 @@ async function advanceStory(choiceId){
   // Add choice to branch history for determinism
   if(choiceId) S.story.branch.push(choiceId);
 
-  // Show loading state for scene
+  // Show loading states IMMEDIATELY
   const sceneEl = $('#story-scene');
+  const narrativeEl = $('#story-narrative');
+  const choicesEl = $('#story-choices');
+
   sceneEl.innerHTML = '<span class="scene-loading">🎨 Drawing scene...</span>';
   sceneEl.classList.add('loading');
+  narrativeEl.innerHTML = '<span class="scene-loading">💭 The Brain is thinking...</span>';
+  narrativeEl.classList.add('loading');
+  choicesEl.classList.add('loading');
 
   // Generate node hash for canonical caching
   const nodeHash = sceneNodeHash(t, beat, choiceId, S.story.branch);
 
-  // Show narrative and choices IMMEDIATELY (don't wait for scene)
-  const narrativeFunc = STORY_BEATS[Math.min(beat, STORY_BEATS.length-1)];
-  const narrative = narrativeFunc(t, choiceId);
-  const isBrain = beat % 2 === 0;
+  // Track generation timing
+  const generationStart = Date.now();
 
-  $('#story-narrative').className = 'story-narrative' + (isBrain ? ' brain' : '');
-  $('#story-narrative').innerHTML = (isBrain ? '<span class="narrator">THE BRAIN:</span> ' : '') + narrative;
+  // PARALLEL GENERATION - fire scene AND narrative+choices simultaneously
+  const [sceneResult, contentResult] = await Promise.all([
+    // 1. Scene SVG (existing system)
+    fetchOrGenerateScene(nodeHash, t, beat, choiceId, S.story.branch),
+
+    // 2. Narrative + Choices (new parallel system)
+    generateBeatContent(t, beat, S.story.branch, [])
+  ]);
+
+  const generationTime = Date.now() - generationStart;
+  console.log(`Parallel generation completed in ${generationTime}ms (source: ${contentResult.source})`);
+
+  // Render narrative
+  const isBrain = beat % 2 === 0;
+  narrativeEl.className = 'story-narrative' + (isBrain ? ' brain' : '');
+  narrativeEl.innerHTML = (isBrain ? '<span class="narrator">THE BRAIN:</span> ' : '') + contentResult.narrative;
+  narrativeEl.classList.remove('loading');
+
+  // Store patterns for engagement tracking
+  S.story.patternsUsed = contentResult.patterns_used || [];
 
   // Update status
   const statuses = ['Development', 'Testing', 'Beta', 'Launch'];
@@ -1587,25 +1844,26 @@ async function advanceStory(choiceId){
   S.story.beat++;
   updateStoryStats();
 
-  // Render choices immediately (but dimmed while scene loads)
+  // Render choices from generated content (or fallback)
   if(S.story.beat < 4){
-    renderStoryChoices();
-    $('#story-choices').classList.add('loading');
+    renderDynamicChoices(contentResult.choices);
+    choicesEl.classList.add('loading'); // Dim until scene finishes
   }
 
-  // Fetch scene in background (non-blocking)
-  fetchOrGenerateScene(nodeHash, t, beat, choiceId, S.story.branch).then(async sceneSvg => {
-    sceneEl.classList.remove('loading');
-    await renderProgressiveSVG(sceneEl, sceneSvg);
-    $('#story-choices').classList.remove('loading');
+  // Render scene with progressive reveal
+  sceneEl.classList.remove('loading');
+  await renderProgressiveSVG(sceneEl, sceneResult);
+  choicesEl.classList.remove('loading');
 
-    // Preload next 3 potential scenes (fire-and-forget)
-    const nextChoiceSet = STORY_CHOICES[Math.min(beat, STORY_CHOICES.length-1)];
-    nextChoiceSet.slice(0,3).forEach(c => {
+  // PRELOAD next potential scenes AND narratives (fire-and-forget)
+  if(S.story.beat < 4 && contentResult.choices){
+    contentResult.choices.slice(0, 3).forEach(c => {
       const nextHash = sceneNodeHash(t, beat+1, c.id, [...S.story.branch, c.id]);
+      // Preload both in parallel - no await, just fire
       fetchOrGenerateScene(nextHash, t, beat+1, c.id, [...S.story.branch, c.id]);
+      generateBeatContent(t, beat+1, [...S.story.branch, c.id], []);
     });
-  });
+  }
 
   // Check if story ends
   if(S.story.beat >= 4){
@@ -1703,28 +1961,9 @@ function resolveEncounter(opt){
 }
 
 function makeChoice(choice){
-  buzz(10);
-
-  // Apply HP change
-  S.story.hp += choice.hp;
-
-  // Check for item drop
-  if(choice.item && Math.random() < 0.5){
-    S.story.items.push(choice.item);
-    stamp(`ITEM: ${choice.item}`);
-  }
-
-  // Check for encounter trigger
-  if(Math.random() < (choice.encounter || 0)){
-    updateStoryStats();
-    advanceStory(choice.id).then(() => {
-      setTimeout(triggerEncounter, 800);
-    });
-    return;
-  }
-
-  updateStoryStats();
-  advanceStory(choice.id);
+  // Delegate to makeDynamicChoice with current choices from S.story
+  const allChoices = S.story.currentChoices || [choice];
+  makeDynamicChoice(choice, allChoices);
 }
 
 function completeStory(){

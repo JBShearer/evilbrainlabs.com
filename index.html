@@ -1318,15 +1318,32 @@ STRICT RULES:
 }
 
 // Generate unique card vignette for a product (fire-and-forget)
+// Reuses the scene generation endpoint which is already working
 async function generateCardVignette(product){
-  if(!CONFIG.SUPABASE_URL || !CONFIG.VIGNETTE_FN) return;
+  if(!CONFIG.SUPABASE_URL || !CONFIG.SCENE_FN) return;
 
   const t = product.triple;
-  const vignetteKey = `card_${hashCode(`${t.subject}|${t.predicate}|${t.object}`).toString(36)}`;
+  const vignetteKey = `card_${Math.abs(hashCode(`${t.subject}|${t.predicate}|${t.object}`)).toString(36)}`;
+
+  // Build a card-specific prompt
+  const cardPrompt = `Draw a small vignette for a collectible card. The card represents:
+"${t.subject} that ${t.predicate} ${t.object}"
+
+STRICT SVG RULES:
+1. Output ONLY valid SVG code, nothing else
+2. viewBox="0 0 400 200" (wide card format)
+3. EXACTLY TWO COLORS: ink black #1A1817, crayon red #D42B1E
+4. Background: #F6F2E8 (paper cream)
+5. Hand-drawn style: wobbly lines, sketch aesthetic
+6. Simple iconic imagery representing the action
+7. 5-10 elements maximum
+8. No text, no gradients, no script tags
+
+Start with <svg and end with </svg>.`;
 
   try {
-    // Request vignette generation
-    const response = await fetch(`${CONFIG.SUPABASE_URL}/functions/v1/${CONFIG.VIGNETTE_FN}`, {
+    console.log('Generating card vignette:', vignetteKey);
+    const response = await fetch(`${CONFIG.SUPABASE_URL}/functions/v1/${CONFIG.SCENE_FN}`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -1334,18 +1351,25 @@ async function generateCardVignette(product){
       },
       body: JSON.stringify({
         node_hash: vignetteKey,
-        subject: t.subject,
-        predicate: t.predicate,
-        object: t.object
+        ticket: t,
+        beat: 0,
+        choice: 'card',
+        prompt: cardPrompt
       })
     });
 
     if(response.ok){
       const result = await response.json();
-      if(result.svg || result.vignette_url){
-        product.vignette = result.svg || result.vignette_url;
-        console.log('Card vignette generated:', vignetteKey);
+      console.log('Card vignette result:', result.success, result.source);
+      if(result.svg){
+        const sanitized = sanitizeSVG(result.svg);
+        if(sanitized){
+          product.vignette = sanitized;
+          console.log('Card vignette stored on product');
+        }
       }
+    } else {
+      console.log('Card vignette response not ok:', response.status);
     }
   } catch(e){
     console.log('Card vignette generation failed:', e);
@@ -1779,7 +1803,7 @@ function completeStory(){
     reveal.innerHTML = '<span class="choice-icon">🎴</span><span class="choice-title">Reveal Card</span>';
     reveal.onclick = () => {
       exitStoryMode();
-      revealCard(newProduct.triple, newProduct.tier, newProduct.serial, newProduct.triple.subject, isFoil);
+      revealCard(newProduct.triple, newProduct.tier, newProduct.serial, newProduct.triple.subject, isFoil, newProduct.vignette);
     };
     actions.appendChild(reveal);
   }
@@ -2738,7 +2762,7 @@ function cardStats(t,grade,stage){
 function wrapText(s,max){ const out=[]; let l='';
   s.split(' ').forEach(w=>{ if((l+' '+w).trim().length>max){out.push(l.trim());l=w;} else l+=' '+w; });
   if(l.trim())out.push(l.trim()); return out.slice(0,4); }
-function cardSVG(t,grade,serial,title,stage){
+function cardSVG(t,grade,serial,title,stage,vignette){
   const s=cardStats(t,grade,stage);
   const gsty={COMMON:['COMMON','var(--pencil)',''],UNCOMMON:['UNCOMMON','var(--ink)',''],
     LEGENDARY:['LEGENDARY','var(--crayon)',''],CASE:['CASE FILE','var(--ink)',''],
@@ -2749,6 +2773,19 @@ function cardSVG(t,grade,serial,title,stage){
     :s.cls==='MONETIZE'
     ?'<circle cx="204" cy="33" r="10" fill="none" stroke="var(--ink)" stroke-width="2"/><text x="204" y="37" text-anchor="middle" font-family="monospace" font-size="12" fill="var(--ink)">₿</text>'
     :'<rect x="195" y="24" width="18" height="18" fill="none" stroke="var(--ink)" stroke-width="2" transform="rotate(8 204 33)"/><circle cx="201" cy="30" r="1.8" fill="var(--ink)"/><circle cx="208" cy="36" r="1.8" fill="var(--ink)"/>';
+
+  // Vignette area - use generated vignette or fallback to text
+  let vignetteContent;
+  if(vignette && vignette.startsWith('<svg')){
+    // Embed the vignette SVG scaled to fit the art box
+    vignetteContent = `<g transform="translate(16,76) scale(0.52,0.48)">${vignette.replace(/<\/?svg[^>]*>/gi, '')}</g>`;
+  } else {
+    // Fallback: show the triple text
+    vignetteContent = `<rect x="16" y="76" width="208" height="96" fill="var(--paper-dark)" stroke="var(--ink)" stroke-width="2"/>
+    ${lines.map((l,i)=>`<text x="120" y="${100+i*18}" text-anchor="middle" font-size="12" fill="var(--ink)">${l.replace(/&/g,'&amp;').replace(/</g,'&lt;')}</text>`).join('')}
+    ${t.qual?`<text x="120" y="164" text-anchor="middle" font-family="monospace" font-size="9" fill="var(--pencil)">(${t.qual})</text>`:''}`;
+  }
+
   return `<svg viewBox="0 0 240 336" style="width:min(78vw,260px);display:block" font-family="Georgia,serif">
   <rect width="240" height="336" fill="var(--paper)"/>
   <rect x="6" y="6" width="228" height="324" fill="none" stroke="var(--ink)" stroke-width="3"/>
@@ -2757,9 +2794,8 @@ function cardSVG(t,grade,serial,title,stage){
   <text x="24" y="38" font-size="13" font-weight="bold" fill="var(--ink)">${(title||t.subject).toUpperCase().slice(0,22)}</text>
   ${icon}
   <text x="24" y="66" font-family="monospace" font-size="8" fill="var(--pencil)" letter-spacing="2">${s.cls} · ${serial}</text>
-  <rect x="16" y="76" width="208" height="96" fill="var(--paper-dark)" stroke="var(--ink)" stroke-width="2"/>
-  ${lines.map((l,i)=>`<text x="120" y="${100+i*18}" text-anchor="middle" font-size="12" fill="var(--ink)">${l.replace(/&/g,'&amp;').replace(/</g,'&lt;')}</text>`).join('')}
-  ${t.qual?`<text x="120" y="164" text-anchor="middle" font-family="monospace" font-size="9" fill="var(--pencil)">(${t.qual})</text>`:''}
+  <rect x="16" y="76" width="208" height="96" fill="#fff" stroke="var(--ink)" stroke-width="2"/>
+  ${vignetteContent}
   <g font-family="monospace" font-size="11" fill="var(--ink)">
     <rect x="16" y="184" width="66" height="30" fill="none" stroke="var(--ink)" stroke-width="2"/>
     <text x="49" y="197" text-anchor="middle" font-size="8" fill="var(--pencil)">ATK</text>
@@ -2797,12 +2833,13 @@ function openCard(t,grade,serial,title,product){
   const hold=v.innerHTML;
   v.style.display='flex';
   const stage=product?.stage||1;
+  const vignette=product?.vignette||null;
   const extras=product?.extras?.map(x=>`<div style="font-family:var(--mono);font-size:10px;color:var(--pencil)">+ ${x.subject} ${x.predicate} ${x.object}</div>`).join('')||'';
   const stagePips=product?'<div style="font-family:var(--hand);color:var(--crayon);font-size:12px">'+['MVP','PLATFORM','ECOSYSTEM'][((product.stage||1)-1)]+' '+'●'.repeat(product.stage||1)+'○'.repeat(3-(product.stage||1))+'</div>':'';
   const stats=cardStats(t,grade,stage);
   const specialLine=stats.special?`<div style="font-family:var(--mono);font-size:10px;color:var(--crayon);margin-top:4px">⚡ ${stats.special}</div>`:'';
   v.innerHTML=`<div class="memo" style="max-width:300px;text-align:center">
-    ${cardSVG(t,grade,serial,title,stage)}
+    ${cardSVG(t,grade,serial,title,stage,vignette)}
     ${stagePips}${extras}${specialLine}
     ${product?'<button class="rb" style="width:100%;margin-top:8px" id="cardevolve">EVOLVE (₿3 · adds a relationship)</button>':''}
     <button class="rb" style="width:100%;margin-top:6px" id="cardclose">CLOSE</button></div>`;
@@ -2812,12 +2849,12 @@ function openCard(t,grade,serial,title,product){
 }
 
 /* ---------- SCRATCH CARD REVEAL ---------- */
-function revealCard(t, grade, serial, title, isFoil = false) {
+function revealCard(t, grade, serial, title, isFoil = false, vignette = null) {
   const v = $('#loginveil');
   const hold = v.innerHTML;
   v.style.display = 'flex';
 
-  const cardHtml = cardSVG(t, grade, serial, title);
+  const cardHtml = cardSVG(t, grade, serial, title, 1, vignette);
   const gradeLabel = { COMMON: 'COMMON', UNCOMMON: 'UNCOMMON', LEGENDARY: 'LEGENDARY!!' }[grade] || grade;
   const gradeColor = { COMMON: 'var(--pencil)', UNCOMMON: 'var(--ink)', LEGENDARY: 'var(--crayon)' }[grade] || 'var(--ink)';
 

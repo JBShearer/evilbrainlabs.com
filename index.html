@@ -482,14 +482,29 @@ careers only go up. sometimes sideways. never out.</div>
     </details>
   </section>
 
-  <!-- CASE BOOK - Redirects to UCAR -->
+  <!-- CASE BOOK - Read-only mirror, filing on UCAR -->
   <section class="view" id="view-cases">
-    <p class="eyebrow">The Case Book has moved</p>
-    <div class="memo" style="text-align:center;padding:32px">
-      <h2 style="font-family:var(--hand);font-size:24px;margin-bottom:16px">📚 Case Registry</h2>
-      <p style="margin-bottom:20px">The Case Book now lives on Use Case Arms Race - Jason's side of the operation.</p>
-      <a href="https://usecasearmsrace.com" class="rb" style="display:inline-block;padding:12px 24px;text-decoration:none;font-size:16px">Go to Case Registry →</a>
-      <p style="margin-top:16px;font-size:12px;color:var(--pencil)">Track cases. Vote good or evil. Submit to the Brain.</p>
+    <p class="eyebrow">The Case Book · Read-only mirror</p>
+    <div class="memo" style="margin-bottom:14px;padding:10px 12px;background:var(--manila);display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px">
+      <span style="font-size:13px">📚 Full registry lives at <a href="https://usecasearmsrace.com" style="color:var(--crayon)">Use Case Arms Race</a></span>
+      <button id="newcase" class="rb" style="padding:6px 12px;font-size:12px">FILE NEW →</button>
+    </div>
+    <div id="caseshome" style="margin-bottom:12px">
+      <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px">
+        <button class="fchip on" data-f="all">ALL</button>
+        <button class="fchip" data-f="evil">EVIL</button>
+        <button class="fchip" data-f="good">GOOD</button>
+        <button class="fchip" data-f="review">TRIBUNAL</button>
+      </div>
+      <input class="fld" id="casesearch" placeholder="search cases..." style="margin-bottom:6px">
+    </div>
+    <p id="casecount" class="hint" style="margin-bottom:8px"></p>
+    <div id="caselist"></div>
+    <div id="casedetail" style="display:none"></div>
+    <div id="triplebox" style="margin-top:16px;padding:10px;background:var(--manila);border:2px solid var(--ink)">
+      <div style="font-size:11px;color:var(--pencil);margin-bottom:4px">RANDOM FROM THE RECORD</div>
+      <div id="tripletext" style="font-family:var(--hand);font-size:15px;cursor:pointer"></div>
+      <button id="reroll" style="margin-top:6px;font-size:11px;padding:4px 8px;background:var(--paper);border:1px solid var(--ink);cursor:pointer">↻ another</button>
     </div>
   </section>
 
@@ -501,6 +516,10 @@ careers only go up. sometimes sideways. never out.</div>
     </div>
     <input class="fld" id="uc-title" maxlength="80" placeholder="Name the bad AI use case">
     <textarea class="fld" id="uc-desc" maxlength="600" placeholder="Describe it fully. What it does, to whom, and how much."></textarea>
+    <!-- Hidden elements for JS compatibility -->
+    <div id="chippool" style="display:none"></div>
+    <div id="stagedlist" style="display:none"></div>
+    <input type="hidden" id="uc-qual" value="">
     <div id="valrow">
       <button class="valbtn good" data-val="good">GOOD</button>
       <button class="valbtn evil on" data-val="evil">EVIL</button>

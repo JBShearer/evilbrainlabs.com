@@ -1755,8 +1755,12 @@ function completeStory(){
   };
   const isFoil = Math.random() < 0.04;
 
-  // Generate unique card vignette (fire-and-forget)
-  generateCardVignette(newProduct);
+  // Use the last scene as the card vignette (already generated, no extra wait!)
+  const lastSceneKey = Object.keys(S.story.scenes).pop();
+  if(lastSceneKey && S.story.scenes[lastSceneKey]){
+    newProduct.vignette = S.story.scenes[lastSceneKey];
+    console.log('Card vignette: reusing last scene');
+  }
 
   let note = '';
   if(S.user){

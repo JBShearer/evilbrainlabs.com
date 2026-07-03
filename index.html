@@ -1223,22 +1223,22 @@ async function fetchOrGenerateScene(nodeHash, ticket, beat, choice, branch){
     return S.story.scenes[nodeHash];
   }
 
-  // Try Supabase cache
+  // Try Supabase cache (skip if table doesn't exist or errors)
   if(supabaseClient){
     try {
-      const { data } = await supabaseClient
+      const { data, error } = await supabaseClient
         .from('scene_cache')
         .select('svg')
         .eq('node_hash', nodeHash)
-        .single();
+        .maybeSingle(); // Use maybeSingle instead of single to avoid errors on no match
 
-      if(data?.svg){
+      if(!error && data?.svg){
         console.log('Scene from Supabase cache:', nodeHash);
         S.story.scenes[nodeHash] = data.svg;
         return data.svg;
       }
     } catch(e){
-      console.log('Scene cache miss (expected on first visit):', nodeHash);
+      // Silently continue to generation - cache is optional
     }
   }
 

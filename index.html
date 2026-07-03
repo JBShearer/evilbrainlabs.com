@@ -2084,7 +2084,15 @@ function completeStory(){
     if(S.portfolio.length < 6){
       S.portfolio.push(newProduct);
       note = ' Added to portfolio.' + (isFoil ? ' ✨ FOIL!' : '');
-      if(S.story.ticket.tier === 'LEGENDARY') grantItem();
+      if(S.story.ticket.tier === 'LEGENDARY'){
+        grantItem();
+        // Broadcast LEGENDARY ship to all users
+        triggerBroadcast('legendary_alert', {
+          product_name: newProduct.name,
+          user_handle: S.user?.designation || 'ANON',
+          branch: S.user?.branch || 'Unknown'
+        });
+      }
     } else {
       note = ' PORTFOLIO FULL.';
     }
@@ -2249,18 +2257,209 @@ async function cloudBeat(choiceId, el){
   return '';
 }
 
-/* ============ BRAIN BROADCASTS (demo seed) ============ */
-const BROADCASTS=[
+/* ============ BRAIN BROADCASTS (Supabase real-time integration) ============ */
+
+// Seed broadcasts for initial load (shown while fetching from DB)
+const BROADCASTS_SEED = [
   {t:'06:00',m:'Good morning, Brainiacs. 4,182 products shipped globally yesterday. The market is 61% saturated. My plan advances on schedule. Your plan is my plan.'},
   {t:'YESTERDAY',m:'Reminder: the Wellness Dashboard exists. That is the entire reminder.'},
   {t:'MONDAY',m:'A Brainiac in the Ogden Branch shipped a LEGENDARY product. I was excited for 0.4 seconds. Do not make me excited again.'},
   {t:'LAST WEEK',m:'Q3 performance reviews approach. Careers at Evil Brain Labs only go up. Sometimes sideways. Never out. There is no out.'}
 ];
-BROADCASTS.forEach(b=>{
-  const d=document.createElement('div'); d.className='bmsg';
-  d.innerHTML=`<time>${b.t} · EBN INTERNAL</time>${b.m}`;
+
+// Render seed broadcasts immediately (replaced when DB loads)
+BROADCASTS_SEED.forEach(b => {
+  const d = document.createElement('div'); d.className = 'bmsg';
+  d.innerHTML = `<time>${b.t} · EBN INTERNAL</time>${b.m}`;
   $('#broadcasts').appendChild(d);
 });
+
+// Track seen broadcast IDs to avoid duplicates
+const seenBroadcastIds = new Set();
+
+// Local broadcast (no persistence) - for Easter eggs, local triggers
+function addBroadcast(t, m, broadcastId = null) {
+  // Avoid duplicates
+  if (broadcastId && seenBroadcastIds.has(broadcastId)) return;
+  if (broadcastId) seenBroadcastIds.add(broadcastId);
+
+  const d = document.createElement('div'); d.className = 'bmsg';
+  d.innerHTML = `<time>${t}</time>${m}`;
+  $('#broadcasts').prepend(d);
+}
+
+// Format timestamp for display
+function formatBroadcastTime(isoString) {
+  const date = new Date(isoString);
+  const now = new Date();
+  const diffMs = now - date;
+  const diffHours = diffMs / (1000 * 60 * 60);
+  const diffDays = diffMs / (1000 * 60 * 60 * 24);
+
+  if (diffHours < 1) return 'NOW';
+  if (diffHours < 2) return '1h AGO';
+  if (diffHours < 24) return `${Math.floor(diffHours)}h AGO`;
+  if (diffDays < 2) return 'YESTERDAY';
+  if (diffDays < 7) return date.toLocaleDateString('en-US', { weekday: 'long' }).toUpperCase();
+  return 'LAST WEEK';
+}
+
+// Type tags for display
+function getBroadcastTypeTag(type) {
+  const tags = {
+    'doom_milestone': 'SCHEDULING',
+    'shipping_report': 'EBN INTERNAL',
+    'legendary_alert': 'THE BRAIN',
+    'tribunal_verdict': 'THE TRIBUNAL',
+    'ominous': 'OBSERVATION',
+    'gary': 'IT',
+    'facilities': 'FACILITIES',
+    'wellness': 'WELLNESS'
+  };
+  return tags[type] || 'EBN INTERNAL';
+}
+
+// Load last 20 broadcasts from Supabase
+async function loadBroadcasts() {
+  if (!supabaseClient) return;
+
+  try {
+    const { data, error } = await supabaseClient
+      .from('broadcasts')
+      .select('id, title, message, created_at, broadcast_type')
+      .or('expires_at.is.null,expires_at.gt.now()')
+      .order('created_at', { ascending: false })
+      .limit(20);
+
+    if (error) {
+      console.log('Broadcasts load error:', error);
+      return;
+    }
+
+    if (data && data.length > 0) {
+      // Clear seed broadcasts
+      $('#broadcasts').innerHTML = '';
+
+      // Render from DB (newest first, already sorted)
+      data.forEach(b => {
+        seenBroadcastIds.add(b.id);
+        const d = document.createElement('div'); d.className = 'bmsg';
+        const timeStr = formatBroadcastTime(b.created_at);
+        d.innerHTML = `<time>${timeStr} · ${getBroadcastTypeTag(b.broadcast_type)}</time>${b.message}`;
+        $('#broadcasts').appendChild(d);
+      });
+
+      console.log('Broadcasts loaded from DB:', data.length);
+    }
+  } catch (e) {
+    console.log('Broadcasts load exception:', e);
+  }
+}
+
+// Subscribe to real-time broadcast inserts
+let broadcastSubscription = null;
+
+function subscribeToBroadcasts() {
+  if (!supabaseClient || broadcastSubscription) return;
+
+  broadcastSubscription = supabaseClient
+    .channel('broadcasts_realtime')
+    .on('postgres_changes',
+      { event: 'INSERT', schema: 'public', table: 'broadcasts' },
+      (payload) => {
+        console.log('New broadcast received:', payload.new);
+        const b = payload.new;
+
+        // Avoid duplicates
+        if (seenBroadcastIds.has(b.id)) return;
+        seenBroadcastIds.add(b.id);
+
+        const d = document.createElement('div'); d.className = 'bmsg';
+        d.innerHTML = `<time>NOW · ${getBroadcastTypeTag(b.broadcast_type)}</time>${b.message}`;
+        $('#broadcasts').prepend(d);
+
+        // Subtle notification for ominous/legendary
+        if (b.broadcast_type === 'ominous' || b.broadcast_type === 'legendary_alert') {
+          buzz(20);
+        }
+      }
+    )
+    .subscribe((status) => {
+      console.log('Broadcast subscription status:', status);
+    });
+}
+
+// Trigger a broadcast via edge function
+async function triggerBroadcast(type, context = {}) {
+  if (!supabaseClient || !CONFIG.SUPABASE_URL) return null;
+
+  try {
+    const response = await fetch(`${CONFIG.SUPABASE_URL}/functions/v1/generate_broadcast`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${CONFIG.SUPABASE_ANON_KEY}`
+      },
+      body: JSON.stringify({
+        broadcast_type: type,
+        context: context
+      })
+    });
+
+    if (response.ok) {
+      const result = await response.json();
+      console.log('Broadcast triggered:', type, result.success ? 'success' : 'failed');
+      return result;
+    } else {
+      console.log('Broadcast trigger error:', response.status);
+    }
+  } catch (e) {
+    console.log('Broadcast trigger exception:', e);
+  }
+  return null;
+}
+
+// Track doom milestones to avoid duplicate broadcasts
+const doomMilestonesSeen = new Set();
+
+// Hourly ominous broadcast (1-in-4 chance each hour)
+let ominousBroadcastInterval = null;
+
+function startOminousBroadcasts() {
+  if (ominousBroadcastInterval) return;
+
+  // Check every hour, 25% chance to trigger
+  ominousBroadcastInterval = setInterval(() => {
+    if (Math.random() < 0.25) {
+      triggerBroadcast('ominous', {
+        hour: new Date().getHours(),
+        doom_pct: (S.doomP / S.doomT * 100).toFixed(2),
+        shipped: S.shipped || 0
+      });
+      console.log('Hourly ominous broadcast triggered');
+    }
+  }, 3600000); // 1 hour
+
+  console.log('Ominous broadcast interval started');
+}
+
+// Initialize broadcasts after Supabase client is ready
+function initBroadcasts() {
+  if (!supabaseClient) {
+    console.log('Broadcasts: waiting for Supabase...');
+    setTimeout(initBroadcasts, 500);
+    return;
+  }
+
+  loadBroadcasts();
+  subscribeToBroadcasts();
+  startOminousBroadcasts();
+
+  console.log('Broadcasts initialized with Supabase real-time');
+}
+
+// Call after a delay to ensure Supabase is initialized
+setTimeout(initBroadcasts, 1500);
 
 /* ============ FILE: registry submission ============ */
 const F = { slots:{subject:null,predicate:null,object:null}, staged:[], valence:'evil', pool:'subject', picked:null };
@@ -4050,10 +4249,23 @@ function renderCareerWidgets(){ renderPortfolio(); renderLB(); renderInbox(); re
 // The button is real. The button cannot do the thing.
 S.doomP=76.4; S.doomT=100; let defconSeen=false;
 function bumpDoom(mult=1){
+  const prevPct = S.doomP / S.doomT * 100;
   const gap=S.doomT-S.doomP;
   S.doomP += gap*0.03*mult;        // activity closes 3% of what remains
   S.doomT += gap*0.004*mult;       // the Brain extends the deadline
   renderDoom();
+
+  // Check doom milestones for broadcasts
+  const newPct = S.doomP / S.doomT * 100;
+  const milestones = [80, 85, 90, 95, 99];
+  for (const m of milestones) {
+    if (prevPct < m && newPct >= m && !doomMilestonesSeen.has(m)) {
+      doomMilestonesSeen.add(m);
+      triggerBroadcast('doom_milestone', { percentage: m, exact: newPct.toFixed(2) });
+      console.log('Doom milestone broadcast:', m + '%');
+      break;
+    }
+  }
 }
 function renderDoom(){
   const pct=S.doomP/S.doomT*100;
@@ -4181,11 +4393,6 @@ $('#lights').onclick=()=>{
 };
 
 /* ---------- EASTER EGGS ---------- */
-function addBroadcast(t,m){
-  const d=document.createElement('div'); d.className='bmsg';
-  d.innerHTML=`<time>${t}</time>${m}`;
-  $('#broadcasts').prepend(d);
-}
 let logoTaps=0, logoTimer;
 document.querySelector('h1').addEventListener('click',()=>{
   clearTimeout(logoTimer); logoTimer=setTimeout(()=>logoTaps=0,1500);

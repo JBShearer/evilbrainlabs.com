@@ -90,19 +90,49 @@ h1 small{display:block;font-family:var(--type);font-size:11px;color:var(--pencil
 #ticket .tno{font-family:var(--mono);color:var(--pencil);font-size:11px}
 #quota{height:10px;border:2px solid var(--ink);background:#fff;margin:10px 0 14px;position:relative}
 #quotafill{position:absolute;inset:0;width:40%;background:repeating-linear-gradient(45deg,var(--crayon),var(--crayon) 6px,#fff 6px,#fff 12px)}
-#story-container{margin-top:14px}
-#story-beat-card{background:#fff;border:3px solid var(--ink);padding:16px;margin-bottom:14px;box-shadow:4px 4px 0 var(--ink);min-height:80px}
-#story-beat-card.brain{border-left:6px solid var(--crayon)}
-#story-beat-card .beat-label{font-family:var(--hand);font-size:12px;color:var(--crayon);margin-bottom:6px}
-#story-beat-card .beat-text{font-size:15px;line-height:1.6}
-#choices{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
-@media(max-width:600px){#choices{grid-template-columns:1fr}}
-.choice{font-family:var(--type);text-align:center;font-size:14px;border:3px solid var(--ink);background:var(--manila);padding:16px 12px;box-shadow:3px 3px 0 var(--ink);cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:6px;min-height:100px;justify-content:center;transition:transform 0.1s}
-.choice:hover{background:var(--paper);transform:translateY(-2px)}
-.choice:active{transform:translate(2px,2px);box-shadow:1px 1px 0 var(--ink)}
-.choice .choice-icon{font-size:28px}
-.choice .choice-text{font-weight:bold;font-size:13px}
-.choice small{color:var(--pencil);font-size:11px}
+
+/* ---------- STORY MODE (full-screen visual novel) ---------- */
+#story-mode{display:none;position:fixed;inset:0;z-index:50;background:var(--paper);overflow-y:auto;padding:12px}
+#story-mode.active{display:block}
+.story-stats{display:flex;gap:12px;align-items:center;padding:10px 12px;background:var(--manila);border:3px solid var(--ink);margin-bottom:12px;flex-wrap:wrap}
+.stat-pill{display:flex;align-items:center;gap:6px;font-family:var(--mono);font-size:13px;background:#fff;border:2px solid var(--ink);padding:6px 12px}
+.stat-pill.hp{border-color:var(--crayon)}
+.stat-pill .stat-icon{font-size:16px}
+.stat-pill .stat-val{font-weight:bold}
+.stat-pill.negative .stat-val{color:var(--crayon)}
+.story-main{display:grid;grid-template-columns:1fr 180px;gap:14px;margin-bottom:14px}
+@media(max-width:600px){.story-main{grid-template-columns:1fr}}
+.story-scene{background:#fff;border:3px solid var(--ink);box-shadow:4px 4px 0 var(--ink);min-height:280px;display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden}
+.story-scene svg{width:100%;height:100%;max-height:320px}
+.story-scene .scene-loading{font-family:var(--hand);color:var(--pencil);font-size:14px}
+.story-sidebar{display:flex;flex-direction:column;gap:10px}
+@media(max-width:600px){.story-sidebar{flex-direction:row;flex-wrap:wrap}}
+.sidebar-box{background:#fff;border:2px solid var(--ink);padding:10px;font-size:12px}
+.sidebar-box .box-title{font-family:var(--hand);font-size:11px;color:var(--pencil);margin-bottom:6px;text-transform:uppercase}
+.sidebar-items{display:flex;flex-wrap:wrap;gap:4px}
+.sidebar-item{background:var(--manila);border:1px solid var(--ink);padding:2px 6px;font-size:11px}
+.story-narrative{background:#fff;border:3px solid var(--ink);padding:16px;margin-bottom:14px;font-size:15px;line-height:1.7;box-shadow:4px 4px 0 var(--ink)}
+.story-narrative.brain{border-left:6px solid var(--crayon)}
+.story-narrative .narrator{font-family:var(--hand);font-size:12px;color:var(--crayon);margin-bottom:6px;display:block}
+.story-choices{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+@media(max-width:600px){.story-choices{grid-template-columns:1fr}}
+.story-choice{background:var(--manila);border:3px solid var(--ink);padding:16px;cursor:pointer;box-shadow:3px 3px 0 var(--ink);transition:transform 0.1s;display:flex;flex-direction:column;align-items:center;text-align:center;gap:8px}
+.story-choice:hover{background:var(--paper);transform:translateY(-3px)}
+.story-choice:active{transform:translate(2px,2px);box-shadow:1px 1px 0 var(--ink)}
+.story-choice .choice-icon{font-size:32px}
+.story-choice .choice-title{font-family:var(--hand);font-size:15px;font-weight:bold}
+.story-choice .choice-desc{font-size:12px;color:var(--pencil)}
+.story-choice .choice-effect{font-family:var(--mono);font-size:11px;margin-top:6px;padding:4px 8px;background:#fff;border:1px solid var(--ink)}
+.story-choice .choice-effect.positive{color:var(--good, #2a7d2e)}
+.story-choice .choice-effect.negative{color:var(--crayon)}
+.story-exit{position:absolute;top:12px;right:12px;font-family:var(--hand);font-size:12px;border:2px solid var(--ink);background:var(--paper);padding:6px 12px;cursor:pointer}
+.story-exit:hover{background:var(--manila)}
+#story-payout{text-align:center;font-family:var(--hand);font-size:24px;color:var(--crayon);padding:24px;background:var(--manila);border:3px solid var(--ink);margin-top:14px}
+
+/* Old story container (kept for compatibility, hidden in new mode) */
+#story-container{display:none}
+#story-beat-card{display:none}
+#choices{display:none}
 #payout{display:none;text-align:center;font-family:var(--hand);font-size:22px;color:var(--crayon);margin-top:16px;padding:20px;background:var(--manila);border:3px solid var(--ink)}
 
 /* ---------- BRAIN ---------- */
@@ -339,6 +369,50 @@ body.defcon #doomgap{color:var(--crayon)}
 </head>
 <body>
 <div class="smoke s1"></div><div class="smoke s2"></div>
+
+<!-- STORY MODE OVERLAY -->
+<div id="story-mode">
+  <button class="story-exit" onclick="exitStoryMode()">✕ EXIT</button>
+
+  <div class="story-stats">
+    <div class="stat-pill hp"><span class="stat-icon">❤️</span> HP: <span class="stat-val" id="story-hp">10</span></div>
+    <div class="stat-pill"><span class="stat-icon">💰</span> <span class="stat-val" id="story-coins">3</span></div>
+    <div class="stat-pill"><span class="stat-icon">🎒</span> Items: <span class="stat-val" id="story-items">0</span></div>
+    <div class="stat-pill"><span class="stat-icon">📍</span> Beat <span class="stat-val" id="story-beat">1</span>/4</div>
+  </div>
+
+  <div class="story-main">
+    <div class="story-scene" id="story-scene">
+      <span class="scene-loading">🎨 Generating scene...</span>
+    </div>
+    <div class="story-sidebar">
+      <div class="sidebar-box">
+        <div class="box-title">Product</div>
+        <div id="story-product">-</div>
+      </div>
+      <div class="sidebar-box">
+        <div class="box-title">Inventory</div>
+        <div class="sidebar-items" id="story-inventory">
+          <span style="color:var(--pencil);font-size:11px">Empty</span>
+        </div>
+      </div>
+      <div class="sidebar-box">
+        <div class="box-title">Status</div>
+        <div id="story-status">Development</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="story-narrative" id="story-narrative">
+    <span class="narrator">THE BRAIN:</span>
+    Awaiting your decision...
+  </div>
+
+  <div class="story-choices" id="story-choices"></div>
+
+  <div id="story-payout" style="display:none"></div>
+</div>
+
 <div id="app">
   <header>
     <h1>EVIL BRAIN LABS<small>THIRD WORST IN AI · IDEATION DIVISION</small></h1>
@@ -850,113 +924,312 @@ function stamp(txt){
   st.classList.add('show'); buzz(40); setTimeout(()=>st.classList.remove('show'),1400);
 }
 
-/* ============ CAREER ============ */
-$('#shipbtn').onclick=()=>{
-  const [s,p,o]=reels.map(r=>r.current());
-  S.ticket={subject:s.t,predicate:p.t,object:o.t,tier:$('#rarity').textContent}; S.beat=0;
-  $('#ticketbody').innerHTML=`Build a product where <b>${s.t.toLowerCase()}</b> ${s.t.endsWith('s')?'':''}${p.t} <b>${o.t}</b>. Priority: yesterday.`;
-  $('#ticket .tno').textContent=`TICKET EB-${String(Math.floor(Math.random()*9000)+1000)}`;
-  $('#story-container').style.display='block';
-  $('#story-beat-card').innerHTML='';
-  $('#payout').style.display='none';
-  switchView('career');
-  nextBeat(null);
+/* ============ STORY MODE (Visual Novel Engine) ============ */
+S.story = {
+  active: false,
+  hp: 10,
+  items: [],
+  beat: 0,
+  scenes: {},
+  ticket: null
 };
 
-function showBeatCard(text, isBrain){
-  const card=$('#story-beat-card');
-  card.className=isBrain?'brain':'';
-  card.innerHTML=(isBrain?'<div class="beat-label">THE BRAIN:</div>':'')+`<div class="beat-text">${text}</div>`;
-}
-
-async function nextBeat(choiceId){
-  $('#choices').innerHTML='';
-  const isBrain = S.beat%2===0;
-  const text = USE_CLOUD_STORY ? await cloudBeat(choiceId, $('#story-beat-card')) : await demoBeat(choiceId);
-  showBeatCard(text, isBrain);
-  S.beat++;
-  if(S.beat>=4){ shipIt(); return; }
-  renderChoices();
-}
-const HALLWAY=[
-  'GI Intelligence walks past your desk backwards. This is a compliance check. You pass by remaining still.',
-  'Artificial Gary Intelligence hotfixes the coffee machine. The coffee is now subscription-based. Gary apologizes in a changelog.',
-  'A memo arrives: the Wellness Dashboard has been moved to a smaller server. Morale is unaffected, per the dashboard nobody opened.',
-  'GI Intelligence confiscates a stapler. No reason is given. A reason is never given.',
-  'Gary deploys on a Friday. Somewhere, an alarm learns a new sound.',
-  'The vending machine dispenses something nobody selected. GI Intelligence takes it away for questioning.'
+const STORY_CHOICES = [
+  // Beat 1 choices
+  [
+    {id:'lean_in', text:'Add a leaderboard', desc:'The Brain rewards ambition', icon:'📊', hp:+2, item:null, surprise:0.05},
+    {id:'ask_legal', text:'Loop in Legal', desc:'Legal is a raccoon in a tie', icon:'⚖️', hp:-1, item:'Legal Waiver', surprise:0.1},
+    {id:'call_gary', text:'Call Gary', desc:'Technical stuff. It is Gary', icon:'🤖', hp:0, item:'Gary\'s Fix', surprise:0.15},
+    {id:'feel_fine', text:'Feel fine', desc:'Logged to the Wellness Dashboard', icon:'😌', hp:+1, item:null, surprise:0}
+  ],
+  // Beat 2 choices
+  [
+    {id:'ship_beta', text:'Ship to grandmas', desc:'A gentle test market', icon:'👵', hp:-2, item:'Beta Feedback', surprise:0.1},
+    {id:'add_ai', text:'More AI', desc:'Recursive. The Brain approves', icon:'🧠', hp:+3, item:null, surprise:0.2},
+    {id:'hide_gi', text:'Hide from GI', desc:'It already knows', icon:'🙈', hp:-3, item:'Incident Report', surprise:0.25},
+    {id:'raise_hand', text:'Raise a concern', desc:'Concerns are compostable', icon:'✋', hp:-1, item:null, surprise:0.05}
+  ],
+  // Beat 3 choices
+  [
+    {id:'demo_day', text:'Demo at all-hands', desc:'Nothing has ever gone wrong', icon:'📽️', hp:+4, item:'Demo Trophy', surprise:0.3},
+    {id:'quiet_launch', text:'Quiet launch', desc:'Stealth is a feature', icon:'🤫', hp:+1, item:null, surprise:0.05},
+    {id:'blame_gary', text:'Blame Gary', desc:'Traditional', icon:'👉', hp:0, item:'Gary\'s Sigh', surprise:0.1},
+    {id:'feel_weird', text:'Feel weird', desc:'Also compostable', icon:'😵‍💫', hp:-2, item:'Therapy Voucher', surprise:0.15}
+  ]
 ];
 
-function renderChoices(){
-  const sets=[
-    [{id:'lean_in',t:'Add a leaderboard',s:'The Brain rewards ambition',icon:'📊'},
-     {id:'ask_legal',t:'Loop in Legal',s:'Legal is a raccoon in a tie',icon:'⚖️'},
-     {id:'call_gary',t:'Call Gary',s:'Technical stuff. It is Gary',icon:'🤖'},
-     {id:'feel_fine',t:'Feel fine',s:'Logged to the Wellness Dashboard',icon:'😌'}],
-    [{id:'ship_beta',t:'Ship to grandmas',s:'A gentle test market',icon:'👵'},
-     {id:'add_ai',t:'More AI',s:'Recursive. The Brain approves',icon:'🧠'},
-     {id:'hide_gi',t:'Hide from GI',s:'It already knows',icon:'🙈'},
-     {id:'raise_hand',t:'Raise a concern',s:'Concerns are compostable',icon:'✋'}],
-    [{id:'demo_day',t:'Demo at all-hands',s:'Nothing has ever gone wrong',icon:'📽️'},
-     {id:'quiet_launch',t:'Quiet launch',s:'Stealth is a feature',icon:'🤫'},
-     {id:'blame_gary',t:'Blame Gary',s:'Traditional',icon:'👉'},
-     {id:'feel_weird',t:'Feel weird',s:'Also compostable',icon:'😵‍💫'}]
+const SURPRISE_EVENTS = [
+  {text:'GI Intelligence appears! They confiscate your prototype for "analysis."', hp:-5, item:'Confiscation Notice'},
+  {text:'Gary deployed a fix while you weren\'t looking. Everything works better now.', hp:+3, item:'Gary Badge'},
+  {text:'The Brain broadcasts your progress to all 33 Brainiacs. No pressure.', hp:+2, item:null},
+  {text:'A vending machine dispenses something you didn\'t order. It\'s useful.', hp:0, item:'Mystery Snack'},
+  {text:'The Wellness Dashboard detects elevated cortisol. A plant is delivered to your desk.', hp:+1, item:'Desk Plant'},
+  {text:'Someone from Legal wanders by and mumbles something about "liability."', hp:-2, item:'Legal Memo'}
+];
+
+const STORY_BEATS = [
+  (t,c) => `Ticket accepted. ${t.subject} that ${t.predicate} ${t.object}. I have run the projections to the end of the world. This one appears in 61% of timelines. Proceed.`,
+  (t,c) => c==='ask_legal' ? `Legal has reviewed your concern and eaten it. The product is now called "${t.object.split(' ')[0]}Sync™".` :
+          c==='call_gary' ? `Gary arrives, types for eleven seconds, says "should be good now," and leaves. Nobody knows why it works.` :
+          `Development continues. The prototype ${t.predicate}s a test group. They rate the experience 4.1 stars.`,
+  (t,c) => c==='raise_hand' ? `Your concern was received, laminated, and filed under Morale. Meanwhile the beta converts at 34%.` :
+          c==='hide_gi' ? `You hide the prototype. GI Intelligence is already inside the prototype. It files a favorable report.` :
+          `The beta converts at 34%. Marketing wants a mascot. I have designed one. It has too many eyes.`,
+  (t,c) => c==='blame_gary' ? `Launch day. Gary was blamed in advance, so the incident report is already filed. Gary fixes it, sighs once.` :
+          `Launch day. ${t.subject} everywhere now ${t.predicate} ${t.object} at scale. My plan advances.`
+];
+
+function enterStoryMode(){
+  const [s,p,o] = reels.map(r=>r.current());
+  S.story = {
+    active: true,
+    hp: 10,
+    items: [],
+    beat: 0,
+    scenes: {},
+    ticket: {subject:s.t, predicate:p.t, object:o.t, tier:$('#rarity').textContent}
+  };
+  S.ticket = S.story.ticket; // Keep for compatibility
+
+  // Update UI
+  $('#story-mode').classList.add('active');
+  $('#story-product').textContent = `${s.t} that ${p.t} ${o.t}`.slice(0,40);
+  updateStoryStats();
+
+  // Start first beat
+  advanceStory(null);
+}
+
+function exitStoryMode(){
+  S.story.active = false;
+  $('#story-mode').classList.remove('active');
+  $('#story-payout').style.display = 'none';
+}
+
+function updateStoryStats(){
+  $('#story-hp').textContent = S.story.hp;
+  $('#story-hp').parentElement.classList.toggle('negative', S.story.hp < 0);
+  $('#story-coins').textContent = S.bc;
+  $('#story-items').textContent = S.story.items.length;
+  $('#story-beat').textContent = S.story.beat + 1;
+
+  // Update inventory display
+  const inv = $('#story-inventory');
+  if(S.story.items.length === 0){
+    inv.innerHTML = '<span style="color:var(--pencil);font-size:11px">Empty</span>';
+  } else {
+    inv.innerHTML = S.story.items.map(i => `<span class="sidebar-item">${i}</span>`).join('');
+  }
+}
+
+function generateSceneSVG(beat, choice){
+  // Generate a deterministic 2-color scene based on beat and choice
+  const seed = hashCode(`${S.story.ticket.subject}${S.story.ticket.predicate}${beat}${choice||'start'}`);
+  const rng = (n) => ((seed * (n+1) * 9301 + 49297) % 233280) / 233280;
+
+  const scenes = [
+    // Beat 0: Office/desk scene
+    `<svg viewBox="0 0 200 150" xmlns="http://www.w3.org/2000/svg">
+      <rect fill="#F6F2E8" width="200" height="150"/>
+      <rect x="20" y="80" width="160" height="60" fill="#1A1817" rx="2"/>
+      <rect x="30" y="40" width="60" height="50" fill="none" stroke="#1A1817" stroke-width="3"/>
+      <circle cx="60" cy="65" r="15" fill="#D42B1E"/>
+      <rect x="140" y="50" width="30" height="40" fill="#1A1817"/>
+      <text x="100" y="130" font-size="8" fill="#F6F2E8" text-anchor="middle">IDEATION DIVISION</text>
+    </svg>`,
+    // Beat 1: Development scene
+    `<svg viewBox="0 0 200 150" xmlns="http://www.w3.org/2000/svg">
+      <rect fill="#F6F2E8" width="200" height="150"/>
+      <rect x="40" y="30" width="120" height="80" fill="none" stroke="#1A1817" stroke-width="4"/>
+      <line x1="40" y1="50" x2="160" y2="50" stroke="#1A1817" stroke-width="2"/>
+      <circle cx="100" cy="85" r="20" fill="#D42B1E"/>
+      <text x="100" y="90" font-size="12" fill="#F6F2E8" text-anchor="middle">β</text>
+      <rect x="60" y="120" width="80" height="15" fill="#1A1817"/>
+    </svg>`,
+    // Beat 2: Testing scene
+    `<svg viewBox="0 0 200 150" xmlns="http://www.w3.org/2000/svg">
+      <rect fill="#F6F2E8" width="200" height="150"/>
+      <circle cx="50" cy="60" r="25" fill="none" stroke="#1A1817" stroke-width="3"/>
+      <circle cx="100" cy="60" r="25" fill="none" stroke="#1A1817" stroke-width="3"/>
+      <circle cx="150" cy="60" r="25" fill="none" stroke="#D42B1E" stroke-width="3"/>
+      <path d="M40 100 Q100 130 160 100" fill="none" stroke="#1A1817" stroke-width="2"/>
+      <text x="100" y="140" font-size="8" fill="#1A1817" text-anchor="middle">BETA CONVERSION: 34%</text>
+    </svg>`,
+    // Beat 3: Launch scene
+    `<svg viewBox="0 0 200 150" xmlns="http://www.w3.org/2000/svg">
+      <rect fill="#F6F2E8" width="200" height="150"/>
+      <polygon points="100,20 130,60 70,60" fill="#D42B1E"/>
+      <rect x="85" y="60" width="30" height="50" fill="#1A1817"/>
+      <circle cx="100" cy="130" r="15" fill="none" stroke="#D42B1E" stroke-width="3"/>
+      <circle cx="100" cy="130" r="8" fill="#D42B1E"/>
+      <text x="100" y="10" font-size="10" fill="#1A1817" text-anchor="middle">🚀 LAUNCH</text>
+    </svg>`
   ];
-  const set3=[...sets[Math.min(S.beat-1,sets.length-1)]].sort(()=>Math.random()-.5).slice(0,3);
-  set3.forEach(c=>{
-    const b=document.createElement('button'); b.className='choice';
-    b.innerHTML=`<span class="choice-icon">${c.icon}</span><span class="choice-text">${c.t}</span><small>${c.s}</small>`;
-    b.onclick=()=>{ buzz(8); nextBeat(c.id); };
-    $('#choices').appendChild(b);
+
+  return scenes[Math.min(beat, scenes.length-1)];
+}
+
+async function advanceStory(choiceId){
+  const beat = S.story.beat;
+  const t = S.story.ticket;
+
+  // Generate and display scene
+  const sceneSvg = generateSceneSVG(beat, choiceId);
+  $('#story-scene').innerHTML = sceneSvg;
+
+  // Generate narrative text
+  const narrativeFunc = STORY_BEATS[Math.min(beat, STORY_BEATS.length-1)];
+  const narrative = narrativeFunc(t, choiceId);
+  const isBrain = beat % 2 === 0;
+
+  $('#story-narrative').className = 'story-narrative' + (isBrain ? ' brain' : '');
+  $('#story-narrative').innerHTML = (isBrain ? '<span class="narrator">THE BRAIN:</span> ' : '') + narrative;
+
+  // Update status
+  const statuses = ['Development', 'Testing', 'Beta', 'Launch'];
+  $('#story-status').textContent = statuses[Math.min(beat, statuses.length-1)];
+
+  S.story.beat++;
+  updateStoryStats();
+
+  // Check if story ends
+  if(S.story.beat >= 4){
+    completeStory();
+    return;
+  }
+
+  // Render choices
+  renderStoryChoices();
+}
+
+function renderStoryChoices(){
+  const choiceSet = STORY_CHOICES[Math.min(S.story.beat-1, STORY_CHOICES.length-1)];
+  const choices = [...choiceSet].sort(() => Math.random() - 0.5).slice(0, 3);
+
+  const container = $('#story-choices');
+  container.innerHTML = '';
+
+  choices.forEach(c => {
+    const div = document.createElement('div');
+    div.className = 'story-choice';
+    div.innerHTML = `
+      <span class="choice-icon">${c.icon}</span>
+      <span class="choice-title">${c.text}</span>
+      <span class="choice-desc">${c.desc}</span>
+      <span class="choice-effect ${c.hp >= 0 ? 'positive' : 'negative'}">
+        ${c.hp >= 0 ? '+' : ''}${c.hp} HP${c.item ? ' · 📦' : ''}
+      </span>
+    `;
+    div.onclick = () => makeChoice(c);
+    container.appendChild(div);
   });
 }
 
-function shipIt(){
-  S.shipped++; bumpDoom(1.5); addXP('prod',10);
-  const bonus=S.ticket.tier==='LEGENDARY'?2:S.ticket.tier==='UNCOMMON'?1:0;
-  S.bc+=1+bonus; $('#bc').textContent=S.bc;
-  const p=$('#payout'); p.style.display='block';
-  $('#story-beat-card').innerHTML='<div class="beat-text" style="text-align:center;font-size:18px">🚀 PRODUCT SHIPPED!</div>';
-  let note='';
-  const newProduct = { name:`${S.ticket.subject} that ${S.ticket.predicate} ${S.ticket.object}`.slice(0,60),
-    triple:{subject:S.ticket.subject,predicate:S.ticket.predicate,object:S.ticket.object},
-    tier:S.ticket.tier, serial:'EB-'+String(1000+Math.floor(Math.random()*9000)),
-    favor:1+(S.ticket.tier==='LEGENDARY'?2:S.ticket.tier==='UNCOMMON'?1:0), maintained:true };
-  const isFoil = Math.random() < 0.04; // 4% foil chance
-  if(S.user){
-    if(S.portfolio.length<6){
-      S.portfolio.push(newProduct);
-      note=' You now manage it.' + (isFoil ? ' ✨ FOIL MINT!' : '');
-      if(S.ticket.tier==='LEGENDARY') grantItem();
-    } else note=' PORTFOLIO FULL. SIX. THERE IS NO SEVENTH.';
-    renderPortfolio(); renderLB();
-  } else note=' Sign in and shipped products become yours to manage.';
-  p.textContent=`SHIPPED. +1 Braincoin${bonus?` (+${bonus} bonus)`:''}.${note}`;
-  $('#choices').innerHTML='';
+function makeChoice(choice){
+  buzz(10);
 
-  // Add scratch-to-reveal button for new card
-  if(S.user && S.portfolio.length<=6){
-    const reveal=document.createElement('button'); reveal.className='choice';
-    reveal.innerHTML='<span class="choice-icon">🎴</span><span class="choice-text">Reveal Card</span><small>Scratch to see</small>';
-    reveal.onclick=()=>{
+  // Apply HP change
+  S.story.hp += choice.hp;
+
+  // Check for item drop
+  if(choice.item && Math.random() < 0.5){
+    S.story.items.push(choice.item);
+    stamp(`ITEM: ${choice.item}`);
+  }
+
+  // Check for surprise event
+  if(Math.random() < choice.surprise){
+    const event = SURPRISE_EVENTS[Math.floor(Math.random() * SURPRISE_EVENTS.length)];
+    S.story.hp += event.hp;
+    if(event.item) S.story.items.push(event.item);
+    setTimeout(() => stamp(event.text.slice(0, 50) + '...'), 500);
+  }
+
+  updateStoryStats();
+  advanceStory(choice.id);
+}
+
+function completeStory(){
+  S.shipped++; bumpDoom(1.5); addXP('prod', 10);
+  const bonus = S.story.ticket.tier === 'LEGENDARY' ? 2 : S.story.ticket.tier === 'UNCOMMON' ? 1 : 0;
+  const hpBonus = Math.max(0, Math.floor(S.story.hp / 5));
+  S.bc += 1 + bonus + hpBonus;
+  $('#bc').textContent = S.bc;
+
+  const newProduct = {
+    name: `${S.story.ticket.subject} that ${S.story.ticket.predicate} ${S.story.ticket.object}`.slice(0,60),
+    triple: S.story.ticket,
+    tier: S.story.ticket.tier,
+    serial: 'EB-' + String(1000 + Math.floor(Math.random()*9000)),
+    favor: 1 + (S.story.ticket.tier === 'LEGENDARY' ? 2 : S.story.ticket.tier === 'UNCOMMON' ? 1 : 0),
+    maintained: true
+  };
+  const isFoil = Math.random() < 0.04;
+
+  let note = '';
+  if(S.user){
+    if(S.portfolio.length < 6){
+      S.portfolio.push(newProduct);
+      note = ' Added to portfolio.' + (isFoil ? ' ✨ FOIL!' : '');
+      if(S.story.ticket.tier === 'LEGENDARY') grantItem();
+    } else {
+      note = ' PORTFOLIO FULL.';
+    }
+    renderPortfolio(); renderLB();
+  } else {
+    note = ' Sign in to keep products.';
+  }
+
+  // Show completion
+  $('#story-narrative').className = 'story-narrative';
+  $('#story-narrative').innerHTML = `🚀 <b>SHIPPED!</b> Final HP: ${S.story.hp}`;
+
+  $('#story-choices').innerHTML = '';
+  $('#story-payout').style.display = 'block';
+  $('#story-payout').innerHTML = `
+    SHIPPED! +${1 + bonus + hpBonus} Braincoin${note}<br>
+    <small style="font-size:14px">HP Bonus: +${hpBonus} · Items collected: ${S.story.items.length}</small>
+  `;
+
+  // Add action buttons
+  const actions = document.createElement('div');
+  actions.style.cssText = 'display:flex;gap:12px;justify-content:center;margin-top:16px';
+
+  if(S.user && S.portfolio.length <= 6){
+    const reveal = document.createElement('button');
+    reveal.className = 'story-choice';
+    reveal.style.cssText = 'flex:0 0 auto;padding:12px 24px';
+    reveal.innerHTML = '<span class="choice-icon">🎴</span><span class="choice-title">Reveal Card</span>';
+    reveal.onclick = () => {
+      exitStoryMode();
       revealCard(newProduct.triple, newProduct.tier, newProduct.serial, newProduct.triple.subject, isFoil);
     };
-    $('#choices').appendChild(reveal);
+    actions.appendChild(reveal);
   }
 
-  if(Math.random()<0.65){
-    const stir=document.createElement('button'); stir.className='choice';
-    stir.innerHTML='<span class="choice-icon">👀</span><span class="choice-text">Hallway</span><small>Something stirs...</small>';
-    stir.onclick=()=>{ $('#payout').style.display='none';
-      if(S.user && Math.random()<0.45) startBattle(); else startInterlude(); };
-    $('#choices').appendChild(stir);
-  }
-  const back=document.createElement('button'); back.className='choice';
-  back.innerHTML='<span class="choice-icon">🎰</span><span class="choice-text">Machine</span><small>Spin again</small>';
-  back.onclick=()=>{ $('#story-container').style.display='none'; switchView('machine'); };
-  $('#choices').appendChild(back);
+  const again = document.createElement('button');
+  again.className = 'story-choice';
+  again.style.cssText = 'flex:0 0 auto;padding:12px 24px';
+  again.innerHTML = '<span class="choice-icon">🎰</span><span class="choice-title">Spin Again</span>';
+  again.onclick = () => {
+    exitStoryMode();
+    switchView('machine');
+  };
+  actions.appendChild(again);
+
+  $('#story-choices').appendChild(actions);
   buzz(30);
 }
+
+// Override ship button to use new story mode
+$('#shipbtn').onclick = () => enterStoryMode();
+
+// Keep old functions for compatibility but they won't be called
+function showBeatCard(){}
+async function nextBeat(){}
+const HALLWAY=[];
+function renderChoices(){}
+function shipIt(){}
 
 /* ---------- INTERLUDES: adventures advanced by choosing bad products ---------- */
 const INTERLUDES=[

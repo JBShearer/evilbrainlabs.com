@@ -609,7 +609,7 @@ document.addEventListener('DOMContentLoaded', () => {
   initSupabase();
   console.log('Supabase client:', !!supabaseClient);
   loadCasesFromDB().then(() => {
-    console.log('Cases loaded, REG length:', REG.length);
+    console.log('Cases loaded, count:', typeof REG !== 'undefined' ? REG.length : 0);
   });
 });
 
@@ -1073,16 +1073,20 @@ function placeInSlot(slot,text){
   const el=document.querySelector(`.slot[data-slot="${slot}"]`);
   el.textContent=text; el.classList.add('filled');
 }
-$('#addrel').onclick=()=>{
-  const {subject,predicate,object}=F.slots;
-  if(!subject||!predicate||!object){ stamp('INCOMPLETE FORM'); return; }
-  const qual=$('#uc-qual').value.trim();
-  F.staged.push({subject,predicate,object,qual}); $('#uc-qual').value='';
-  ['subject','predicate','object'].forEach(k=>{ F.slots[k]=null;
-    const el=document.querySelector(`.slot[data-slot="${k}"]`);
-    el.textContent='drop or tap'; el.classList.remove('filled'); });
-  renderStaged(); buzz(12);
-};
+// Only set up addrel if the element exists (full filing is on UCAR now)
+if($('#addrel')){
+  $('#addrel').onclick=()=>{
+    const {subject,predicate,object}=F.slots;
+    if(!subject||!predicate||!object){ stamp('INCOMPLETE FORM'); return; }
+    const qual=$('#uc-qual').value?.trim() || '';
+    F.staged.push({subject,predicate,object,qual}); if($('#uc-qual')) $('#uc-qual').value='';
+    ['subject','predicate','object'].forEach(k=>{ F.slots[k]=null;
+      const el=document.querySelector(`.slot[data-slot="${k}"]`);
+      if(el){ el.textContent='drop or tap'; el.classList.remove('filled'); }
+    });
+    renderStaged(); buzz(12);
+  };
+}
 function renderStaged(){
   const l=$('#stagedlist'); l.innerHTML='';
   F.staged.forEach((tr,i)=>{
@@ -1102,7 +1106,7 @@ $('#filebtn2').onclick=async()=>requireAuth(async()=>{
   const desc=$('#uc-desc').value.trim();
   // pending slot counts as a relationship if complete
   const {subject,predicate,object}=F.slots;
-  if(subject&&predicate&&object) $('#addrel').click();
+  if(subject&&predicate&&object && $('#addrel')) $('#addrel').click();
   if(!title && !desc && F.staged.length===0){ stamp('THE FORM IS EMPTY'); return; }
 
   const filingTitle = title || (F.staged[0]?`${F.staged[0].subject} that ${F.staged[0].predicate} ${F.staged[0].object}`:'Untitled Bad Idea');

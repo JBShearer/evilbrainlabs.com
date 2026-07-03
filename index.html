@@ -598,8 +598,8 @@ body.defcon #doomgap{color:var(--crayon)}
   <div id="bigstamp"><div>THE BRAIN IS EXCITED</div></div>
 
   <nav>
-    <button data-v="career">Career</button>
     <button data-v="machine" class="active">Machine</button>
+    <button data-v="career">Career</button>
     <button data-v="store">Store</button>
     <button data-v="brain">Brain</button>
     <a href="https://usecasearmsrace.com" style="font-family:var(--hand);padding:6px 10px;text-decoration:none;border:2px solid var(--ink);background:var(--paper);color:var(--ink)">Cases ↗</a>
@@ -906,11 +906,6 @@ function renderChoices(){
   set3.forEach(c=>{
     const b=document.createElement('button'); b.className='choice';
     b.innerHTML=`<span class="choice-icon">${c.icon}</span><span class="choice-text">${c.t}</span><small>${c.s}</small>`;
-    b.onclick=()=>{ buzz(8); nextBeat(c.id); };
-    $('#choices').appendChild(b);
-  });
-}
-    b.innerHTML=`${c.t}<small>${c.s}</small>`;
     b.onclick=()=>{ buzz(8); nextBeat(c.id); };
     $('#choices').appendChild(b);
   });

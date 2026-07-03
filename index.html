@@ -1039,13 +1039,41 @@ function loadLocalProgress(){
       const data = JSON.parse(raw);
       if(data.bc) S.bc = data.bc;
       if(data.products) S.products = data.products;
+      // Sync shipped triples from local products
+      syncShippedTriples();
     }
   } catch(e){}
 }
 
+// Sync shippedTriples Set from all known products (portfolio + local)
+function syncShippedTriples(){
+  // From signed-in portfolio
+  if(S.portfolio && S.portfolio.length > 0){
+    S.portfolio.forEach(p => {
+      if(p.triple){
+        const key = `${p.triple.subject}|${p.triple.predicate}|${p.triple.object}`.toLowerCase();
+        shippedTriples.add(key);
+      }
+    });
+  }
+  // From local storage products
+  if(S.products && S.products.length > 0){
+    S.products.forEach(p => {
+      if(p.triple){
+        const key = `${p.triple.subject}|${p.triple.predicate}|${p.triple.object}`.toLowerCase();
+        shippedTriples.add(key);
+      }
+    });
+  }
+  console.log('Synced shipped triples:', shippedTriples.size);
+}
+
 // Initialize local progress on load for unsigned users
 document.addEventListener('DOMContentLoaded', () => {
-  setTimeout(() => { if(!S.user?.id) loadLocalProgress(); }, 500);
+  setTimeout(() => {
+    if(!S.user?.id) loadLocalProgress();
+    syncShippedTriples(); // Always sync on load
+  }, 500);
 });
 
 S.story = {
@@ -1405,8 +1433,57 @@ const STORY_BEATS = [
           `Launch day. ${t.subject} everywhere now ${t.predicate} ${t.object} at scale. My plan advances.`
 ];
 
+// Check if a triple is unique (not shipped before)
+function isUniqueTriple(s, p, o){
+  const key = `${s}|${p}|${o}`.toLowerCase();
+  return !shippedTriples.has(key);
+}
+
+// Find a unique combination by spinning specific reels
+function findUniqueCombo(maxAttempts = 50){
+  const [sReel, pReel, oReel] = reels;
+
+  for(let i = 0; i < maxAttempts; i++){
+    const s = VOCAB.subject[Math.floor(Math.random() * VOCAB.subject.length)].t;
+    const p = VOCAB.predicate[Math.floor(Math.random() * VOCAB.predicate.length)].t;
+    const o = VOCAB.object[Math.floor(Math.random() * VOCAB.object.length)].t;
+
+    if(isUniqueTriple(s, p, o)){
+      return {s, p, o};
+    }
+  }
+  return null; // All combos exhausted (unlikely with large vocab)
+}
+
 function enterStoryMode(){
   const [s,p,o] = reels.map(r=>r.current());
+
+  // Check for duplicate BEFORE starting story
+  if(!isUniqueTriple(s.t, p.t, o.t)){
+    // Find a unique combo and auto-spin to it
+    const unique = findUniqueCombo();
+    if(unique){
+      stamp('DUPLICATE! REROLLING...');
+      // Spin reels to the unique combo
+      const sIdx = VOCAB.subject.findIndex(x => x.t === unique.s);
+      const pIdx = VOCAB.predicate.findIndex(x => x.t === unique.p);
+      const oIdx = VOCAB.object.findIndex(x => x.t === unique.o);
+
+      S.busy = true;
+      let pending = 3;
+      const done = () => { if(--pending === 0){ S.busy = false; setTimeout(enterStoryMode, 300); }};
+
+      reels[0].spinTo(sIdx >= 0 ? sIdx : 0, 2, 800, done);
+      reels[1].spinTo(pIdx >= 0 ? pIdx : 0, 2, 900, done);
+      reels[2].spinTo(oIdx >= 0 ? oIdx : 0, 2, 1000, done);
+      return;
+    } else {
+      // Extremely rare: all combos used
+      stamp('ALL PRODUCTS INVENTED!');
+      return;
+    }
+  }
+
   S.story = {
     active: true,
     hp: 10,
@@ -1616,28 +1693,8 @@ function makeChoice(choice){
 }
 
 function completeStory(){
-  // Create triple key for uniqueness check
+  // Mark this triple as shipped (uniqueness already checked in enterStoryMode)
   const tripleKey = `${S.story.ticket.subject}|${S.story.ticket.predicate}|${S.story.ticket.object}`.toLowerCase();
-
-  // Check if this exact triple has been shipped before
-  if(shippedTriples.has(tripleKey)){
-    // Duplicate product - reject and show warning
-    $('#story-narrative').className = 'story-narrative';
-    $('#story-narrative').innerHTML = `⚠️ <b>REJECTED!</b> This exact product already exists in the registry. The Brain does not tolerate redundancy. Spin again for a unique combination.`;
-    $('#story-choices').innerHTML = '';
-    $('#story-payout').style.display = 'block';
-    $('#story-payout').innerHTML = `DUPLICATE DETECTED. No coins awarded.<br><small>Try a different combination.</small>`;
-
-    const again = document.createElement('button');
-    again.className = 'story-choice';
-    again.style.cssText = 'margin:16px auto;display:block;padding:12px 24px';
-    again.innerHTML = '<span class="choice-icon">🎰</span><span class="choice-title">Spin Again</span>';
-    again.onclick = () => { exitStoryMode(); show('machine'); };
-    $('#story-payout').appendChild(again);
-    return;
-  }
-
-  // Mark this triple as shipped
   shippedTriples.add(tripleKey);
 
   S.shipped++; bumpDoom(1.5); addXP('prod', 10);

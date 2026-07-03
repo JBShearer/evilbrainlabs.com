@@ -1753,9 +1753,13 @@ function enterStoryMode(){
     items: [],
     beat: 0,
     scenes: {},
+    narratives: {},  // Cached narratives by node hash
     ticket: {subject:s.t, predicate:p.t, object:o.t, tier:$('#rarity').textContent},
     branch: [],
-    encounter: null
+    encounter: null,
+    currentChoices: null,
+    patternsUsed: [],
+    choiceShownAt: null
   };
   S.ticket = S.story.ticket; // Keep for compatibility
 

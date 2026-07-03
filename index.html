@@ -690,7 +690,8 @@ const CONFIG = {
   SUPABASE_URL: "https://aslcrwmbdtvimjrexxzw.supabase.co",
   SUPABASE_ANON_KEY: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFzbGNyd21iZHR2aW1qcmV4eHp3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODExNDA0NjgsImV4cCI6MjA5NjcxNjQ2OH0.XYG0LrgA_92h7dGjw0aamX53WIrwQaqPHNHQLe8p9ls",
   STORY_FN: "",            // optional: streaming story beats from edge function
-  SCENE_FN: "generate_scene" // scene generation edge function
+  SCENE_FN: "generate_scene", // scene generation edge function
+  VIGNETTE_FN: "generate_vignette" // card vignette generation
 };
 
 /* ================= SUPABASE CLIENT ================= */
@@ -752,6 +753,8 @@ document.addEventListener('DOMContentLoaded', () => {
   console.log('DOM loaded, initializing Supabase...');
   initSupabase();
   console.log('Supabase client:', !!supabaseClient);
+  // Load vocab from graph after short delay to ensure Supabase is ready
+  setTimeout(() => loadVocabFromSupabase(), 500);
   loadCasesFromDB().then(() => {
     console.log('Cases loaded, count:', typeof REG !== 'undefined' ? REG.length : 0);
   });
@@ -760,8 +763,8 @@ document.addEventListener('DOMContentLoaded', () => {
 const DEMO = !CONFIG.SUPABASE_URL;
 const USE_CLOUD_STORY = CONFIG.STORY_FN && CONFIG.STORY_FN.length > 0;
 
-/* ============ SEED VOCAB (demo; replace with Supabase fetch) ============ */
-const VOCAB = {
+/* ============ VOCAB (loaded from Supabase, fallback to seed) ============ */
+const SEED_VOCAB = {
   subject: [
     {t:"Landlords",w:3},{t:"Dating apps",w:3},{t:"Your HOA",w:2},{t:"A fleet of drones",w:1},
     {t:"Middle managers",w:2},{t:"Smart fridges",w:3},{t:"The DMV",w:2},{t:"Toddler influencers",w:1},
@@ -778,6 +781,84 @@ const VOCAB = {
     {t:"parole officers",w:1},{t:"book clubs",w:1},{t:"emotional support animals",w:2},{t:"city council",w:1}
   ]
 };
+
+// Live vocab - starts as seed, replaced by Supabase data when loaded
+let VOCAB = JSON.parse(JSON.stringify(SEED_VOCAB));
+let vocabLoaded = false;
+
+// Load vocabulary from Supabase entities and predicates tables
+async function loadVocabFromSupabase() {
+  if (!supabaseClient || vocabLoaded) return;
+
+  try {
+    // Load entities for subjects and objects
+    const { data: entities, error: entErr } = await supabaseClient
+      .from('entities')
+      .select('canonical_name, entity_kind')
+      .limit(100);
+
+    // Load predicates for verbs
+    const { data: predicates, error: predErr } = await supabaseClient
+      .from('predicates')
+      .select('label')
+      .eq('tier', 'entity')
+      .eq('status', 'approved')
+      .limit(50);
+
+    if (entErr || predErr) {
+      console.log('Vocab load error, using seed:', entErr || predErr);
+      return;
+    }
+
+    if (entities && entities.length > 0) {
+      // Split entities into subjects (orgs, products, tech) and objects (people, data)
+      const subjectKinds = ['org', 'product', 'tech', 'person_class'];
+      const objectKinds = ['person_class', 'data_type', 'event'];
+
+      const subjects = entities
+        .filter(e => !e.entity_kind || subjectKinds.includes(e.entity_kind))
+        .map(e => ({ t: e.canonical_name, w: 2 }));
+
+      const objects = entities
+        .filter(e => !e.entity_kind || objectKinds.includes(e.entity_kind))
+        .map(e => ({ t: e.canonical_name, w: 2 }));
+
+      if (subjects.length >= 5) {
+        VOCAB.subject = [...subjects, ...SEED_VOCAB.subject.slice(0, 3)];
+      }
+      if (objects.length >= 5) {
+        VOCAB.object = [...objects, ...SEED_VOCAB.object.slice(0, 3)];
+      }
+    }
+
+    if (predicates && predicates.length >= 5) {
+      VOCAB.predicate = predicates.map(p => ({ t: p.label, w: 2 }));
+      // Add some seed predicates for variety
+      VOCAB.predicate.push(...SEED_VOCAB.predicate.slice(0, 4));
+    }
+
+    vocabLoaded = true;
+    console.log('Vocab loaded from Supabase:', {
+      subjects: VOCAB.subject.length,
+      predicates: VOCAB.predicate.length,
+      objects: VOCAB.object.length
+    });
+
+    // Rebuild reels with new vocab
+    if (typeof reels !== 'undefined' && reels.length > 0) {
+      reels.forEach(r => {
+        r.items = VOCAB[r.kind];
+        r.n = r.items.length;
+        r.rebuild();
+      });
+    }
+  } catch (e) {
+    console.log('Vocab load failed, using seed:', e);
+  }
+}
+
+// Track shipped products for uniqueness check
+let shippedTriples = new Set();
 
 /* ============ STATE ============ */
 const S = { bc:3, ticket:null, beat:0, busy:false };
@@ -884,6 +965,16 @@ class Reel {
     this.strip.style.transform=`translateY(${y}px)`;
   }
   current(){ const i=((Math.round(this.pos)%this.n)+this.n)%this.n; return this.items[i]; }
+  rebuild(){
+    // Rebuild strip with new vocab items
+    this.strip.innerHTML = '';
+    for(let c=0;c<3;c++) this.items.forEach(it=>{
+      const d=document.createElement('div'); d.className='cell'+(it.w>=3?' hot':''); d.textContent=it.t;
+      this.strip.appendChild(d);
+    });
+    this.pos = Math.random()*this.n;
+    this.render();
+  }
 }
 
 function weightedIndex(items){
@@ -1096,6 +1187,7 @@ async function renderProgressiveSVG(container, svgSource){
 async function fetchOrGenerateScene(nodeHash, ticket, beat, choice, branch){
   // Check local cache first
   if(S.story.scenes[nodeHash]){
+    console.log('Scene from local cache:', nodeHash);
     return S.story.scenes[nodeHash];
   }
 
@@ -1109,14 +1201,18 @@ async function fetchOrGenerateScene(nodeHash, ticket, beat, choice, branch){
         .single();
 
       if(data?.svg){
+        console.log('Scene from Supabase cache:', nodeHash);
         S.story.scenes[nodeHash] = data.svg;
         return data.svg;
       }
-    } catch(e){} // Cache miss, continue to generate
+    } catch(e){
+      console.log('Scene cache miss (expected on first visit):', nodeHash);
+    }
   }
 
-  // Generate via LLM edge function (streaming)
+  // Generate via LLM edge function
   if(CONFIG.SUPABASE_URL && CONFIG.SCENE_FN){
+    console.log('Requesting scene generation:', nodeHash, `${CONFIG.SUPABASE_URL}/functions/v1/${CONFIG.SCENE_FN}`);
     try {
       const scenePrompt = buildScenePrompt(ticket, beat, choice);
       const response = await fetch(`${CONFIG.SUPABASE_URL}/functions/v1/${CONFIG.SCENE_FN}`, {
@@ -1134,22 +1230,34 @@ async function fetchOrGenerateScene(nodeHash, ticket, beat, choice, branch){
         })
       });
 
+      console.log('Scene generation response:', response.status, response.ok);
+
       if(response.ok){
         const result = await response.json();
+        console.log('Scene generation result:', result.success, result.source, result.svg ? 'has SVG' : 'no SVG');
         if(result.svg){
           const sanitized = sanitizeSVG(result.svg);
           if(sanitized){
+            console.log('Scene sanitized successfully');
             S.story.scenes[nodeHash] = sanitized;
             return sanitized;
+          } else {
+            console.log('Scene sanitization failed');
           }
         }
+      } else {
+        const errorText = await response.text();
+        console.log('Scene generation error:', errorText);
       }
     } catch(e){
       console.log('Scene generation failed, using fallback:', e);
     }
+  } else {
+    console.log('Scene generation skipped - no SCENE_FN configured');
   }
 
   // Fallback to geometric scene
+  console.log('Using geometric fallback for:', nodeHash);
   const seed = hashCode(nodeHash);
   const fallback = fallbackSceneSVG(beat, seed);
   S.story.scenes[nodeHash] = fallback;
@@ -1175,6 +1283,41 @@ STRICT RULES:
 - Elements ordered BACK TO FRONT for progressive reveal
 - First element should be background rect
 - Keep it simple: 10-20 elements max`;
+}
+
+// Generate unique card vignette for a product (fire-and-forget)
+async function generateCardVignette(product){
+  if(!CONFIG.SUPABASE_URL || !CONFIG.VIGNETTE_FN) return;
+
+  const t = product.triple;
+  const vignetteKey = `card_${hashCode(`${t.subject}|${t.predicate}|${t.object}`).toString(36)}`;
+
+  try {
+    // Request vignette generation
+    const response = await fetch(`${CONFIG.SUPABASE_URL}/functions/v1/${CONFIG.VIGNETTE_FN}`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${CONFIG.SUPABASE_ANON_KEY}`
+      },
+      body: JSON.stringify({
+        node_hash: vignetteKey,
+        subject: t.subject,
+        predicate: t.predicate,
+        object: t.object
+      })
+    });
+
+    if(response.ok){
+      const result = await response.json();
+      if(result.svg || result.vignette_url){
+        product.vignette = result.svg || result.vignette_url;
+        console.log('Card vignette generated:', vignetteKey);
+      }
+    }
+  } catch(e){
+    console.log('Card vignette generation failed:', e);
+  }
 }
 
 // ENCOUNTER SYSTEM - battles, side quests, random events
@@ -1473,23 +1616,55 @@ function makeChoice(choice){
 }
 
 function completeStory(){
+  // Create triple key for uniqueness check
+  const tripleKey = `${S.story.ticket.subject}|${S.story.ticket.predicate}|${S.story.ticket.object}`.toLowerCase();
+
+  // Check if this exact triple has been shipped before
+  if(shippedTriples.has(tripleKey)){
+    // Duplicate product - reject and show warning
+    $('#story-narrative').className = 'story-narrative';
+    $('#story-narrative').innerHTML = `⚠️ <b>REJECTED!</b> This exact product already exists in the registry. The Brain does not tolerate redundancy. Spin again for a unique combination.`;
+    $('#story-choices').innerHTML = '';
+    $('#story-payout').style.display = 'block';
+    $('#story-payout').innerHTML = `DUPLICATE DETECTED. No coins awarded.<br><small>Try a different combination.</small>`;
+
+    const again = document.createElement('button');
+    again.className = 'story-choice';
+    again.style.cssText = 'margin:16px auto;display:block;padding:12px 24px';
+    again.innerHTML = '<span class="choice-icon">🎰</span><span class="choice-title">Spin Again</span>';
+    again.onclick = () => { exitStoryMode(); show('machine'); };
+    $('#story-payout').appendChild(again);
+    return;
+  }
+
+  // Mark this triple as shipped
+  shippedTriples.add(tripleKey);
+
   S.shipped++; bumpDoom(1.5); addXP('prod', 10);
   const bonus = S.story.ticket.tier === 'LEGENDARY' ? 2 : S.story.ticket.tier === 'UNCOMMON' ? 1 : 0;
   const hpBonus = Math.max(0, Math.floor(S.story.hp / 5));
   S.bc += 1 + bonus + hpBonus;
   $('#bc').textContent = S.bc;
 
+  // Generate unique serial (hash-based for true uniqueness)
+  const serialHash = hashCode(tripleKey + Date.now());
+  const serial = 'EB-' + Math.abs(serialHash).toString(36).toUpperCase().slice(0,6);
+
   const newProduct = {
     name: `${S.story.ticket.subject} that ${S.story.ticket.predicate} ${S.story.ticket.object}`.slice(0,60),
     triple: S.story.ticket,
     tier: S.story.ticket.tier,
-    serial: 'EB-' + String(1000 + Math.floor(Math.random()*9000)),
+    serial: serial,
     favor: 1 + (S.story.ticket.tier === 'LEGENDARY' ? 2 : S.story.ticket.tier === 'UNCOMMON' ? 1 : 0),
     maintained: true,
     items: S.story.items,
-    finalHp: S.story.hp
+    finalHp: S.story.hp,
+    vignette: null // Will be populated by card generation
   };
   const isFoil = Math.random() < 0.04;
+
+  // Generate unique card vignette (fire-and-forget)
+  generateCardVignette(newProduct);
 
   let note = '';
   if(S.user){

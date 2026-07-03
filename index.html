@@ -717,7 +717,7 @@ const CONFIG = {
 
   // Feature flags for gradual rollout
   USE_DYNAMIC_NARRATIVE: true, // Enable LLM-generated narrative (fallback to static if off/fails)
-  NARRATIVE_TIMEOUT_MS: 5000   // Max wait for narrative before falling back to static
+  NARRATIVE_TIMEOUT_MS: 8000   // Max wait for narrative before falling back to static
 };
 
 // Session ID for anonymous engagement tracking
@@ -1474,7 +1474,13 @@ async function generateBeatContent(ticket, beat, previousChoices, runningJokes) 
 
       if(response.ok){
         const result = await response.json();
-        console.log('Narrative generation result:', result.success, result.cached ? 'cached' : 'fresh');
+        console.log('Narrative generation result:', {
+          success: result.success,
+          cached: result.cached,
+          source: result.source,
+          choiceCount: result.choices?.length,
+          hasItems: result.choices?.some(c => c.item)
+        });
         if(result.narrative && result.choices){
           const content = {
             narrative: result.narrative,

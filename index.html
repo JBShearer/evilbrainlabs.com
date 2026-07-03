@@ -1029,7 +1029,7 @@ async function demoBeat(choice){
 }
 async function typewrite(el,text){
   if(reduceMotion){ el.textContent=text; return; }
-  for(const ch of text){ el.textContent+=ch; feedScroll(); await new Promise(r=>setTimeout(r,12)); }
+  for(const ch of text){ el.textContent+=ch; await new Promise(r=>setTimeout(r,12)); }
 }
 
 /* cloud story: streams SSE from the story-beat edge function */

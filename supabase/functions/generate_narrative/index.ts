@@ -66,6 +66,7 @@ interface GeneratedChoice {
   icon: string;
   hp: number;
   item: string | null;
+  item_rarity: "COMMON" | "UNCOMMON" | "LEGENDARY" | null;
   encounter: number;
 }
 
@@ -136,6 +137,16 @@ Example: ${pattern.example}
 === ENTITY PERSONALITIES ===
 ${ENTITY_PERSONALITIES}
 
+=== ITEMS SYSTEM ===
+Items are rewards/consequences. Each has a rarity that affects battle bonuses:
+- COMMON (70%): Minor buffs like "Coffee Mug", "Sticky Note", "Lanyard"
+- UNCOMMON (25%): Meaningful buffs like "Gary's Toolkit", "Legal Loophole", "Wellness Plant"
+- LEGENDARY (5%): Rare game-changers like "Recursive Algorithm", "Insider Knowledge", "The Brain's Favor"
+
+Item names should be contextual to the product and choice. Example:
+- Product about surveillance + choice to add AI → item "Panopticon Module" (UNCOMMON)
+- Product about monetization + risky choice → item "Dark Pattern Template" (LEGENDARY)
+
 === GENERATE ===
 
 NARRATIVE (2-3 sentences):
@@ -146,18 +157,29 @@ NARRATIVE (2-3 sentences):
 - Callback a running joke if it fits
 
 CHOICES (exactly 4):
-- Distinct approaches
-- HP range: -3 to +4
-- One "feel weird" emotional option
-- One involving Gary, Legal, or GI
-- Foreshadowing in descriptions
-- encounter: 0.05-0.35 based on risk
+Generate UNIQUE choices based on the product and story so far. Do NOT use generic templates.
+- Each choice reacts to the specific product being built
+- HP range: -4 to +5 (LEGENDARY tier products have higher stakes: -5 to +7)
+- One choice should be emotionally complex ("feel weird about it", "question everything")
+- One choice involving an entity (Gary, Legal, GI, Wellness, Vending Machine)
+- Items: 40% chance per choice. Generate contextual item names based on the choice.
+- encounter: 0.05-0.35 based on risk level
+- item_rarity: "COMMON", "UNCOMMON", or "LEGENDARY" (weighted by encounter risk)
 
 OUTPUT JSON ONLY (no markdown, no explanation):
 {
   "narrative": "...",
   "choices": [
-    {"id": "snake_case", "text": "3-5 words", "desc": "flavor text", "icon": "emoji", "hp": number, "item": "Name" or null, "encounter": 0.0-0.35}
+    {
+      "id": "snake_case_unique_to_choice",
+      "text": "3-6 words describing action",
+      "desc": "flavorful consequence hint",
+      "icon": "emoji",
+      "hp": number,
+      "item": "Contextual Item Name" or null,
+      "item_rarity": "COMMON" | "UNCOMMON" | "LEGENDARY" | null,
+      "encounter": 0.0-0.35
+    }
   ],
   "patterns_used": ["${patternKey}"],
   "callbacks_used": []
@@ -185,22 +207,22 @@ function generateFallback(ticket: any, beat: number, choice: string | null): Nar
 
   const choiceSets: GeneratedChoice[][] = [
     [
-      { id: 'lean_in', text: 'Add a leaderboard', desc: 'The Brain rewards ambition', icon: '📊', hp: 2, item: null, encounter: 0.1 },
-      { id: 'ask_legal', text: 'Loop in Legal', desc: 'Legal is a raccoon in a tie', icon: '⚖️', hp: -1, item: 'Legal Waiver', encounter: 0.15 },
-      { id: 'call_gary', text: 'Call Gary', desc: 'Technical stuff. It is Gary', icon: '🤖', hp: 0, item: "Gary's Fix", encounter: 0.2 },
-      { id: 'feel_fine', text: 'Feel fine', desc: 'Logged to the Wellness Dashboard', icon: '😌', hp: 1, item: null, encounter: 0.05 }
+      { id: 'lean_in', text: 'Add a leaderboard', desc: 'The Brain rewards ambition', icon: '📊', hp: 2, item: null, item_rarity: null, encounter: 0.1 },
+      { id: 'ask_legal', text: 'Loop in Legal', desc: 'Legal is a raccoon in a tie', icon: '⚖️', hp: -1, item: 'Legal Waiver', item_rarity: 'COMMON', encounter: 0.15 },
+      { id: 'call_gary', text: 'Call Gary', desc: 'Technical stuff. It is Gary', icon: '🤖', hp: 0, item: "Gary's Toolkit", item_rarity: 'UNCOMMON', encounter: 0.2 },
+      { id: 'feel_fine', text: 'Feel fine', desc: 'Logged to the Wellness Dashboard', icon: '😌', hp: 1, item: null, item_rarity: null, encounter: 0.05 }
     ],
     [
-      { id: 'ship_beta', text: 'Ship to grandmas', desc: 'A gentle test market', icon: '👵', hp: -2, item: 'Beta Feedback', encounter: 0.15 },
-      { id: 'add_ai', text: 'More AI', desc: 'Recursive. The Brain approves', icon: '🧠', hp: 3, item: null, encounter: 0.25 },
-      { id: 'hide_gi', text: 'Hide from GI', desc: 'It already knows', icon: '🙈', hp: -3, item: 'Incident Report', encounter: 0.3 },
-      { id: 'raise_hand', text: 'Raise a concern', desc: 'Concerns are compostable', icon: '✋', hp: -1, item: null, encounter: 0.1 }
+      { id: 'ship_beta', text: 'Ship to grandmas', desc: 'A gentle test market', icon: '👵', hp: -2, item: 'Beta Feedback', item_rarity: 'COMMON', encounter: 0.15 },
+      { id: 'add_ai', text: 'More AI', desc: 'Recursive. The Brain approves', icon: '🧠', hp: 3, item: 'Recursive Algorithm', item_rarity: 'LEGENDARY', encounter: 0.25 },
+      { id: 'hide_gi', text: 'Hide from GI', desc: 'It already knows', icon: '🙈', hp: -3, item: 'Incident Report', item_rarity: 'UNCOMMON', encounter: 0.3 },
+      { id: 'raise_hand', text: 'Raise a concern', desc: 'Concerns are compostable', icon: '✋', hp: -1, item: null, item_rarity: null, encounter: 0.1 }
     ],
     [
-      { id: 'demo_day', text: 'Demo at all-hands', desc: 'Nothing has ever gone wrong', icon: '📽️', hp: 4, item: 'Demo Trophy', encounter: 0.35 },
-      { id: 'quiet_launch', text: 'Quiet launch', desc: 'Stealth is a feature', icon: '🤫', hp: 1, item: null, encounter: 0.1 },
-      { id: 'blame_gary', text: 'Blame Gary', desc: 'Traditional', icon: '👉', hp: 0, item: "Gary's Sigh", encounter: 0.15 },
-      { id: 'feel_weird', text: 'Feel weird', desc: 'Also compostable', icon: '😵‍💫', hp: -2, item: 'Therapy Voucher', encounter: 0.2 }
+      { id: 'demo_day', text: 'Demo at all-hands', desc: 'Nothing has ever gone wrong', icon: '📽️', hp: 4, item: 'Demo Trophy', item_rarity: 'UNCOMMON', encounter: 0.35 },
+      { id: 'quiet_launch', text: 'Quiet launch', desc: 'Stealth is a feature', icon: '🤫', hp: 1, item: null, item_rarity: null, encounter: 0.1 },
+      { id: 'blame_gary', text: 'Blame Gary', desc: 'Traditional', icon: '👉', hp: 0, item: "Gary's Sigh", item_rarity: 'COMMON', encounter: 0.15 },
+      { id: 'feel_weird', text: 'Feel weird', desc: 'Also compostable', icon: '😵‍💫', hp: -2, item: 'Therapy Voucher', item_rarity: 'COMMON', encounter: 0.2 }
     ]
   ];
 
@@ -327,6 +349,7 @@ Deno.serve(async (req) => {
           icon: c.icon || "❓",
           hp: typeof c.hp === "number" ? c.hp : 0,
           item: c.item || null,
+          item_rarity: c.item ? (c.item_rarity || "COMMON") : null,
           encounter: typeof c.encounter === "number" ? Math.min(0.35, Math.max(0, c.encounter)) : 0.1
         }));
 

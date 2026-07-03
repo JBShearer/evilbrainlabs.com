@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
 <title>Evil Brain Labs: The Machine</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Permanent+Marker&family=Special+Elite&display=swap" rel="stylesheet">
@@ -16,11 +16,19 @@
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 button,input,textarea{color:var(--ink)}
 html,body{height:100%;overscroll-behavior:none}
+html{
+  /* iOS safe area - push content below Dynamic Island/notch */
+  padding-top: env(safe-area-inset-top);
+  padding-left: env(safe-area-inset-left);
+  padding-right: env(safe-area-inset-right);
+  background: var(--paper);
+}
 body{
   background:var(--paper); color:var(--ink); font-family:var(--type);
   background-image:radial-gradient(circle at 20% 10%, rgba(0,0,0,.03), transparent 40%),
                    radial-gradient(circle at 80% 90%, rgba(0,0,0,.04), transparent 40%);
   display:flex; flex-direction:column; align-items:center;
+  min-height: 100%;
 }
 #app{width:100%;max-width:960px;min-height:100dvh;display:flex;flex-direction:column;padding:12px 14px 84px;margin:0 auto}
 
@@ -92,7 +100,7 @@ h1 small{display:block;font-family:var(--type);font-size:11px;color:var(--pencil
 #quotafill{position:absolute;inset:0;width:40%;background:repeating-linear-gradient(45deg,var(--crayon),var(--crayon) 6px,#fff 6px,#fff 12px)}
 
 /* ---------- STORY MODE (full-screen visual novel) ---------- */
-#story-mode{display:none;position:fixed;inset:0;z-index:50;background:var(--paper);overflow-y:auto}
+#story-mode{display:none;position:fixed;inset:0;z-index:50;background:var(--paper);overflow-y:auto;padding-top:env(safe-area-inset-top);padding-bottom:env(safe-area-inset-bottom);padding-left:env(safe-area-inset-left);padding-right:env(safe-area-inset-right)}
 #story-mode.active{display:block}
 .story-wrapper{max-width:960px;margin:0 auto;padding:16px 24px}
 @media(max-width:600px){.story-wrapper{padding:12px}}
@@ -133,7 +141,13 @@ h1 small{display:block;font-family:var(--type);font-size:11px;color:var(--pencil
 .story-choice .choice-effect{font-family:var(--mono);font-size:11px;margin-top:6px;padding:4px 8px;background:#fff;border:1px solid var(--ink)}
 .story-choice .choice-effect.positive{color:var(--good, #2a7d2e)}
 .story-choice .choice-effect.negative{color:var(--crayon)}
-.story-exit{position:fixed;top:12px;right:12px;font-family:var(--hand);font-size:12px;border:2px solid var(--ink);background:var(--paper);padding:6px 12px;cursor:pointer;z-index:51}
+.story-choice.legendary-choice{border-color:var(--crayon);box-shadow:3px 3px 0 var(--crayon), 0 0 12px rgba(220,53,69,0.2)}
+.story-choice.legendary-choice:hover{background:var(--paper);box-shadow:4px 4px 0 var(--crayon), 0 0 18px rgba(220,53,69,0.3)}
+.item-rarity{font-size:10px;margin-left:2px}
+.item-rarity.legendary{color:var(--crayon);font-weight:bold}
+.item-rarity.uncommon{color:#6f42c1}
+.item-rarity.common{color:var(--pencil)}
+.story-exit{position:fixed;top:max(12px, env(safe-area-inset-top));right:max(12px, env(safe-area-inset-right));font-family:var(--hand);font-size:12px;border:2px solid var(--ink);background:var(--paper);padding:6px 12px;cursor:pointer;z-index:51}
 .story-exit:hover{background:var(--manila)}
 #story-payout{text-align:center;font-family:var(--hand);font-size:24px;color:var(--crayon);padding:24px;background:var(--manila);border:3px solid var(--ink);margin-top:14px}
 
@@ -300,7 +314,7 @@ body[data-theme="evil"] .smoke{display:block}
 #authbtn{font-family:var(--mono);font-size:11px;border:2px solid var(--ink);background:var(--manila);color:var(--ink);padding:4px 8px;cursor:pointer;margin-right:6px;box-shadow:2px 2px 0 var(--ink);white-space:nowrap}
 #authbtn:active{transform:translate(2px,2px);box-shadow:none}
 #adminchip{display:none;font-family:var(--hand);font-size:11px;color:var(--crayon);border:2px solid var(--crayon);padding:1px 6px;margin-right:6px;transform:rotate(-3deg)}
-#loginveil{position:fixed;inset:0;background:rgba(20,18,16,.55);z-index:60;display:none;align-items:center;justify-content:center;padding:20px}
+#loginveil{position:fixed;inset:0;background:rgba(20,18,16,.55);z-index:60;display:none;align-items:center;justify-content:center;padding:20px;padding-top:max(20px, env(safe-area-inset-top));padding-bottom:max(20px, env(safe-area-inset-bottom))}
 #loginveil .memo{max-width:340px;width:100%}
 #slots{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:6px}
 .slotbox{border:2px solid var(--ink);background:#fff;padding:8px;font-size:12px;min-height:70px;position:relative;box-shadow:2px 2px 0 var(--ink)}
@@ -1585,15 +1599,20 @@ function renderDynamicChoices(choices){
   S.story.currentChoices = displayed;
   S.story.choiceShownAt = Date.now();
 
+  const rarityIcon = r => ({ 'LEGENDARY': '⭐', 'UNCOMMON': '◆', 'COMMON': '•' }[r] || '');
+
   displayed.forEach(c => {
     const div = document.createElement('div');
-    div.className = 'story-choice';
+    div.className = 'story-choice' + (c.item_rarity === 'LEGENDARY' ? ' legendary-choice' : '');
+    const itemDisplay = c.item
+      ? ` · 📦 <span class="item-rarity ${(c.item_rarity||'COMMON').toLowerCase()}">${rarityIcon(c.item_rarity)}${c.item}</span>`
+      : '';
     div.innerHTML = `
       <span class="choice-icon">${c.icon}</span>
       <span class="choice-title">${c.text}</span>
       <span class="choice-desc">${c.desc}</span>
       <span class="choice-effect ${c.hp >= 0 ? 'positive' : 'negative'}">
-        ${c.hp >= 0 ? '+' : ''}${c.hp} HP${c.item ? ' · 📦' : ''}
+        ${c.hp >= 0 ? '+' : ''}${c.hp} HP${itemDisplay}
       </span>
     `;
     div.onclick = () => makeDynamicChoice(c, displayed);
@@ -1622,10 +1641,13 @@ function makeDynamicChoice(choice, allChoices){
   // Apply HP change
   S.story.hp += choice.hp;
 
-  // Check for item drop
-  if(choice.item && Math.random() < 0.5){
-    S.story.items.push(choice.item);
-    stamp(`ITEM: ${choice.item}`);
+  // Check for item drop - rarity affects drop rate
+  const dropRate = { 'LEGENDARY': 0.3, 'UNCOMMON': 0.5, 'COMMON': 0.7 }[choice.item_rarity] || 0.5;
+  if(choice.item && Math.random() < dropRate){
+    const item = { name: choice.item, rarity: choice.item_rarity || 'COMMON' };
+    S.story.items.push(item);
+    const rarityStyle = item.rarity === 'LEGENDARY' ? '⭐ LEGENDARY' : item.rarity === 'UNCOMMON' ? '◆ UNCOMMON' : '';
+    stamp(`${rarityStyle} ITEM: ${item.name}`);
   }
 
   // Check for encounter trigger
@@ -1817,12 +1839,18 @@ function updateStoryStats(){
   $('#story-items').textContent = S.story.items.length;
   $('#story-beat').textContent = S.story.beat + 1;
 
-  // Update inventory display
+  // Update inventory display with rarity colors
   const inv = $('#story-inventory');
   if(S.story.items.length === 0){
     inv.innerHTML = '<span style="color:var(--pencil);font-size:11px">Empty</span>';
   } else {
-    inv.innerHTML = S.story.items.map(i => `<span class="sidebar-item">${i}</span>`).join('');
+    const rarityColor = r => ({ 'LEGENDARY': 'var(--crayon)', 'UNCOMMON': '#6f42c1', 'COMMON': 'var(--pencil)' }[r] || 'var(--ink)');
+    const rarityIcon = r => ({ 'LEGENDARY': '⭐', 'UNCOMMON': '◆', 'COMMON': '' }[r] || '');
+    inv.innerHTML = S.story.items.map(i => {
+      const name = typeof i === 'string' ? i : i.name;
+      const rarity = typeof i === 'string' ? 'COMMON' : (i.rarity || 'COMMON');
+      return `<span class="sidebar-item" style="color:${rarityColor(rarity)}">${rarityIcon(rarity)}${name}</span>`;
+    }).join('');
   }
 }
 
@@ -2010,6 +2038,22 @@ function completeStory(){
   const hpBonus = Math.max(0, Math.floor(S.story.hp / 5));
   S.bc += 1 + bonus + hpBonus;
   $('#bc').textContent = S.bc;
+
+  // Transfer story items to global inventory (with rarity intact)
+  S.story.items.forEach(item => {
+    // Normalize item format: ensure it's an object with name, rarity, fx
+    const normalizedItem = typeof item === 'string'
+      ? { name: item, rarity: 'COMMON', fx: '+1 ATK' }
+      : {
+          name: item.name || item,
+          rarity: item.rarity || 'COMMON',
+          fx: item.fx || (item.rarity === 'LEGENDARY' ? '+3 ATK' : item.rarity === 'UNCOMMON' ? '+2 ATK' : '+1 ATK')
+        };
+    S.items.push(normalizedItem);
+  });
+  if(S.story.items.length > 0){
+    renderInventory();
+  }
 
   // Generate unique serial (hash-based for true uniqueness)
   const serialHash = hashCode(tripleKey + Date.now());
@@ -3019,21 +3063,86 @@ function renderBrainReview(){
 }
 
 /* ---------- CARD RENDERER (client mirror of _shared/card-svg.ts) ---------- */
-const CLS_MAP={'deanonymize':'SURVEIL','rat on':'SURVEIL','emotionally profile':'SURVEIL','sentiment-score':'SURVEIL','predictively evict':'SURVEIL','monetize':'MONETIZE','subscription-lock':'MONETIZE','upsell':'MONETIZE','auto-negotiate with':'MONETIZE','gamify':'GAMIFY','a/b test':'GAMIFY','biometrically greet':'GAMIFY'};
-function cardClass(p){ const k=p.toLowerCase(); return CLS_MAP[k]||['SURVEIL','MONETIZE','GAMIFY'][hashCode(k)%3]; }
-function cardStats(t,grade,stage){
-  stage=stage||1;
-  const gw={COMMON:1,UNCOMMON:3,LEGENDARY:10,CASE:1,CLASSIFIED:10}[grade]||1;
-  const w=(VOCAB.predicate.find(x=>x.t===t.predicate)||{w:1}).w;
-  const qn=t.qual?parseFloat((t.qual.match(/[\d.]+/)||['0'])[0]):0;
-  // Evolution bonuses: stage 2 = +1/+1/+1, stage 3 = +3/+2/+2 with special ability
-  const evoAtk=[0,0,1,3][stage], evoDef=[0,0,1,2][stage], evoSpd=[0,0,1,2][stage];
-  const special=stage===3?'ECOSYSTEM: Wins ties':'';
-  return { cls:cardClass(t.predicate),
-    atk:2+w*2+Math.floor(gw/5)+evoAtk,
-    def:2+hashCode(t.subject.toLowerCase())%4+evoDef,
-    spd:1+Math.min(5,qn>0?Math.floor(Math.log2(1+qn)):0)+hashCode(t.object.toLowerCase())%2+evoSpd,
-    special };
+const CLS_MAP={
+  'surveils':'SURVEIL','deanonymize':'SURVEIL','deanonymizes':'SURVEIL','tracks':'SURVEIL',
+  'rat on':'SURVEIL','emotionally profile':'SURVEIL','sentiment-score':'SURVEIL',
+  'predictively evict':'SURVEIL','classifies':'SURVEIL',
+  'monetize':'MONETIZE','monetizes':'MONETIZE','subscription-lock':'MONETIZE',
+  'upsells':'MONETIZE','upsell':'MONETIZE','auto-negotiate with':'MONETIZE',
+  'exploits':'EXPLOIT','exploits':'EXPLOIT','defrauds':'EXPLOIT',
+  'discriminates_against':'EXPLOIT','harms':'EXPLOIT',
+  'gamify':'GAMIFY','gamifies':'GAMIFY','a/b test':'GAMIFY','a_b_tests':'GAMIFY',
+  'biometrically greet':'GAMIFY','manipulates':'GAMIFY','deceives':'GAMIFY'
+};
+function cardClass(p){ const k=p.toLowerCase().replace(/_/g,' '); return CLS_MAP[k]||CLS_MAP[p]||['SURVEIL','MONETIZE','GAMIFY','EXPLOIT'][hashCode(k)%4]; }
+
+function cardStats(t, grade, stage, product){
+  stage = stage || 1;
+
+  // If product has pre-calculated stats, use those
+  if(product?.stats){
+    return {
+      cls: cardClass(t.predicate),
+      ...product.stats
+    };
+  }
+
+  // Base stats from predicate class
+  const classStats = {
+    'SURVEIL': { atk: 3, def: 3, spd: 2 },
+    'MONETIZE': { atk: 2, def: 4, spd: 3 },
+    'EXPLOIT': { atk: 5, def: 2, spd: 2 },
+    'GAMIFY': { atk: 3, def: 2, spd: 4 }
+  };
+  const cls = cardClass(t.predicate);
+  const base = classStats[cls] || { atk: 3, def: 3, spd: 3 };
+
+  // Rarity multipliers - LEGENDARY is significantly stronger
+  const rarityMult = {
+    'LEGENDARY': { atk: 1.8, def: 1.5, spd: 1.5 },
+    'UNCOMMON': { atk: 1.3, def: 1.2, spd: 1.2 },
+    'COMMON': { atk: 1.0, def: 1.0, spd: 1.0 },
+    'CASE': { atk: 1.0, def: 1.2, spd: 1.0 },
+    'CLASSIFIED': { atk: 2.0, def: 1.5, spd: 2.0 }
+  }[grade] || { atk: 1.0, def: 1.0, spd: 1.0 };
+
+  // Stage evolution bonuses
+  const stageMult = 1 + (stage - 1) * 0.4;
+
+  // Extras bonus (each semantic relationship adds power)
+  const extrasCount = product?.extras?.length || 0;
+  const extrasBonus = extrasCount * 0.8;
+
+  // Special abilities by rarity
+  const specials = {
+    'LEGENDARY': [
+      'RECURSIVE DOOM: +3 ATK vs lower tier',
+      'REGULATORY CAPTURE: Ignores DEF',
+      'INFINITE SCALE: +2 all stats in round 2+',
+      'MOAT OF LAWYERS: Survives first KO'
+    ],
+    'UNCOMMON': [
+      'DARK PATTERN: +2 SPD on first strike',
+      'VENDOR LOCK-IN: Enemy -1 SPD',
+      'DATA SIPHON: Heal 1 HP on hit'
+    ],
+    'CLASSIFIED': [
+      'IT IS GARY: Auto-wins if opponent hesitates'
+    ]
+  };
+
+  const specialPool = specials[grade] || [];
+  const special = stage >= 2 && specialPool.length > 0
+    ? specialPool[hashCode(t.subject + t.predicate) % specialPool.length]
+    : (stage === 3 ? 'ECOSYSTEM: Wins ties' : '');
+
+  return {
+    cls: cls,
+    atk: Math.round((base.atk + extrasBonus) * stageMult * rarityMult.atk),
+    def: Math.round((base.def + extrasBonus) * stageMult * rarityMult.def),
+    spd: Math.round((base.spd + extrasBonus) * stageMult * rarityMult.spd),
+    special: special
+  };
 }
 function wrapText(s,max){ const out=[]; let l='';
   s.split(' ').forEach(w=>{ if((l+' '+w).trim().length>max){out.push(l.trim());l=w;} else l+=' '+w; });
@@ -3095,14 +3204,156 @@ function evolveProduct(p, close){
   if(S.bc<3){ stamp('EVOLUTION COSTS 3. THE BRAIN DOES NOT HAGGLE.'); return; }
   if((p.stage||1)>=3){ stamp('ECOSYSTEM STAGE. IT EVOLVES NO FURTHER. IT EVOLVES US.'); return; }
   S.bc-=3; $('#bc').textContent=S.bc;
-  const extra={ subject:p.triple.subject,
-    predicate:VOCAB.predicate[weightedIndex(VOCAB.predicate)].t,
-    object:VOCAB.object[weightedIndex(VOCAB.object)].t };
+
+  // Generate a contextual semantic relationship based on the product
+  const evolutionRelationships = generateEvolutionRelationship(p);
+  const extra = evolutionRelationships;
+
   p.extras=p.extras||[]; p.extras.push(extra);
-  p.stage=(p.stage||1)+1; p.favor=Math.min(3,p.favor+1);
+  p.stage=(p.stage||1)+1;
+
+  // Favor increases with stage, rarity amplifies it
+  const rarityBonus = p.tier === 'LEGENDARY' ? 2 : p.tier === 'UNCOMMON' ? 1 : 0;
+  p.favor = Math.min(5, (p.stage||1) + rarityBonus);
+
+  // Recalculate stats with new stage and extras
+  p.stats = calculateProductStats(p);
+
   addXP('evil',6); bumpDoom(1.5);
-  stamp('EVOLVED: STAGE '+p.stage+(p.stage===3?' · IT BEGINS TO TAKE OVER':''));
+
+  const stageNames = ['MVP', 'PLATFORM', 'ECOSYSTEM'];
+  const flavorText = [
+    '',
+    ' · Now it has dependencies.',
+    ' · IT BEGINS TO TAKE OVER.'
+  ];
+  stamp(`EVOLVED: ${stageNames[p.stage-1]}${flavorText[p.stage-1]}`);
+
+  // Fire-and-forget: Store the new relationship in the graph (if signed in)
+  if(S.user && supabaseClient){
+    storeEvolutionTriple(p, extra);
+  }
+
   renderPortfolio(); renderLB(); close();
+}
+
+// Generate contextual evolution relationship based on product context
+function generateEvolutionRelationship(product){
+  const t = product.triple;
+
+  // Stage 2: Product gains a secondary capability
+  if((product.stage||1) === 1){
+    // Pick a predicate that synergizes with the original
+    const synergies = {
+      'surveils': ['tracks', 'deanonymizes', 'classifies', 'predicts'],
+      'discriminates_against': ['classifies', 'predicts', 'automates', 'excludes'],
+      'monetizes': ['upsells', 'gamifies', 'subscription_locks', 'exploits'],
+      'exploits': ['monetizes', 'automates', 'surveils', 'manipulates'],
+      'tracks': ['surveils', 'deanonymizes', 'predicts', 'monetizes'],
+      'manipulates': ['deceives', 'influences', 'gamifies', 'exploits'],
+      'deceives': ['manipulates', 'defrauds', 'monetizes', 'influences'],
+      'automates': ['replaces', 'surveils', 'classifies', 'optimizes']
+    };
+
+    const related = synergies[t.predicate] || ['monetizes', 'surveils', 'tracks'];
+    const newPredicate = related[Math.floor(Math.random() * related.length)];
+
+    // Object expands to adjacent population
+    const objectExpansions = {
+      'employees': ['contractors', 'job applicants', 'former employees'],
+      'tenants': ['homeowners', 'landlords', 'neighbors'],
+      'warehouse workers': ['gig workers', 'delivery drivers', 'logistics staff'],
+      'general public': ['social media users', 'consumers', 'citizens'],
+      'Black Americans': ['minority communities', 'marginalized groups', 'low-income families'],
+      'children': ['teenagers', 'students', 'young adults'],
+      'patients': ['elderly patients', 'disabled patients', 'insurance holders']
+    };
+
+    const expanded = objectExpansions[t.object] || [t.object];
+    const newObject = expanded[Math.floor(Math.random() * expanded.length)];
+
+    return {
+      subject: t.subject,
+      predicate: newPredicate,
+      object: newObject,
+      type: 'capability_expansion'
+    };
+  }
+
+  // Stage 3: Product becomes an ecosystem - gains partner/dependency
+  const ecosystemPartners = [
+    { subject: 'third-party data brokers', predicate: 'supplies_data_to', object: t.subject },
+    { subject: t.subject, predicate: 'integrates_with', object: 'government databases' },
+    { subject: 'advertisers', predicate: 'purchases_insights_from', object: t.subject },
+    { subject: t.subject, predicate: 'licenses_to', object: 'law enforcement' },
+    { subject: 'insurance companies', predicate: 'subscribes_to', object: t.subject }
+  ];
+
+  const partner = ecosystemPartners[Math.floor(Math.random() * ecosystemPartners.length)];
+  return { ...partner, type: 'ecosystem_integration' };
+}
+
+// Calculate battle stats based on product attributes
+function calculateProductStats(product){
+  const t = product.triple;
+  const stage = product.stage || 1;
+  const tier = product.tier || 'COMMON';
+
+  // Base stats from predicate type
+  const predicateStats = {
+    'surveils': { atk: 3, def: 2, spd: 2 },
+    'discriminates_against': { atk: 4, def: 1, spd: 2 },
+    'monetizes': { atk: 2, def: 3, spd: 3 },
+    'exploits': { atk: 4, def: 2, spd: 1 },
+    'manipulates': { atk: 3, def: 2, spd: 3 },
+    'deceives': { atk: 3, def: 1, spd: 4 },
+    'tracks': { atk: 2, def: 3, spd: 3 },
+    'automates': { atk: 2, def: 4, spd: 2 }
+  };
+
+  const base = predicateStats[t.predicate] || { atk: 2, def: 2, spd: 2 };
+
+  // Stage multiplier
+  const stageMult = 1 + (stage - 1) * 0.3;
+
+  // Rarity multiplier and special ability
+  const rarityMult = tier === 'LEGENDARY' ? 1.5 : tier === 'UNCOMMON' ? 1.2 : 1.0;
+  const specials = {
+    'LEGENDARY': ['RECURSIVE DOOM', 'INFINITE SCALE', 'REGULATORY CAPTURE', 'MOAT OF LAWYERS'],
+    'UNCOMMON': ['DARK PATTERN', 'VENDOR LOCK-IN', 'DATA SIPHON'],
+    'COMMON': []
+  };
+  const specialPool = specials[tier] || [];
+  const special = specialPool.length > 0 ? specialPool[Math.floor(Math.random() * specialPool.length)] : null;
+
+  // Extra relationships add bonus stats
+  const extrasBonus = (product.extras?.length || 0) * 0.5;
+
+  return {
+    atk: Math.round((base.atk + extrasBonus) * stageMult * rarityMult),
+    def: Math.round((base.def + extrasBonus) * stageMult * rarityMult),
+    spd: Math.round((base.spd + extrasBonus) * stageMult * rarityMult),
+    special: special,
+    tier: tier,
+    stage: stage
+  };
+}
+
+// Store evolution triple in the graph (fire-and-forget)
+async function storeEvolutionTriple(product, extra){
+  if(!supabaseClient) return;
+
+  try {
+    // This creates real semantic relationships in the UCAR graph
+    // Evolution = the game contributing back to the registry
+    console.log('Storing evolution triple:', extra);
+
+    // For now, just log it - full graph integration would need
+    // entity resolution and proper triple creation
+    // TODO: Call an edge function that properly creates the triple
+  } catch(e){
+    console.log('Evolution triple storage failed:', e);
+  }
 }
 function openCard(t,grade,serial,title,product){
   const v=$('#loginveil'); // reuse the veil chrome
@@ -3458,12 +3709,15 @@ function startBattle(){
   const foeStats=cardStats(foe.triple,foe.tier,1);
 
   // Item bar HTML
+  const rarityColor = r => ({ 'LEGENDARY': 'var(--crayon)', 'UNCOMMON': '#6f42c1', 'COMMON': 'var(--pencil)' }[r] || 'var(--ink)');
+  const rarityIcon = r => ({ 'LEGENDARY': '⭐', 'UNCOMMON': '◆', 'COMMON': '' }[r] || '');
   const itemSlots=Array(3).fill(null).map((_,i)=>{
     const item=S.items[i];
     if(item){
-      return `<div class="battle-item-slot filled" data-idx="${i}">
-        <div class="item-name">${item.name.substring(0,12)}</div>
-        <div class="item-fx">${item.fx.match(/\+\d+/)?.[0]||''}</div>
+      const fxText = item.fx?.match(/\+\d+/)?.[0] || '';
+      return `<div class="battle-item-slot filled" data-idx="${i}" style="border-color:${rarityColor(item.rarity)}">
+        <div class="item-name" style="color:${rarityColor(item.rarity)}">${rarityIcon(item.rarity)}${item.name.substring(0,12)}</div>
+        <div class="item-fx">${fxText}</div>
       </div>`;
     }
     return `<div class="battle-item-slot empty">-</div>`;
@@ -3583,15 +3837,24 @@ function startBattle(){
     $('#fleebtn').disabled=true;
 
     const r=rngJS(seed);
-    const a=cardStats(mine.triple,mine.tier,mine.stage||1), b=cardStats(foe.triple,foe.tier,1);
+    const a=cardStats(mine.triple,mine.tier,mine.stage||1,mine), b=cardStats(foe.triple,foe.tier,1);
 
     let itemBonus=0;
     if(selectedItem>=0 && S.items[selectedItem]){
       const it=S.items[selectedItem];
-      itemBonus=(it.fx.match(/\+(\d+)/)||[0,0])[1]*1;
+      // Base bonus from fx text (e.g. "+3 ATK")
+      const baseFx=(it.fx?.match(/\+(\d+)/)||[0,0])[1]*1;
+      // Rarity multiplier: LEGENDARY 3x, UNCOMMON 2x, COMMON 1x
+      const rarityMult = { 'LEGENDARY': 3, 'UNCOMMON': 2, 'COMMON': 1 }[it.rarity] || 1;
+      itemBonus = baseFx * rarityMult;
+      // If item has no fx but has rarity, give base bonus by rarity
+      if(!baseFx && it.rarity){
+        itemBonus = { 'LEGENDARY': 5, 'UNCOMMON': 3, 'COMMON': 1 }[it.rarity] || 1;
+      }
       document.querySelectorAll('.battle-item-slot')[selectedItem].classList.add('used');
       const buffEl=$('#player-buff');
-      buffEl.textContent=`+${itemBonus} ATK (${it.name})`;
+      const rarityIcon = { 'LEGENDARY': '⭐', 'UNCOMMON': '◆', 'COMMON': '' }[it.rarity] || '';
+      buffEl.innerHTML=`<span style="color:${it.rarity==='LEGENDARY'?'var(--crayon)':'var(--ink)'}">+${itemBonus} ATK ${rarityIcon}${it.name}</span>`;
       buffEl.style.display='block';
       S.items.splice(selectedItem,1);
     }

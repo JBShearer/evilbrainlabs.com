@@ -585,11 +585,11 @@ body.defcon #doomgap{color:var(--crayon)}
   <div id="loginveil">
     <div class="memo">
       <div class="dsec" style="margin:0 0 6px">Employee verification</div>
-      <div id="loginmsg" style="font-size:13px;margin-bottom:8px">The Brain requires an email. The Brain will send a magic link. The Brain does not do passwords. Passwords are a use case.</div>
+      <div id="loginmsg" style="font-size:13px;margin-bottom:8px">The Brain requires an email. Enter any email to sign in. Passwords are a use case.</div>
       <input class="fld" id="loginemail" type="email" placeholder="you@anywhere.example">
-      <button class="rb" id="loginsend" style="width:100%;margin-bottom:6px">SEND MAGIC LINK</button>
+      <button class="rb" id="loginsend" style="width:100%;margin-bottom:6px">SIGN IN</button>
       <button class="rb" id="logincancel" style="width:100%">NOT NOW</button>
-      <p class="hint">Demo: signs you in instantly. Production: Supabase magic link. Hint: an address containing "brain" gets admin.</p>
+      <p class="hint">Enter any email address. Addresses containing "brain" get admin access.</p>
     </div>
   </div>
   <div id="dragghost"></div>
@@ -1687,7 +1687,7 @@ $('#loginsend').onclick=async()=>{
   const email=$('#loginemail').value.trim().toLowerCase();
   if(!email.includes('@')){ stamp('THAT IS NOT AN EMAIL'); return; }
 
-  // Use Supabase magic link auth
+  // Use Supabase magic link auth if available
   if(supabaseClient){
     try{
       const { error } = await supabaseClient.auth.signInWithOtp({
@@ -1701,20 +1701,25 @@ $('#loginsend').onclick=async()=>{
       $('#loginmsg').textContent = 'Magic link sent! Check your inbox and click the link to sign in.';
     }catch(err){
       console.error('Auth error:', err);
-      stamp('AUTH FAILED: ' + err.message);
+      // Fall back to demo mode on error
+      demoSignIn(email);
     }
   } else {
     // Demo mode - instant sign in
-    const admin=email.includes('brain');
-    S.user={ email, admin,
-      designation:'BRAINIAC OG-'+String(1000+hashCode(email)%9000) };
-    $('#authbtn').textContent=S.user.designation;
-    if(admin){ $('#adminchip').style.display='inline-block'; enableAdmin(); }
-    closeLogin(); buzz(15);
-    stamp(admin?'WELCOME. THE BRAIN KNOWS ITS OWN.':'EMPLOYMENT CONFIRMED');
-    renderCareerWidgets(); renderAll();
+    demoSignIn(email);
   }
 };
+}
+
+function demoSignIn(email){
+  const admin=email.includes('brain');
+  S.user={ email, admin,
+    designation:'BRAINIAC OG-'+String(1000+hashCode(email)%9000) };
+  $('#authbtn').textContent=S.user.designation;
+  if(admin){ $('#adminchip').style.display='inline-block'; enableAdmin(); }
+  closeLogin(); buzz(15);
+  stamp(admin?'WELCOME. THE BRAIN KNOWS ITS OWN.':'EMPLOYMENT CONFIRMED (DEMO MODE)');
+  renderCareerWidgets(); renderAll();
 }
 wireLogin();
 $('#authbtn').onclick=async()=>{

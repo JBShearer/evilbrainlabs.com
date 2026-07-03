@@ -801,65 +801,95 @@ const SEED_VOCAB = {
 let VOCAB = JSON.parse(JSON.stringify(SEED_VOCAB));
 let vocabLoaded = false;
 
-// Load vocabulary from Supabase entities and predicates tables
+// Load vocabulary from Supabase (uses slot_machine_vocab view)
 async function loadVocabFromSupabase() {
   if (!supabaseClient || vocabLoaded) return;
 
   try {
-    // Load entities for subjects and objects
-    const { data: entities, error: entErr } = await supabaseClient
+    // Use the slot_machine_vocab view which formats everything correctly
+    const { data: vocab, error } = await supabaseClient
+      .from('slot_machine_vocab')
+      .select('slot_type, term, weight');
+
+    if (error) {
+      console.log('Vocab view not available, trying raw tables...');
+      // Fallback to raw tables
+      return loadVocabFromRawTables();
+    }
+
+    if (vocab && vocab.length > 0) {
+      const subjects = vocab.filter(v => v.slot_type === 'subject').map(v => ({ t: v.term, w: v.weight }));
+      const predicates = vocab.filter(v => v.slot_type === 'predicate').map(v => ({ t: v.term, w: v.weight }));
+      const objects = vocab.filter(v => v.slot_type === 'object').map(v => ({ t: v.term, w: v.weight }));
+
+      if (subjects.length >= 5) VOCAB.subject = subjects;
+      if (predicates.length >= 5) VOCAB.predicate = predicates;
+      if (objects.length >= 5) VOCAB.object = objects;
+
+      vocabLoaded = true;
+      console.log('Vocab loaded from Supabase view:', {
+        subjects: VOCAB.subject.length,
+        predicates: VOCAB.predicate.length,
+        objects: VOCAB.object.length
+      });
+
+      // Rebuild reels with new vocab
+      if (typeof reels !== 'undefined' && reels.length > 0) {
+        reels.forEach(r => {
+          r.items = VOCAB[r.kind];
+          r.n = r.items.length;
+          r.rebuild();
+        });
+      }
+    }
+  } catch (e) {
+    console.log('Vocab load failed, using seed:', e);
+  }
+}
+
+// Fallback: load from raw entities/predicates tables
+async function loadVocabFromRawTables() {
+  try {
+    const { data: entities } = await supabaseClient
       .from('entities')
       .select('canonical_name, entity_kind')
       .limit(100);
 
-    // Load predicates for verbs
-    const { data: predicates, error: predErr } = await supabaseClient
+    const { data: predicates } = await supabaseClient
       .from('predicates')
       .select('label')
       .eq('tier', 'entity')
       .eq('status', 'approved')
       .limit(50);
 
-    if (entErr || predErr) {
-      console.log('Vocab load error, using seed:', entErr || predErr);
-      return;
-    }
-
     if (entities && entities.length > 0) {
-      // Split entities into subjects (orgs, products, tech) and objects (people, data)
-      const subjectKinds = ['org', 'product', 'tech', 'person_class'];
-      const objectKinds = ['person_class', 'data_type', 'event'];
+      const subjectKinds = ['org', 'product', 'tech'];
+      const objectKinds = ['person_class', 'data_type'];
 
       const subjects = entities
-        .filter(e => !e.entity_kind || subjectKinds.includes(e.entity_kind))
+        .filter(e => subjectKinds.includes(e.entity_kind))
         .map(e => ({ t: e.canonical_name, w: 2 }));
 
       const objects = entities
-        .filter(e => !e.entity_kind || objectKinds.includes(e.entity_kind))
+        .filter(e => objectKinds.includes(e.entity_kind))
         .map(e => ({ t: e.canonical_name, w: 2 }));
 
-      if (subjects.length >= 5) {
-        VOCAB.subject = [...subjects, ...SEED_VOCAB.subject.slice(0, 3)];
-      }
-      if (objects.length >= 5) {
-        VOCAB.object = [...objects, ...SEED_VOCAB.object.slice(0, 3)];
-      }
+      if (subjects.length >= 5) VOCAB.subject = subjects;
+      if (objects.length >= 5) VOCAB.object = objects;
     }
 
     if (predicates && predicates.length >= 5) {
       VOCAB.predicate = predicates.map(p => ({ t: p.label, w: 2 }));
-      // Add some seed predicates for variety
-      VOCAB.predicate.push(...SEED_VOCAB.predicate.slice(0, 4));
     }
 
     vocabLoaded = true;
-    console.log('Vocab loaded from Supabase:', {
+    console.log('Vocab loaded from raw tables:', {
       subjects: VOCAB.subject.length,
       predicates: VOCAB.predicate.length,
       objects: VOCAB.object.length
     });
 
-    // Rebuild reels with new vocab
+    // Rebuild reels
     if (typeof reels !== 'undefined' && reels.length > 0) {
       reels.forEach(r => {
         r.items = VOCAB[r.kind];
@@ -868,7 +898,7 @@ async function loadVocabFromSupabase() {
       });
     }
   } catch (e) {
-    console.log('Vocab load failed, using seed:', e);
+    console.log('Raw table vocab load failed:', e);
   }
 }
 

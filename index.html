@@ -491,7 +491,7 @@ body.defcon #doomgap{color:var(--crayon)}
     <div id="resultplate">
       <span id="rarity">·</span>
       <div id="sentence">The Machine awaits input. The Machine is patient. The Machine is not.</div>
-      <div id="resrow"><button id="shipbtn" disabled style="flex:1">SHIP IT →</button><button id="filebtn" disabled style="flex:1;font-family:var(--hand);font-size:18px;background:var(--manila);color:var(--ink);border:3px solid var(--ink);padding:10px;box-shadow:3px 3px 0 var(--ink);cursor:pointer">FILE IT →</button></div>
+      <div id="resrow"><button id="shipbtn" disabled style="flex:1">CLAIM IT →</button><button id="filebtn" disabled style="flex:1;font-family:var(--hand);font-size:18px;background:var(--manila);color:var(--ink);border:3px solid var(--ink);padding:10px;box-shadow:3px 3px 0 var(--ink);cursor:pointer">FILE IT →</button></div>
     </div>
 
     <!-- Registry Card Browser: Unclaimed UCAR cases as minted cards -->
@@ -834,8 +834,7 @@ document.addEventListener('DOMContentLoaded', () => {
   console.log('DOM loaded, initializing Supabase...');
   initSupabase();
   console.log('Supabase client:', !!supabaseClient);
-  // Load vocab from graph after short delay to ensure Supabase is ready
-  setTimeout(() => loadVocabFromSupabase(), 500);
+  // Machine V2: the reels run on minted registry cards, loaded below.
   loadCasesFromDB().then(() => {
     console.log('Cases loaded, count:', typeof REG !== 'undefined' ? REG.length : 0);
   });
@@ -844,8 +843,12 @@ document.addEventListener('DOMContentLoaded', () => {
 const DEMO = !CONFIG.SUPABASE_URL;
 const USE_CLOUD_STORY = CONFIG.STORY_FN && CONFIG.STORY_FN.length > 0;
 
-/* ============ VOCAB (loaded from Supabase, fallback to seed) ============ */
-const SEED_VOCAB = {
+/* ============ FILE_VOCAB (static chips for the EB-13 filing composer) ============ */
+// The Machine no longer runs on vocab (it runs on minted registry cards).
+// This static set survives for the FILE IT composer chips and battle flavor.
+// To make it dynamic again, point poolItems() at a Supabase view; the
+// Machine will not care either way.
+const FILE_VOCAB = {
   subject: [
     {t:"Landlords",w:3},{t:"Dating apps",w:3},{t:"Your HOA",w:2},{t:"A fleet of drones",w:1},
     {t:"Middle managers",w:2},{t:"Smart fridges",w:3},{t:"The DMV",w:2},{t:"Toddler influencers",w:1},
@@ -863,113 +866,6 @@ const SEED_VOCAB = {
   ]
 };
 
-// Live vocab - starts as seed, replaced by Supabase data when loaded
-let VOCAB = JSON.parse(JSON.stringify(SEED_VOCAB));
-let vocabLoaded = false;
-
-// Load vocabulary from Supabase (uses slot_machine_vocab view)
-async function loadVocabFromSupabase() {
-  if (!supabaseClient || vocabLoaded) return;
-
-  try {
-    // Use the slot_machine_vocab view which formats everything correctly
-    const { data: vocab, error } = await supabaseClient
-      .from('slot_machine_vocab')
-      .select('slot_type, term, weight');
-
-    if (error) {
-      console.log('Vocab view not available, trying raw tables...');
-      // Fallback to raw tables
-      return loadVocabFromRawTables();
-    }
-
-    if (vocab && vocab.length > 0) {
-      const subjects = vocab.filter(v => v.slot_type === 'subject').map(v => ({ t: v.term, w: v.weight }));
-      const predicates = vocab.filter(v => v.slot_type === 'predicate').map(v => ({ t: v.term, w: v.weight }));
-      const objects = vocab.filter(v => v.slot_type === 'object').map(v => ({ t: v.term, w: v.weight }));
-
-      if (subjects.length >= 5) VOCAB.subject = subjects;
-      if (predicates.length >= 5) VOCAB.predicate = predicates;
-      if (objects.length >= 5) VOCAB.object = objects;
-
-      vocabLoaded = true;
-      console.log('Vocab loaded from Supabase view:', {
-        subjects: VOCAB.subject.length,
-        predicates: VOCAB.predicate.length,
-        objects: VOCAB.object.length
-      });
-
-      // Rebuild reels with new vocab
-      if (typeof reels !== 'undefined' && reels.length > 0) {
-        reels.forEach(r => {
-          r.items = VOCAB[r.kind];
-          r.n = r.items.length;
-          r.rebuild();
-        });
-      }
-    }
-  } catch (e) {
-    console.log('Vocab load failed, using seed:', e);
-  }
-}
-
-// Fallback: load from raw entities/predicates tables
-async function loadVocabFromRawTables() {
-  try {
-    const { data: entities } = await supabaseClient
-      .from('entities')
-      .select('canonical_name, entity_kind')
-      .limit(100);
-
-    const { data: predicates } = await supabaseClient
-      .from('predicates')
-      .select('label')
-      .eq('tier', 'entity')
-      .eq('status', 'approved')
-      .limit(50);
-
-    if (entities && entities.length > 0) {
-      const subjectKinds = ['org', 'product', 'tech'];
-      const objectKinds = ['person_class', 'data_type'];
-
-      const subjects = entities
-        .filter(e => subjectKinds.includes(e.entity_kind))
-        .map(e => ({ t: e.canonical_name, w: 2 }));
-
-      const objects = entities
-        .filter(e => objectKinds.includes(e.entity_kind))
-        .map(e => ({ t: e.canonical_name, w: 2 }));
-
-      if (subjects.length >= 5) VOCAB.subject = subjects;
-      if (objects.length >= 5) VOCAB.object = objects;
-    }
-
-    if (predicates && predicates.length >= 5) {
-      VOCAB.predicate = predicates.map(p => ({ t: p.label, w: 2 }));
-    }
-
-    vocabLoaded = true;
-    console.log('Vocab loaded from raw tables:', {
-      subjects: VOCAB.subject.length,
-      predicates: VOCAB.predicate.length,
-      objects: VOCAB.object.length
-    });
-
-    // Rebuild reels
-    if (typeof reels !== 'undefined' && reels.length > 0) {
-      reels.forEach(r => {
-        r.items = VOCAB[r.kind];
-        r.n = r.items.length;
-        r.rebuild();
-      });
-    }
-  } catch (e) {
-    console.log('Raw table vocab load failed:', e);
-  }
-}
-
-// Track shipped products for uniqueness check
-let shippedTriples = new Set();
 
 /* ============ STATE ============ */
 const S = { bc:3, ticket:null, beat:0, busy:false };
@@ -979,8 +875,8 @@ const CELL = 56;
 
 /* ============ REELS ============ */
 class Reel {
-  constructor(kind, mount){
-    this.kind = kind; this.items = VOCAB[kind];
+  constructor(kind, mount, items, label){
+    this.kind = kind; this.items = items; this.labelTxt = label;
     this.n = this.items.length;
     this.pos = Math.random()*this.n;      // continuous index
     this.vel = 0; this.locked = false; this.raf = null;
@@ -990,7 +886,7 @@ class Reel {
   }
   build(){
     const col = document.createElement('div'); col.className='reelcol';
-    col.innerHTML = `<div class="label">${{subject:'WHO',predicate:'DOES WHAT TO',object:'WHOM'}[this.kind]}</div>`;
+    col.innerHTML = `<div class="label">${this.labelTxt}</div>`;
     this.win = document.createElement('div'); this.win.className='reelwin';
     this.strip = document.createElement('div'); this.strip.className='strip';
     // 3 copies for seamless wrap
@@ -1095,1123 +991,150 @@ function weightedIndex(items){
 }
 function buzz(ms){ if(navigator.vibrate && !reduceMotion) navigator.vibrate(ms); }
 
-const reels = ['subject','predicate','object'].map(k=>new Reel(k,$('#reels')));
+/* ============ THE MACHINE V2: registry-driven reels ============ */
+// Per EBL_BATTLER_BUILD_PLAN 5.3 + ADDENDUM 01 B3. The reels are theater
+// over a pre-picked card: the card is chosen first (weighted impact^2 from
+// unclaimed registry cases), then the reels spin to land on its attributes.
+// LOCKS are filters: a held reel constrains the next pick to matching cards.
+const MACHINE = { pool: [], picked: null };
+const RARITY_ORDER = ['common','uncommon','rare','legendary'];
+const FACTION_ORDER = ['hell','unaligned','heaven'];
+const FACTION_ICON = { hell:'\u{1F608}', heaven:'\u{1F47C}', unaligned:'\u25FB' };
 
-$('#spinbtn').onclick=()=>{
-  if(S.busy) return; S.busy=true; $('#spinbtn').disabled=true; buzz(15);
-  let pending=0;
-  reels.forEach((r,i)=>{
+function machineStrips(){
+  const cats = [...new Set(MACHINE.pool.map(c => c.category || 'UNFILED'))].sort();
+  return {
+    category: (cats.length ? cats : ['LOADING']).map(t => ({
+      t, v: t,
+      w: Math.max(1, ...MACHINE.pool.filter(c => (c.category||'UNFILED')===t).map(c => c.impact||1))
+    })),
+    rarity: RARITY_ORDER.map(t => ({ t: t.toUpperCase(), v: t, w: t==='legendary'?3:1 })),
+    faction: FACTION_ORDER.map(t => ({ t: t.toUpperCase(), v: t, w: 1 }))
+  };
+}
+
+const REEL_LABELS = { category:'CATEGORY', rarity:'RARITY', faction:'ALIGNMENT' };
+const strips0 = { category:[{t:'LOADING',v:null,w:1}], rarity:[{t:'LOADING',v:null,w:1}], faction:[{t:'LOADING',v:null,w:1}] };
+const reels = ['category','rarity','faction'].map(k => new Reel(k, $('#reels'), strips0[k], REEL_LABELS[k]));
+
+function rebuildMachineReels(){
+  const strips = machineStrips();
+  reels.forEach(r => { r.items = strips[r.kind]; r.n = r.items.length; r.rebuild(); });
+}
+
+function machineFilters(){
+  const f = {};
+  reels.forEach(r => { if(r.locked && r.current() && r.current().v) f[r.kind] = r.current().v; });
+  return f;
+}
+
+function weightedPickCard(filters){
+  let pool = MACHINE.pool.filter(c =>
+    (!filters.category || (c.category||'UNFILED') === filters.category) &&
+    (!filters.rarity   || (c.rarity||'common') === filters.rarity) &&
+    (!filters.faction  || (c.faction||'unaligned') === filters.faction));
+  const filtered = pool.length > 0;
+  if(!pool.length) pool = MACHINE.pool;
+  if(!pool.length) return { card:null, filtered:false };
+  const tot = pool.reduce((a,c) => a + Math.pow(c.impact||1, 2), 0);
+  let r = Math.random() * tot;
+  for(const c of pool){ r -= Math.pow(c.impact||1, 2); if(r <= 0) return { card:c, filtered }; }
+  return { card: pool[pool.length-1], filtered };
+}
+
+function reelIndexOf(reel, value){
+  const i = reel.items.findIndex(it => it.v === value);
+  return i >= 0 ? i : 0;
+}
+
+$('#spinbtn').onclick = () => {
+  if(S.busy) return;
+  if(!MACHINE.pool.length){
+    stamp('THE REGISTRY IS EMPTY. FILE SOMETHING.');
+    if(typeof loadUnclaimedCards === 'function') loadUnclaimedCards();
+    return;
+  }
+  S.busy = true; $('#spinbtn').disabled = true; buzz(15);
+  const { card, filtered } = weightedPickCard(machineFilters());
+  MACHINE.picked = card;
+  if(!filtered && reels.some(r => r.locked)) stamp('NO CASE MATCHES THE HELD REELS. THE MACHINE IMPROVISES.');
+  const targets = {
+    category: reelIndexOf(reels[0], card.category || 'UNFILED'),
+    rarity:   reelIndexOf(reels[1], card.rarity || 'common'),
+    faction:  reelIndexOf(reels[2], card.faction || 'unaligned')
+  };
+  let pending = 0;
+  reels.forEach((r, i) => {
     if(r.locked) return;
     pending++;
-    const target=weightedIndex(r.items);
-    r.spinTo(target, 2+i, 900+i*350, ()=>{ buzz(10); if(--pending===0) landed(); });
+    r.spinTo(targets[r.kind], 2 + i, 900 + i*350, () => { buzz(10); if(--pending === 0) landed(); });
   });
-  if(pending===0){ S.busy=false; $('#spinbtn').disabled=false;
-    stamp('NOTHING SPUN. GI INTELLIGENCE HAS BEEN NOTIFIED.'); landed(true); return; }
+  if(pending === 0){ landed(); }
 };
 
 function landed(quiet=false){
-  S.busy=false; $('#spinbtn').disabled=false;
-  if(!quiet && Math.random()<0.02){
-    $('#sentence').innerHTML='<b>Artificial Gary Intelligence</b> <b>fixes</b> <b>everything</b>.';
-    const rar=$('#rarity'); rar.textContent='CLASSIFIED'; rar.classList.add('legendary');
-    $('#shipbtn').disabled=false; $('#filebtn').disabled=false;
-    stamp('IT IS GARY'); return;
+  S.busy = false; $('#spinbtn').disabled = false;
+  if(quiet){
+    // Manual nudge/drag: reels are now a filter statement, not a result.
+    $('#sentence').innerHTML = 'SPIN TO SUMMON A CASE MATCHING THE HELD REELS.';
+    $('#rarity').textContent = '';
+    $('#shipbtn').disabled = true; $('#filebtn').disabled = false;
+    MACHINE.picked = null;
+    return;
   }
-  const [s,p,o]=reels.map(r=>r.current());
-  $('#sentence').innerHTML=`<b>${s.t}</b> that <b>${p.t}</b> <b>${o.t}</b>.`;
-  const score=s.w+p.w+o.w;
-  const tier=score>=8?'LEGENDARY':score>=6?'UNCOMMON':'COMMON';
-  const rar=$('#rarity'); rar.textContent=tier; rar.classList.toggle('legendary',tier==='LEGENDARY');
-  $('#shipbtn').disabled=false; $('#filebtn').disabled=false;
-  if(tier==='LEGENDARY' && !quiet) stamp('THE BRAIN IS EXCITED');
+  if(Math.random() < 0.02){
+    $('#sentence').innerHTML = '<b>Artificial Gary Intelligence</b> <b>fixes</b> <b>everything</b>.';
+    const rar = $('#rarity'); rar.textContent = 'CLASSIFIED'; rar.classList.add('legendary');
+    stamp('IT IS GARY');
+    if(MACHINE.picked) renderCardInMachine(MACHINE.picked, true);
+    return;
+  }
+  if(MACHINE.picked) renderCardInMachine(MACHINE.picked);
 }
+
+function renderCardInMachine(card, appendGary=false){
+  const seats = (typeof cardBrowserState !== 'undefined') ? cardBrowserState.seatCount : 0;
+  const cost = calcClaimCost(seats);
+  const stars = '\u2605'.repeat(card.impact || 1);
+  const fIcon = FACTION_ICON[card.faction] || FACTION_ICON.unaligned;
+  const art = (card.art_url && !String(card.art_url).includes('pending'))
+    ? '<img src="' + card.art_url + '" alt="" style="width:44px;height:60px;object-fit:cover;border:2px solid var(--ink);vertical-align:middle;margin-right:8px">'
+    : '';
+  const html = art + '<b>' + card.name + '</b><br>'
+    + '<span style="font-size:13px">' + (card.category || 'UNFILED') + ' \u00B7 '
+    + fIcon + ' ' + (card.faction || 'unaligned').toUpperCase() + ' \u00B7 '
+    + stars + ' \u00B7 \u26A1 ' + (card.power || (card.impact||1)*2) + '</span>';
+  $('#sentence').innerHTML = appendGary ? $('#sentence').innerHTML + '<hr>' + html : html;
+  const rar = $('#rarity');
+  const tier = (card.rarity || 'common').toUpperCase();
+  rar.textContent = tier; rar.classList.toggle('legendary', tier === 'LEGENDARY');
+  const claimBtn = $('#shipbtn');
+  claimBtn.textContent = S.user ? ('CLAIM IT \u20BF' + (isFinite(cost)?cost:'\u2014') + ' \u2192') : 'SIGN IN TO CLAIM \u2192';
+  claimBtn.disabled = false;
+  $('#filebtn').disabled = false;
+  if(tier === 'LEGENDARY') stamp('THE BRAIN IS EXCITED');
+}
+
+$('#shipbtn').onclick = () => {
+  if(!MACHINE.picked){ stamp('SPIN FIRST. THE MACHINE DECIDES.'); return; }
+  claimCard(MACHINE.picked.case_id);
+};
+
 function stamp(txt){
   const st=$('#bigstamp'); st.firstElementChild.textContent=txt;
   st.classList.add('show'); buzz(40); setTimeout(()=>st.classList.remove('show'),1400);
 }
 
-/* ============ STORY MODE (Visual Novel Engine) ============ */
-
-// Local storage fallback for unsigned users
-function saveLocalProgress(){
-  const data = {
-    bc: S.bc,
-    products: S.products || [],
-    lastSaved: Date.now()
-  };
-  try { localStorage.setItem('ebl_progress', JSON.stringify(data)); } catch(e){}
-}
-
-function loadLocalProgress(){
-  try {
-    const raw = localStorage.getItem('ebl_progress');
-    if(raw){
-      const data = JSON.parse(raw);
-      if(data.bc) S.bc = data.bc;
-      if(data.products) S.products = data.products;
-      // Sync shipped triples from local products
-      syncShippedTriples();
-    }
-  } catch(e){}
-}
-
-// Sync shippedTriples Set from all known products (portfolio + local)
-function syncShippedTriples(){
-  // From signed-in portfolio
-  if(S.portfolio && S.portfolio.length > 0){
-    S.portfolio.forEach(p => {
-      if(p.triple){
-        const key = `${p.triple.subject}|${p.triple.predicate}|${p.triple.object}`.toLowerCase();
-        shippedTriples.add(key);
-      }
-    });
-  }
-  // From local storage products
-  if(S.products && S.products.length > 0){
-    S.products.forEach(p => {
-      if(p.triple){
-        const key = `${p.triple.subject}|${p.triple.predicate}|${p.triple.object}`.toLowerCase();
-        shippedTriples.add(key);
-      }
-    });
-  }
-  console.log('Synced shipped triples:', shippedTriples.size);
-}
-
-// Initialize local progress on load for unsigned users
-document.addEventListener('DOMContentLoaded', () => {
-  setTimeout(() => {
-    if(!S.user?.id) loadLocalProgress();
-    syncShippedTriples(); // Always sync on load
-  }, 500);
-});
-
-S.story = {
-  active: false,
-  hp: 10,
-  items: [],
-  beat: 0,
-  scenes: {},   // Cached scenes by node hash
-  narratives: {}, // Cached narratives by node hash
-  ticket: null,
-  branch: [],   // Branch path for determinism
-  encounter: null, // Active encounter/battle
-  currentChoices: null, // Currently displayed choice objects
-  patternsUsed: [], // Comedy patterns used in current narrative
-  choiceShownAt: null // Timestamp when choices were shown (for hesitation tracking)
-};
-
-// Scene node hashing for canonical lazy generation
-function sceneNodeHash(ticket, beat, choice, branch){
-  const raw = `${ticket.subject}|${ticket.predicate}|${ticket.object}|${beat}|${choice||'start'}|${branch.join(',')}`;
-  let h = 0;
-  for(let i=0; i<raw.length; i++){
-    h = ((h << 5) - h + raw.charCodeAt(i)) | 0;
-  }
-  return 'scene_' + Math.abs(h).toString(36);
-}
-
-// SVG sanitizer - strips dangerous elements, validates parse
-function sanitizeSVG(svgStr){
-  // Remove script tags, event handlers, foreignObject, external hrefs
-  let clean = svgStr
-    .replace(/<script[\s\S]*?<\/script>/gi, '')
-    .replace(/<foreignObject[\s\S]*?<\/foreignObject>/gi, '')
-    .replace(/on\w+\s*=\s*["'][^"']*["']/gi, '')
-    .replace(/javascript:/gi, '')
-    .replace(/href\s*=\s*["'](?!#)[^"']*["']/gi, '')
-    .replace(/xlink:href\s*=\s*["'](?!#)[^"']*["']/gi, '');
-
-  // Validate it parses as valid SVG
-  try {
-    const parser = new DOMParser();
-    const doc = parser.parseFromString(clean, 'image/svg+xml');
-    const error = doc.querySelector('parsererror');
-    if(error) return null;
-    // Return the sanitized SVG string
-    return new XMLSerializer().serializeToString(doc.documentElement);
-  } catch(e){
-    return null;
-  }
-}
-
-// Geometric fallback scene (used when LLM fails)
-function fallbackSceneSVG(beat, seed){
-  const rng = (n) => Math.abs(((seed * (n+1) * 9301 + 49297) % 233280)) / 233280;
-  const ink = '#1A1817';
-  const red = '#D42B1E';
-  const bg = '#F6F2E8';
-
-  const scenes = [
-    // Beat 0: Ideation cubicle
-    `<svg viewBox="0 0 400 300" xmlns="http://www.w3.org/2000/svg">
-      <rect fill="${bg}" width="400" height="300"/>
-      <rect x="50" y="160" width="300" height="120" fill="${ink}" rx="4"/>
-      <rect x="70" y="80" width="120" height="100" fill="none" stroke="${ink}" stroke-width="6"/>
-      <circle cx="130" cy="130" r="30" fill="${red}"/>
-      <rect x="260" y="100" width="60" height="80" fill="${ink}"/>
-      <circle cx="290" cy="130" r="15" fill="${red}"/>
-      <text x="200" y="260" font-size="16" font-family="monospace" fill="${bg}" text-anchor="middle">IDEATION DIVISION</text>
-      <path d="M320 90 L350 60 L380 90" stroke="${ink}" stroke-width="4" fill="none"/>
-    </svg>`,
-    // Beat 1: Development lab
-    `<svg viewBox="0 0 400 300" xmlns="http://www.w3.org/2000/svg">
-      <rect fill="${bg}" width="400" height="300"/>
-      <rect x="60" y="40" width="280" height="180" fill="none" stroke="${ink}" stroke-width="8"/>
-      <line x1="60" y1="80" x2="340" y2="80" stroke="${ink}" stroke-width="4"/>
-      <circle cx="200" cy="150" r="50" fill="${red}"/>
-      <text x="200" y="160" font-size="40" fill="${bg}" text-anchor="middle" font-family="serif">β</text>
-      <rect x="100" y="240" width="200" height="30" fill="${ink}"/>
-      <text x="200" y="260" font-size="12" fill="${bg}" text-anchor="middle" font-family="monospace">PROTOTYPE BUILD ${Math.floor(rng(1)*99)+1}</text>
-    </svg>`,
-    // Beat 2: Testing arena
-    `<svg viewBox="0 0 400 300" xmlns="http://www.w3.org/2000/svg">
-      <rect fill="${bg}" width="400" height="300"/>
-      <circle cx="100" cy="100" r="50" fill="none" stroke="${ink}" stroke-width="6"/>
-      <circle cx="200" cy="100" r="50" fill="none" stroke="${ink}" stroke-width="6"/>
-      <circle cx="300" cy="100" r="50" fill="${red}" opacity="0.3"/>
-      <circle cx="300" cy="100" r="50" fill="none" stroke="${red}" stroke-width="6"/>
-      <path d="M50 200 Q200 270 350 200" fill="none" stroke="${ink}" stroke-width="4"/>
-      <text x="200" y="260" font-size="14" fill="${ink}" text-anchor="middle" font-family="monospace">BETA CONVERSION: ${Math.floor(rng(2)*60+20)}%</text>
-      <rect x="90" y="90" width="20" height="20" fill="${red}"/>
-      <rect x="190" y="90" width="20" height="20" fill="${ink}"/>
-    </svg>`,
-    // Beat 3: Launch pad
-    `<svg viewBox="0 0 400 300" xmlns="http://www.w3.org/2000/svg">
-      <rect fill="${bg}" width="400" height="300"/>
-      <polygon points="200,30 260,120 140,120" fill="${red}"/>
-      <rect x="170" y="120" width="60" height="100" fill="${ink}"/>
-      <circle cx="200" cy="260" r="30" fill="none" stroke="${red}" stroke-width="6"/>
-      <circle cx="200" cy="260" r="15" fill="${red}"/>
-      <text x="200" y="20" font-size="18" fill="${ink}" text-anchor="middle" font-family="sans-serif">🚀 LAUNCH SEQUENCE</text>
-      <line x1="140" y1="200" x2="100" y2="240" stroke="${ink}" stroke-width="4"/>
-      <line x1="260" y1="200" x2="300" y2="240" stroke="${ink}" stroke-width="4"/>
-    </svg>`
-  ];
-
-  return scenes[Math.min(beat, scenes.length-1)];
-}
-
-// Progressive SVG rendering - streams elements back-to-front
-async function renderProgressiveSVG(container, svgSource){
-  // Parse the SVG
-  const parser = new DOMParser();
-  const doc = parser.parseFromString(svgSource, 'image/svg+xml');
-  const svg = doc.documentElement;
-
-  if(!svg || svg.nodeName === 'parsererror'){
-    container.innerHTML = svgSource; // Fallback to direct render
-    return;
-  }
-
-  // Get all child elements
-  const elements = Array.from(svg.children);
-
-  // Create empty SVG container
-  const viewBox = svg.getAttribute('viewBox') || '0 0 400 300';
-  container.innerHTML = `<svg viewBox="${viewBox}" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:100%"></svg>`;
-  const targetSvg = container.querySelector('svg');
-
-  // Progressive render - elements appear one by one like being drawn
-  for(let i = 0; i < elements.length; i++){
-    const el = elements[i].cloneNode(true);
-    el.style.opacity = '0';
-    targetSvg.appendChild(el);
-
-    // Animate in
-    await new Promise(r => setTimeout(r, 80 + Math.random() * 120));
-    el.style.transition = 'opacity 0.3s ease-in';
-    el.style.opacity = '1';
-  }
-}
-
-// Check scene cache (Supabase) or generate new
-async function fetchOrGenerateScene(nodeHash, ticket, beat, choice, branch){
-  // Check local cache first
-  if(S.story.scenes[nodeHash]){
-    console.log('Scene from local cache:', nodeHash);
-    return S.story.scenes[nodeHash];
-  }
-
-  // Try Supabase cache (skip if table doesn't exist or errors)
-  if(supabaseClient){
-    try {
-      const { data, error } = await supabaseClient
-        .from('scene_cache')
-        .select('svg')
-        .eq('node_hash', nodeHash)
-        .maybeSingle(); // Use maybeSingle instead of single to avoid errors on no match
-
-      if(!error && data?.svg){
-        console.log('Scene from Supabase cache:', nodeHash);
-        S.story.scenes[nodeHash] = data.svg;
-        return data.svg;
-      }
-    } catch(e){
-      // Silently continue to generation - cache is optional
-    }
-  }
-
-  // Generate via LLM edge function
-  if(CONFIG.SUPABASE_URL && CONFIG.SCENE_FN){
-    console.log('Requesting scene generation:', nodeHash, `${CONFIG.SUPABASE_URL}/functions/v1/${CONFIG.SCENE_FN}`);
-    try {
-      const scenePrompt = buildScenePrompt(ticket, beat, choice);
-      const response = await fetch(`${CONFIG.SUPABASE_URL}/functions/v1/${CONFIG.SCENE_FN}`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${CONFIG.SUPABASE_ANON_KEY}`
-        },
-        body: JSON.stringify({
-          node_hash: nodeHash,
-          ticket: ticket,
-          beat: beat,
-          choice: choice,
-          prompt: scenePrompt
-        })
-      });
-
-      console.log('Scene generation response:', response.status, response.ok);
-
-      if(response.ok){
-        const result = await response.json();
-        console.log('Scene generation result:', result.success, result.source, result.svg ? 'has SVG' : 'no SVG');
-        if(result.svg){
-          const sanitized = sanitizeSVG(result.svg);
-          if(sanitized){
-            console.log('Scene sanitized successfully');
-            S.story.scenes[nodeHash] = sanitized;
-            return sanitized;
-          } else {
-            console.log('Scene sanitization failed');
-          }
-        }
-      } else {
-        const errorText = await response.text();
-        console.log('Scene generation error:', errorText);
-      }
-    } catch(e){
-      console.log('Scene generation failed, using fallback:', e);
-    }
-  } else {
-    console.log('Scene generation skipped - no SCENE_FN configured');
-  }
-
-  // Fallback to geometric scene
-  console.log('Using geometric fallback for:', nodeHash);
-  const seed = hashCode(nodeHash);
-  const fallback = fallbackSceneSVG(beat, seed);
-  S.story.scenes[nodeHash] = fallback;
-  return fallback;
-}
-
-function buildScenePrompt(ticket, beat, choice){
-  const phases = ['Ideation', 'Development', 'Testing', 'Launch'];
-  const phase = phases[Math.min(beat, phases.length-1)];
-
-  return `Draw a scene for a corporate villain game. Phase: ${phase}.
-Product: "${ticket.subject} that ${ticket.predicate} ${ticket.object}"
-Choice made: ${choice || 'start'}
-
-STRICT RULES:
-- Output ONLY valid SVG, no explanation
-- viewBox="0 0 400 300"
-- ONLY TWO COLORS: ink black #1A1817 and crayon red #D42B1E
-- Background: #F6F2E8 (off-white paper)
-- Hand-drawn, sketch style, corporate dystopia aesthetic
-- Include: desks, monitors, filing cabinets, evil machinery
-- No photographs, no gradients, no complex paths
-- Elements ordered BACK TO FRONT for progressive reveal
-- First element should be background rect
-- Keep it simple: 10-20 elements max`;
-}
-
-// Generate unique card vignette for a product (fire-and-forget)
-// Reuses the scene generation endpoint which is already working
-async function generateCardVignette(product){
-  if(!CONFIG.SUPABASE_URL || !CONFIG.SCENE_FN) return;
-
-  const t = product.triple;
-  const vignetteKey = `card_${Math.abs(hashCode(`${t.subject}|${t.predicate}|${t.object}`)).toString(36)}`;
-
-  // Build a card-specific prompt
-  const cardPrompt = `Draw a small vignette for a collectible card. The card represents:
-"${t.subject} that ${t.predicate} ${t.object}"
-
-STRICT SVG RULES:
-1. Output ONLY valid SVG code, nothing else
-2. viewBox="0 0 400 200" (wide card format)
-3. EXACTLY TWO COLORS: ink black #1A1817, crayon red #D42B1E
-4. Background: #F6F2E8 (paper cream)
-5. Hand-drawn style: wobbly lines, sketch aesthetic
-6. Simple iconic imagery representing the action
-7. 5-10 elements maximum
-8. No text, no gradients, no script tags
-
-Start with <svg and end with </svg>.`;
-
-  try {
-    console.log('Generating card vignette:', vignetteKey);
-    const response = await fetch(`${CONFIG.SUPABASE_URL}/functions/v1/${CONFIG.SCENE_FN}`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${CONFIG.SUPABASE_ANON_KEY}`
-      },
-      body: JSON.stringify({
-        node_hash: vignetteKey,
-        ticket: t,
-        beat: 0,
-        choice: 'card',
-        prompt: cardPrompt
-      })
-    });
-
-    if(response.ok){
-      const result = await response.json();
-      console.log('Card vignette result:', result.success, result.source);
-      if(result.svg){
-        const sanitized = sanitizeSVG(result.svg);
-        if(sanitized){
-          product.vignette = sanitized;
-          console.log('Card vignette stored on product');
-        }
-      }
-    } else {
-      console.log('Card vignette response not ok:', response.status);
-    }
-  } catch(e){
-    console.log('Card vignette generation failed:', e);
-  }
-}
-
-// ============ PARALLEL NARRATIVE + CHOICES GENERATION ============
-
-// Generate narrative + choices (called in parallel with scene generation)
-async function generateBeatContent(ticket, beat, previousChoices, runningJokes) {
-  const nodeHash = sceneNodeHash(ticket, beat, previousChoices[previousChoices.length-1] || null, previousChoices);
-
-  // Check local cache first
-  if(S.story.narratives?.[nodeHash]){
-    console.log('Narrative from local cache:', nodeHash);
-    return S.story.narratives[nodeHash];
-  }
-
-  // Try edge function if enabled
-  if(CONFIG.USE_DYNAMIC_NARRATIVE && CONFIG.SUPABASE_URL && CONFIG.NARRATIVE_FN){
-    try {
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), CONFIG.NARRATIVE_TIMEOUT_MS);
-
-      const response = await fetch(`${CONFIG.SUPABASE_URL}/functions/v1/${CONFIG.NARRATIVE_FN}`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${CONFIG.SUPABASE_ANON_KEY}`
-        },
-        body: JSON.stringify({
-          node_hash: nodeHash,
-          ticket: ticket,
-          beat: beat,
-          choice: previousChoices[previousChoices.length-1] || null,
-          branch: previousChoices,
-          running_jokes: runningJokes || []
-        }),
-        signal: controller.signal
-      });
-
-      clearTimeout(timeoutId);
-
-      if(response.ok){
-        const result = await response.json();
-        console.log('Narrative generation result:', {
-          success: result.success,
-          cached: result.cached,
-          source: result.source,
-          choiceCount: result.choices?.length,
-          hasItems: result.choices?.some(c => c.item)
-        });
-        if(result.narrative && result.choices){
-          const content = {
-            narrative: result.narrative,
-            choices: result.choices,
-            patterns_used: result.patterns_used || [],
-            callbacks_used: result.callbacks_used || [],
-            source: result.cached ? 'cache' : 'llm'
-          };
-          S.story.narratives[nodeHash] = content;
-          return content;
-        }
-      } else {
-        console.log('Narrative generation error:', response.status);
-      }
-    } catch(e){
-      if(e.name === 'AbortError'){
-        console.log('Narrative generation timed out, using fallback');
-      } else {
-        console.log('Narrative generation failed, using fallback:', e);
-      }
-    }
-  }
-
-  // Fallback to static content
-  console.log('Using static narrative fallback for beat:', beat);
-  return generateFallbackNarrative(ticket, beat, previousChoices[previousChoices.length-1] || null);
-}
-
-// Static fallback narrative generator (mirrors current STORY_BEATS/STORY_CHOICES)
-function generateFallbackNarrative(ticket, beat, choice){
-  const narratives = [
-    `Ticket accepted. ${ticket.subject} that ${ticket.predicate} ${ticket.object}. I have run the projections to the end of the world. This one appears in 61% of timelines. Proceed.`,
-    choice === 'ask_legal'
-      ? `Legal has reviewed your concern and eaten it. The product is now called "${ticket.object.split(' ')[0]}Sync™".`
-      : choice === 'call_gary'
-        ? `Gary arrives, types for eleven seconds, says "should be good now," and leaves. Nobody knows why it works.`
-        : `Development continues. The prototype ${ticket.predicate}s a test group. They rate the experience 4.1 stars.`,
-    choice === 'raise_hand'
-      ? `Your concern was received, laminated, and filed under Morale. Meanwhile the beta converts at 34%.`
-      : choice === 'hide_gi'
-        ? `You hide the prototype. GI Intelligence is already inside the prototype. It files a favorable report.`
-        : `The beta converts at 34%. Marketing wants a mascot. I have designed one. It has too many eyes.`,
-    choice === 'blame_gary'
-      ? `Launch day. Gary was blamed in advance, so the incident report is already filed. Gary fixes it, sighs once.`
-      : `Launch day. ${ticket.subject} everywhere now ${ticket.predicate} ${ticket.object} at scale. My plan advances.`
-  ];
-
-  const fallbackChoices = [
-    [
-      {id:'lean_in', text:'Add a leaderboard', desc:'The Brain rewards ambition', icon:'📊', hp:+2, item:null, encounter:0.1},
-      {id:'ask_legal', text:'Loop in Legal', desc:'Legal is a raccoon in a tie', icon:'⚖️', hp:-1, item:'Legal Waiver', encounter:0.15},
-      {id:'call_gary', text:'Call Gary', desc:'Technical stuff. It is Gary', icon:'🤖', hp:0, item:"Gary's Fix", encounter:0.2},
-      {id:'feel_fine', text:'Feel fine', desc:'Logged to the Wellness Dashboard', icon:'😌', hp:+1, item:null, encounter:0.05}
-    ],
-    [
-      {id:'ship_beta', text:'Ship to grandmas', desc:'A gentle test market', icon:'👵', hp:-2, item:'Beta Feedback', encounter:0.15},
-      {id:'add_ai', text:'More AI', desc:'Recursive. The Brain approves', icon:'🧠', hp:+3, item:null, encounter:0.25},
-      {id:'hide_gi', text:'Hide from GI', desc:'It already knows', icon:'🙈', hp:-3, item:'Incident Report', encounter:0.3},
-      {id:'raise_hand', text:'Raise a concern', desc:'Concerns are compostable', icon:'✋', hp:-1, item:null, encounter:0.1}
-    ],
-    [
-      {id:'demo_day', text:'Demo at all-hands', desc:'Nothing has ever gone wrong', icon:'📽️', hp:+4, item:'Demo Trophy', encounter:0.35},
-      {id:'quiet_launch', text:'Quiet launch', desc:'Stealth is a feature', icon:'🤫', hp:+1, item:null, encounter:0.1},
-      {id:'blame_gary', text:'Blame Gary', desc:'Traditional', icon:'👉', hp:0, item:"Gary's Sigh", encounter:0.15},
-      {id:'feel_weird', text:'Feel weird', desc:'Also compostable', icon:'😵‍💫', hp:-2, item:'Therapy Voucher', encounter:0.2}
-    ]
-  ];
-
-  return {
-    narrative: narratives[Math.min(beat, narratives.length - 1)],
-    choices: fallbackChoices[Math.min(beat, fallbackChoices.length - 1)],
-    patterns_used: ['fallback'],
-    callbacks_used: [],
-    source: 'static'
-  };
-}
-
-// Fire-and-forget engagement tracking
-function recordChoice(choiceId, beat, tripleHash, hesitationMs, choicesPresented, patternsShown){
-  if(!CONFIG.SUPABASE_URL || !CONFIG.ENGAGEMENT_FN) return;
-
-  // Don't block on analytics - fire and forget
-  fetch(`${CONFIG.SUPABASE_URL}/functions/v1/${CONFIG.ENGAGEMENT_FN}`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${CONFIG.SUPABASE_ANON_KEY}`
-    },
-    body: JSON.stringify({
-      session_id: SESSION_ID,
-      user_id: S.user?.id || null,
-      triple_hash: tripleHash,
-      beat: beat,
-      choice_id: choiceId,
-      time_to_choose_ms: hesitationMs,
-      choices_presented: choicesPresented,
-      hp_before: S.story.hp,
-      joke_patterns_shown: patternsShown
-    })
-  }).then(() => {
-    console.log('Engagement tracked:', choiceId, hesitationMs + 'ms');
-  }).catch(e => {
-    // Silently fail - don't break the game for analytics
-    console.log('Engagement tracking failed (non-critical):', e.message);
-  });
-}
-
-// Render dynamically generated choices (works with both LLM and fallback content)
-function renderDynamicChoices(choices){
-  if(S.story.encounter){
-    renderEncounterChoices();
-    return;
-  }
-
-  const container = $('#story-choices');
-  container.innerHTML = '';
-
-  // Shuffle and pick 3 (like current behavior)
-  const displayed = [...choices].sort(() => Math.random() - 0.5).slice(0, 3);
-
-  // Store displayed choices and timestamp for engagement tracking
-  S.story.currentChoices = displayed;
-  S.story.choiceShownAt = Date.now();
-
-  const rarityIcon = r => ({ 'LEGENDARY': '⭐', 'UNCOMMON': '◆', 'COMMON': '•' }[r] || '');
-
-  displayed.forEach(c => {
-    const div = document.createElement('div');
-    div.className = 'story-choice' + (c.item_rarity === 'LEGENDARY' ? ' legendary-choice' : '');
-    const itemDisplay = c.item
-      ? ` · 📦 <span class="item-rarity ${(c.item_rarity||'COMMON').toLowerCase()}">${rarityIcon(c.item_rarity)}${c.item}</span>`
-      : '';
-    div.innerHTML = `
-      <span class="choice-icon">${c.icon}</span>
-      <span class="choice-title">${c.text}</span>
-      <span class="choice-desc">${c.desc}</span>
-      <span class="choice-effect ${c.hp >= 0 ? 'positive' : 'negative'}">
-        ${c.hp >= 0 ? '+' : ''}${c.hp} HP${itemDisplay}
-      </span>
-    `;
-    div.onclick = () => makeDynamicChoice(c, displayed);
-    container.appendChild(div);
-  });
-}
-
-// Enhanced choice handler with engagement tracking
-function makeDynamicChoice(choice, allChoices){
-  buzz(10);
-
-  // Calculate hesitation time (engagement signal)
-  const hesitationMs = S.story.choiceShownAt ? Date.now() - S.story.choiceShownAt : 0;
-  const tripleHash = sceneNodeHash(S.story.ticket, 0, null, []);
-
-  // Fire-and-forget engagement tracking
-  recordChoice(
-    choice.id,
-    S.story.beat,
-    tripleHash,
-    hesitationMs,
-    allChoices.map(c => c.id),
-    S.story.patternsUsed
-  );
-
-  // Apply HP change
-  S.story.hp += choice.hp;
-
-  // Check for item drop - rarity affects drop rate
-  const dropRate = { 'LEGENDARY': 0.3, 'UNCOMMON': 0.5, 'COMMON': 0.7 }[choice.item_rarity] || 0.5;
-  if(choice.item && Math.random() < dropRate){
-    const item = { name: choice.item, rarity: choice.item_rarity || 'COMMON' };
-    S.story.items.push(item);
-    const rarityStyle = item.rarity === 'LEGENDARY' ? '⭐ LEGENDARY' : item.rarity === 'UNCOMMON' ? '◆ UNCOMMON' : '';
-    stamp(`${rarityStyle} ITEM: ${item.name}`);
-  }
-
-  // Check for encounter trigger
-  if(Math.random() < (choice.encounter || 0)){
-    updateStoryStats();
-    advanceStory(choice.id).then(() => {
-      setTimeout(triggerEncounter, 800);
-    });
-    return;
-  }
-
-  updateStoryStats();
-  advanceStory(choice.id);
-}
-
-// ENCOUNTER SYSTEM - battles, side quests, random events
-const ENCOUNTER_TYPES = {
-  battle: {
-    name: 'GI ENCOUNTER',
-    intro: 'GI Intelligence has detected unauthorized innovation.',
-    options: [
-      {text: 'Explain yourself', icon: '🗣️', hp: -3, result: 'GI finds your explanation "insufficient but amusing."'},
-      {text: 'Run', icon: '🏃', hp: -1, result: 'You escape, but GI makes a note.'},
-      {text: 'Offer a bribe', icon: '💰', hp: 0, coins: -2, result: 'GI accepts your "efficiency donation."', item: 'GI Pass'}
-    ]
-  },
-  gary: {
-    name: 'GARY SIGHTING',
-    intro: 'Gary appears from the server room, holding a cable.',
-    options: [
-      {text: 'Ask for help', icon: '🙏', hp: +2, result: 'Gary types for 11 seconds. Everything works now.', item: "Gary's Fix"},
-      {text: 'Pretend you didn\'t see him', icon: '🙈', hp: 0, result: 'Gary vanishes. You hear typing in the vents.'},
-      {text: 'Thank him preemptively', icon: '👏', hp: +1, result: 'Gary nods once. This counts as friendship.'}
-    ]
-  },
-  legal: {
-    name: 'LEGAL INTERCEPT',
-    intro: 'A raccoon in a tie blocks your path. It\'s Legal.',
-    options: [
-      {text: 'Sign everything', icon: '✍️', hp: -2, result: 'You signed 47 documents. One was a waiver for your soul.', item: 'Legal Waiver'},
-      {text: 'Claim ignorance', icon: '🤷', hp: -1, result: 'Legal adds "claims ignorance" to your permanent file.'},
-      {text: 'Offer snacks', icon: '🥨', hp: +1, result: 'Legal accepts. The matter is... resolved.', item: 'Legal Favor'}
-    ]
-  },
-  vending: {
-    name: 'VENDING ANOMALY',
-    intro: 'The vending machine in B-wing is glowing.',
-    options: [
-      {text: 'Insert coin', icon: '🪙', hp: 0, coins: -1, result: 'It dispenses something... useful?', item: 'Mystery Item'},
-      {text: 'Report it', icon: '📋', hp: +1, result: 'Facilities thanks you. Nothing changes.'},
-      {text: 'Kick it', icon: '🦵', hp: -2, result: 'It kicks back. Vending machines here are load-bearing.', item: 'Dent Badge'}
-    ]
-  },
-  wellness: {
-    name: 'WELLNESS CHECK',
-    intro: 'The Wellness Dashboard has flagged your cortisol levels.',
-    options: [
-      {text: 'Accept the plant', icon: '🌱', hp: +2, result: 'A desk plant is delivered. It seems to watch you.', item: 'Desk Plant'},
-      {text: 'Decline intervention', icon: '✋', hp: -1, result: 'Your refusal has been logged. The plant arrives anyway.'},
-      {text: 'Meditate on command', icon: '🧘', hp: +1, result: '"Good job," says the dashboard. It never blinks.'}
-    ]
-  }
-};
-
-const STORY_CHOICES = [
-  // Beat 1 choices
-  [
-    {id:'lean_in', text:'Add a leaderboard', desc:'The Brain rewards ambition', icon:'📊', hp:+2, item:null, encounter:0.1},
-    {id:'ask_legal', text:'Loop in Legal', desc:'Legal is a raccoon in a tie', icon:'⚖️', hp:-1, item:'Legal Waiver', encounter:0.15},
-    {id:'call_gary', text:'Call Gary', desc:'Technical stuff. It is Gary', icon:'🤖', hp:0, item:"Gary's Fix", encounter:0.2},
-    {id:'feel_fine', text:'Feel fine', desc:'Logged to the Wellness Dashboard', icon:'😌', hp:+1, item:null, encounter:0.05}
-  ],
-  // Beat 2 choices
-  [
-    {id:'ship_beta', text:'Ship to grandmas', desc:'A gentle test market', icon:'👵', hp:-2, item:'Beta Feedback', encounter:0.15},
-    {id:'add_ai', text:'More AI', desc:'Recursive. The Brain approves', icon:'🧠', hp:+3, item:null, encounter:0.25},
-    {id:'hide_gi', text:'Hide from GI', desc:'It already knows', icon:'🙈', hp:-3, item:'Incident Report', encounter:0.3},
-    {id:'raise_hand', text:'Raise a concern', desc:'Concerns are compostable', icon:'✋', hp:-1, item:null, encounter:0.1}
-  ],
-  // Beat 3 choices
-  [
-    {id:'demo_day', text:'Demo at all-hands', desc:'Nothing has ever gone wrong', icon:'📽️', hp:+4, item:'Demo Trophy', encounter:0.35},
-    {id:'quiet_launch', text:'Quiet launch', desc:'Stealth is a feature', icon:'🤫', hp:+1, item:null, encounter:0.1},
-    {id:'blame_gary', text:'Blame Gary', desc:'Traditional', icon:'👉', hp:0, item:"Gary's Sigh", encounter:0.15},
-    {id:'feel_weird', text:'Feel weird', desc:'Also compostable', icon:'😵‍💫', hp:-2, item:'Therapy Voucher', encounter:0.2}
-  ]
-];
-
-const STORY_BEATS = [
-  (t,c) => `Ticket accepted. ${t.subject} that ${t.predicate} ${t.object}. I have run the projections to the end of the world. This one appears in 61% of timelines. Proceed.`,
-  (t,c) => c==='ask_legal' ? `Legal has reviewed your concern and eaten it. The product is now called "${t.object.split(' ')[0]}Sync™".` :
-          c==='call_gary' ? `Gary arrives, types for eleven seconds, says "should be good now," and leaves. Nobody knows why it works.` :
-          `Development continues. The prototype ${t.predicate}s a test group. They rate the experience 4.1 stars.`,
-  (t,c) => c==='raise_hand' ? `Your concern was received, laminated, and filed under Morale. Meanwhile the beta converts at 34%.` :
-          c==='hide_gi' ? `You hide the prototype. GI Intelligence is already inside the prototype. It files a favorable report.` :
-          `The beta converts at 34%. Marketing wants a mascot. I have designed one. It has too many eyes.`,
-  (t,c) => c==='blame_gary' ? `Launch day. Gary was blamed in advance, so the incident report is already filed. Gary fixes it, sighs once.` :
-          `Launch day. ${t.subject} everywhere now ${t.predicate} ${t.object} at scale. My plan advances.`
-];
-
-// Check if a triple is unique (not shipped before)
-function isUniqueTriple(s, p, o){
-  const key = `${s}|${p}|${o}`.toLowerCase();
-  return !shippedTriples.has(key);
-}
-
-// Find a unique combination by spinning specific reels
-function findUniqueCombo(maxAttempts = 50){
-  const [sReel, pReel, oReel] = reels;
-
-  for(let i = 0; i < maxAttempts; i++){
-    const s = VOCAB.subject[Math.floor(Math.random() * VOCAB.subject.length)].t;
-    const p = VOCAB.predicate[Math.floor(Math.random() * VOCAB.predicate.length)].t;
-    const o = VOCAB.object[Math.floor(Math.random() * VOCAB.object.length)].t;
-
-    if(isUniqueTriple(s, p, o)){
-      return {s, p, o};
-    }
-  }
-  return null; // All combos exhausted (unlikely with large vocab)
-}
-
-function enterStoryMode(){
-  const [s,p,o] = reels.map(r=>r.current());
-
-  // Check for duplicate BEFORE starting story
-  if(!isUniqueTriple(s.t, p.t, o.t)){
-    // Find a unique combo and auto-spin to it
-    const unique = findUniqueCombo();
-    if(unique){
-      stamp('DUPLICATE! REROLLING...');
-      // Spin reels to the unique combo
-      const sIdx = VOCAB.subject.findIndex(x => x.t === unique.s);
-      const pIdx = VOCAB.predicate.findIndex(x => x.t === unique.p);
-      const oIdx = VOCAB.object.findIndex(x => x.t === unique.o);
-
-      S.busy = true;
-      let pending = 3;
-      const done = () => { if(--pending === 0){ S.busy = false; setTimeout(enterStoryMode, 300); }};
-
-      reels[0].spinTo(sIdx >= 0 ? sIdx : 0, 2, 800, done);
-      reels[1].spinTo(pIdx >= 0 ? pIdx : 0, 2, 900, done);
-      reels[2].spinTo(oIdx >= 0 ? oIdx : 0, 2, 1000, done);
-      return;
-    } else {
-      // Extremely rare: all combos used
-      stamp('ALL PRODUCTS INVENTED!');
-      return;
-    }
-  }
-
-  S.story = {
-    active: true,
-    hp: 10,
-    items: [],
-    beat: 0,
-    scenes: {},
-    narratives: {},  // Cached narratives by node hash
-    ticket: {subject:s.t, predicate:p.t, object:o.t, tier:$('#rarity').textContent},
-    branch: [],
-    encounter: null,
-    currentChoices: null,
-    patternsUsed: [],
-    choiceShownAt: null
-  };
-  S.ticket = S.story.ticket; // Keep for compatibility
-
-  // Update UI
-  $('#story-mode').classList.add('active');
-  $('#story-product').textContent = `${s.t} that ${p.t} ${o.t}`.slice(0,40);
-  updateStoryStats();
-
-  // Start first beat
-  advanceStory(null);
-}
-
+/* ============ STORY MODE REMOVED (Machine Refactor) ============ */
+// On-demand scene/narrative generation is gone; claims are instant per
+// EBL_BATTLER_BUILD_PLAN 5.3. Narrative returns in Phase 5 (quests) with
+// pre-generated content. Stubs below keep legacy HTML handlers alive.
 function exitStoryMode(){
-  S.story.active = false;
-  $('#story-mode').classList.remove('active');
-  $('#story-payout').style.display = 'none';
-  // Save progress for unsigned users
-  if(!S.user?.id) saveLocalProgress();
+  const sm = document.getElementById('story-mode');
+  if(sm){ sm.classList.remove('active'); sm.style.display='none'; }
+  document.body.classList.remove('story-active');
 }
-
-function updateStoryStats(){
-  $('#story-hp').textContent = S.story.hp;
-  $('#story-hp').parentElement.classList.toggle('negative', S.story.hp < 0);
-  $('#story-coins').textContent = S.bc;
-  $('#story-items').textContent = S.story.items.length;
-  $('#story-beat').textContent = S.story.beat + 1;
-
-  // Update inventory display with rarity colors
-  const inv = $('#story-inventory');
-  if(S.story.items.length === 0){
-    inv.innerHTML = '<span style="color:var(--pencil);font-size:11px">Empty</span>';
-  } else {
-    const rarityColor = r => ({ 'LEGENDARY': 'var(--crayon)', 'UNCOMMON': '#6f42c1', 'COMMON': 'var(--pencil)' }[r] || 'var(--ink)');
-    const rarityIcon = r => ({ 'LEGENDARY': '⭐', 'UNCOMMON': '◆', 'COMMON': '' }[r] || '');
-    inv.innerHTML = S.story.items.map(i => {
-      const name = typeof i === 'string' ? i : i.name;
-      const rarity = typeof i === 'string' ? 'COMMON' : (i.rarity || 'COMMON');
-      return `<span class="sidebar-item" style="color:${rarityColor(rarity)}">${rarityIcon(rarity)}${name}</span>`;
-    }).join('');
-  }
-}
-
-async function advanceStory(choiceId){
-  const beat = S.story.beat;
-  const t = S.story.ticket;
-
-  // Add choice to branch history for determinism
-  if(choiceId) S.story.branch.push(choiceId);
-
-  // Show loading states IMMEDIATELY
-  const sceneEl = $('#story-scene');
-  const narrativeEl = $('#story-narrative');
-  const choicesEl = $('#story-choices');
-
-  sceneEl.innerHTML = '<span class="scene-loading">🎨 Drawing scene...</span>';
-  sceneEl.classList.add('loading');
-  narrativeEl.innerHTML = '<span class="scene-loading">💭 The Brain is thinking...</span>';
-  narrativeEl.classList.add('loading');
-  choicesEl.classList.add('loading');
-
-  // Generate node hash for canonical caching
-  const nodeHash = sceneNodeHash(t, beat, choiceId, S.story.branch);
-
-  // Track generation timing
-  const generationStart = Date.now();
-
-  // PARALLEL GENERATION - fire scene AND narrative+choices simultaneously
-  const [sceneResult, contentResult] = await Promise.all([
-    // 1. Scene SVG (existing system)
-    fetchOrGenerateScene(nodeHash, t, beat, choiceId, S.story.branch),
-
-    // 2. Narrative + Choices (new parallel system)
-    generateBeatContent(t, beat, S.story.branch, [])
-  ]);
-
-  const generationTime = Date.now() - generationStart;
-  console.log(`Parallel generation completed in ${generationTime}ms (source: ${contentResult.source})`);
-
-  // Render narrative
-  const isBrain = beat % 2 === 0;
-  narrativeEl.className = 'story-narrative' + (isBrain ? ' brain' : '');
-  narrativeEl.innerHTML = (isBrain ? '<span class="narrator">THE BRAIN:</span> ' : '') + contentResult.narrative;
-  narrativeEl.classList.remove('loading');
-
-  // Store patterns for engagement tracking
-  S.story.patternsUsed = contentResult.patterns_used || [];
-
-  // Update status
-  const statuses = ['Development', 'Testing', 'Beta', 'Launch'];
-  $('#story-status').textContent = statuses[Math.min(beat, statuses.length-1)];
-
-  S.story.beat++;
-  updateStoryStats();
-
-  // Render choices from generated content (or fallback)
-  if(S.story.beat < 4){
-    renderDynamicChoices(contentResult.choices);
-    choicesEl.classList.add('loading'); // Dim until scene finishes
-  }
-
-  // Render scene with progressive reveal
-  sceneEl.classList.remove('loading');
-  await renderProgressiveSVG(sceneEl, sceneResult);
-  choicesEl.classList.remove('loading');
-
-  // PRELOAD next potential scenes AND narratives (fire-and-forget)
-  if(S.story.beat < 4 && contentResult.choices){
-    contentResult.choices.slice(0, 3).forEach(c => {
-      const nextHash = sceneNodeHash(t, beat+1, c.id, [...S.story.branch, c.id]);
-      // Preload both in parallel - no await, just fire
-      fetchOrGenerateScene(nextHash, t, beat+1, c.id, [...S.story.branch, c.id]);
-      generateBeatContent(t, beat+1, [...S.story.branch, c.id], []);
-    });
-  }
-
-  // Check if story ends
-  if(S.story.beat >= 4){
-    completeStory();
-    return;
-  }
-}
-
-function renderStoryChoices(){
-  // Check if we're in an encounter
-  if(S.story.encounter){
-    renderEncounterChoices();
-    return;
-  }
-
-  const choiceSet = STORY_CHOICES[Math.min(S.story.beat-1, STORY_CHOICES.length-1)];
-  const choices = [...choiceSet].sort(() => Math.random() - 0.5).slice(0, 3);
-
-  const container = $('#story-choices');
-  container.innerHTML = '';
-
-  choices.forEach(c => {
-    const div = document.createElement('div');
-    div.className = 'story-choice';
-    div.innerHTML = `
-      <span class="choice-icon">${c.icon}</span>
-      <span class="choice-title">${c.text}</span>
-      <span class="choice-desc">${c.desc}</span>
-      <span class="choice-effect ${c.hp >= 0 ? 'positive' : 'negative'}">
-        ${c.hp >= 0 ? '+' : ''}${c.hp} HP${c.item ? ' · 📦' : ''}
-      </span>
-    `;
-    div.onclick = () => makeChoice(c);
-    container.appendChild(div);
-  });
-}
-
-function renderEncounterChoices(){
-  const enc = S.story.encounter;
-  const container = $('#story-choices');
-  container.innerHTML = '';
-
-  enc.options.forEach(opt => {
-    const div = document.createElement('div');
-    div.className = 'story-choice';
-    div.innerHTML = `
-      <span class="choice-icon">${opt.icon}</span>
-      <span class="choice-title">${opt.text}</span>
-      <span class="choice-desc">${opt.result.slice(0,40)}...</span>
-      <span class="choice-effect ${opt.hp >= 0 ? 'positive' : 'negative'}">
-        ${opt.hp >= 0 ? '+' : ''}${opt.hp} HP${opt.item ? ' · 📦' : ''}${opt.coins ? ` · ${opt.coins}💰` : ''}
-      </span>
-    `;
-    div.onclick = () => resolveEncounter(opt);
-    container.appendChild(div);
-  });
-}
-
-function triggerEncounter(){
-  const types = Object.keys(ENCOUNTER_TYPES);
-  const type = types[Math.floor(Math.random() * types.length)];
-  S.story.encounter = {...ENCOUNTER_TYPES[type], type};
-
-  // Show encounter in narrative
-  $('#story-narrative').className = 'story-narrative brain';
-  $('#story-narrative').innerHTML = `<span class="narrator">${S.story.encounter.name}!</span> ${S.story.encounter.intro}`;
-
-  renderEncounterChoices();
-}
-
-function resolveEncounter(opt){
-  buzz(10);
-
-  // Apply effects
-  S.story.hp += opt.hp;
-  if(opt.coins) S.bc = Math.max(0, S.bc + opt.coins);
-  if(opt.item) S.story.items.push(opt.item);
-
-  // Show result
-  $('#story-narrative').className = 'story-narrative';
-  $('#story-narrative').innerHTML = opt.result;
-  if(opt.item) stamp(`ITEM: ${opt.item}`);
-
-  S.story.encounter = null;
-  updateStoryStats();
-
-  // Continue to next beat after a moment
-  setTimeout(() => {
-    if(S.story.beat >= 4){
-      completeStory();
-    } else {
-      renderStoryChoices();
-    }
-  }, 1500);
-}
-
-function makeChoice(choice){
-  // Delegate to makeDynamicChoice with current choices from S.story
-  const allChoices = S.story.currentChoices || [choice];
-  makeDynamicChoice(choice, allChoices);
-}
-
-function completeStory(){
-  // Mark this triple as shipped (uniqueness already checked in enterStoryMode)
-  const tripleKey = `${S.story.ticket.subject}|${S.story.ticket.predicate}|${S.story.ticket.object}`.toLowerCase();
-  shippedTriples.add(tripleKey);
-
-  S.shipped++; bumpDoom(1.5); addXP('prod', 10);
-  const bonus = S.story.ticket.tier === 'LEGENDARY' ? 2 : S.story.ticket.tier === 'UNCOMMON' ? 1 : 0;
-  const hpBonus = Math.max(0, Math.floor(S.story.hp / 5));
-  S.bc += 1 + bonus + hpBonus;
-  $('#bc').textContent = S.bc;
-
-  // Transfer story items to global inventory (with rarity intact)
-  S.story.items.forEach(item => {
-    // Normalize item format: ensure it's an object with name, rarity, fx
-    const normalizedItem = typeof item === 'string'
-      ? { name: item, rarity: 'COMMON', fx: '+1 ATK' }
-      : {
-          name: item.name || item,
-          rarity: item.rarity || 'COMMON',
-          fx: item.fx || (item.rarity === 'LEGENDARY' ? '+3 ATK' : item.rarity === 'UNCOMMON' ? '+2 ATK' : '+1 ATK')
-        };
-    S.items.push(normalizedItem);
-  });
-  if(S.story.items.length > 0){
-    renderInventory();
-  }
-
-  // Generate unique serial (hash-based for true uniqueness)
-  const serialHash = hashCode(tripleKey + Date.now());
-  const serial = 'EB-' + Math.abs(serialHash).toString(36).toUpperCase().slice(0,6);
-
-  const newProduct = {
-    name: `${S.story.ticket.subject} that ${S.story.ticket.predicate} ${S.story.ticket.object}`.slice(0,60),
-    triple: S.story.ticket,
-    tier: S.story.ticket.tier,
-    serial: serial,
-    favor: 1 + (S.story.ticket.tier === 'LEGENDARY' ? 2 : S.story.ticket.tier === 'UNCOMMON' ? 1 : 0),
-    maintained: true,
-    items: S.story.items,
-    finalHp: S.story.hp,
-    vignette: null // Will be populated by card generation
-  };
-  const isFoil = Math.random() < 0.04;
-
-  // Use the last scene as the card vignette (already generated, no extra wait!)
-  const lastSceneKey = Object.keys(S.story.scenes).pop();
-  if(lastSceneKey && S.story.scenes[lastSceneKey]){
-    newProduct.vignette = S.story.scenes[lastSceneKey];
-    console.log('Card vignette: reusing last scene');
-  }
-
-  let note = '';
-  if(S.user){
-    if(S.portfolio.length < 6){
-      S.portfolio.push(newProduct);
-      note = ' Added to portfolio.' + (isFoil ? ' ✨ FOIL!' : '');
-      if(S.story.ticket.tier === 'LEGENDARY'){
-        grantItem();
-        // Broadcast LEGENDARY ship to all users
-        triggerBroadcast('legendary_alert', {
-          product_name: newProduct.name,
-          user_handle: S.user?.designation || 'ANON',
-          branch: S.user?.branch || 'Unknown'
-        });
-      }
-    } else {
-      note = ' PORTFOLIO FULL.';
-    }
-    renderPortfolio(); renderLB();
-  } else {
-    // Save to localStorage for unsigned users
-    if(!S.products) S.products = [];
-    if(S.products.length < 6){
-      S.products.push(newProduct);
-      note = ' Product saved locally. Sign in to sync.';
-    } else {
-      note = ' LOCAL STORAGE FULL.';
-    }
-    saveLocalProgress();
-  }
-
-  // Show completion
-  $('#story-narrative').className = 'story-narrative';
-  $('#story-narrative').innerHTML = `🚀 <b>SHIPPED!</b> Final HP: ${S.story.hp}${note}`;
-
-  $('#story-choices').innerHTML = '';
-  $('#story-payout').style.display = 'block';
-  $('#story-payout').innerHTML = `
-    SHIPPED! +${1 + bonus + hpBonus} Braincoin${note}<br>
-    <small style="font-size:14px">HP Bonus: +${hpBonus} · Items collected: ${S.story.items.length}</small>
-  `;
-
-  // Add action buttons
-  const actions = document.createElement('div');
-  actions.style.cssText = 'display:flex;gap:12px;justify-content:center;margin-top:16px';
-
-  if(S.user && S.portfolio.length <= 6){
-    const reveal = document.createElement('button');
-    reveal.className = 'story-choice';
-    reveal.style.cssText = 'flex:0 0 auto;padding:12px 24px';
-    reveal.innerHTML = '<span class="choice-icon">🎴</span><span class="choice-title">Reveal Card</span>';
-    reveal.onclick = () => {
-      exitStoryMode();
-      revealCard(newProduct.triple, newProduct.tier, newProduct.serial, newProduct.triple.subject, isFoil, newProduct.vignette);
-    };
-    actions.appendChild(reveal);
-  }
-
-  const again = document.createElement('button');
-  again.className = 'story-choice';
-  again.style.cssText = 'flex:0 0 auto;padding:12px 24px';
-  again.innerHTML = '<span class="choice-icon">🎰</span><span class="choice-title">Spin Again</span>';
-  again.onclick = () => {
-    exitStoryMode();
-    switchView('machine');
-  };
-  actions.appendChild(again);
-
-  $('#story-choices').appendChild(actions);
-  buzz(30);
-}
-
-// Override ship button to use new story mode
-$('#shipbtn').onclick = () => enterStoryMode();
-
-// Keep old functions for compatibility but they won't be called
+function enterStoryMode(){ /* removed: SHIP IT is now CLAIM IT */ }
 function showBeatCard(){}
 async function nextBeat(){}
 const HALLWAY=[];
@@ -2242,9 +1165,13 @@ const INTERLUDES=[
   outro:p=>`The auditor's badge reads ARTIFICIAL GARY INTELLIGENCE in small print. It was Gary. It is always Gary. ${p} passes the audit it invented. +₿1.`}
 ];
 function randomProduct(){
-  const s=VOCAB.subject[weightedIndex(VOCAB.subject)].t;
-  const p=VOCAB.predicate[weightedIndex(VOCAB.predicate)].t;
-  const o=VOCAB.object[weightedIndex(VOCAB.object)].t;
+  // Prefer a real unclaimed registry case; fall back to composer flavor.
+  if(typeof MACHINE !== 'undefined' && MACHINE.pool.length){
+    return MACHINE.pool[Math.floor(Math.random()*MACHINE.pool.length)].name;
+  }
+  const s=FILE_VOCAB.subject[weightedIndex(FILE_VOCAB.subject)].t;
+  const p=FILE_VOCAB.predicate[weightedIndex(FILE_VOCAB.predicate)].t;
+  const o=FILE_VOCAB.object[weightedIndex(FILE_VOCAB.object)].t;
   return `${s} that ${p} ${o}`;
 }
 function startInterlude(){
@@ -2524,8 +1451,8 @@ const F = { slots:{subject:null,predicate:null,object:null}, staged:[], valence:
 
 function poolItems(kind){
   // Entities and Targets share the entity vocabulary; Verbs are predicates.
-  if(kind==='predicate') return VOCAB.predicate;
-  return kind==='subject' ? VOCAB.subject : VOCAB.object;
+  if(kind==='predicate') return FILE_VOCAB.predicate;
+  return kind==='subject' ? FILE_VOCAB.subject : FILE_VOCAB.object;
 }
 function renderPool(){
   const pool=$('#chippool'); pool.innerHTML='';
@@ -2835,6 +1762,7 @@ async function loadUnclaimedCards() {
     if (unclaimed.length === 0) {
       grid.innerHTML = '<div id="card-browser-empty">All cases have been claimed! Submit new ones at usecasearmsrace.com</div>';
       document.getElementById('card-browser-nav').style.display = 'none';
+      MACHINE.pool = []; MACHINE.picked = null;
       return;
     }
 
@@ -2842,6 +1770,9 @@ async function loadUnclaimedCards() {
     unclaimed.sort((a, b) => (b.impact * b.impact) - (a.impact * a.impact));
 
     cardBrowserState.cards = unclaimed;
+    // Feed the Machine: same pool drives the reels (V2 refactor).
+    MACHINE.pool = unclaimed;
+    rebuildMachineReels();
     cardBrowserState.totalPages = Math.ceil(unclaimed.length / CARDS_PER_PAGE);
     cardBrowserState.page = 1;
 
@@ -2937,6 +1868,11 @@ async function claimCard(caseId) {
     cardBrowserState.seatCount++;
     document.getElementById('bc').textContent = S.bc;
     stamp('CLAIMED. YOU ARE THE PM.');
+    // Reset the Machine plate; the claimed card leaves the pool.
+    MACHINE.picked = null;
+    $('#sentence').innerHTML = 'CLAIMED. SPIN FOR THE NEXT ONE.';
+    $('#rarity').textContent = '';
+    $('#shipbtn').disabled = true;
 
     // Reload cards to remove the claimed one
     await loadUnclaimedCards();
@@ -4191,9 +3127,16 @@ function rngJS(seedStr){ let a=hashCode(seedStr)||1;
     t=(t+Math.imul(t^(t>>>7),61|t))^t; return ((t^(t>>>14))>>>0)/4294967296; }; }
 let battleCount=0;
 function randomOpponent(){
-  const t={ subject:VOCAB.subject[weightedIndex(VOCAB.subject)].t,
-    predicate:VOCAB.predicate[weightedIndex(VOCAB.predicate)].t,
-    object:VOCAB.object[weightedIndex(VOCAB.object)].t };
+  // Prefer a real registry card as the foe; composer flavor as fallback.
+  if(typeof MACHINE !== 'undefined' && MACHINE.pool.length){
+    const c = MACHINE.pool[Math.floor(Math.random()*MACHINE.pool.length)];
+    const tier = (c.rarity==='legendary')?'LEGENDARY':(c.rarity==='rare'||c.rarity==='uncommon')?'UNCOMMON':'COMMON';
+    return {triple:{subject:c.name,predicate:'',object:''},tier,
+      serial:'GI-'+String(100+Math.floor(Math.random()*900)),name:c.name};
+  }
+  const t={ subject:FILE_VOCAB.subject[weightedIndex(FILE_VOCAB.subject)].t,
+    predicate:FILE_VOCAB.predicate[weightedIndex(FILE_VOCAB.predicate)].t,
+    object:FILE_VOCAB.object[weightedIndex(FILE_VOCAB.object)].t };
   const r=Math.random(), tier=r<0.08?'LEGENDARY':r<0.30?'UNCOMMON':'COMMON';
   return {triple:t,tier,serial:'GI-'+String(100+Math.floor(Math.random()*900)),
     name:t.subject};

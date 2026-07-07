@@ -3059,8 +3059,9 @@ function fillStandup(){
     `33 Brainiacs across 7 branches · you shipped ${S.shipped} this session · `+
     `${REG.filter(f=>f.review).length} before the Tribunal<br>`+
     `<span style="color:var(--pencil)">overnight: ${overnight}</span>`+
-    `<div class="factions" style="margin-top:6px"><button class="fvote" id="sparbtn">SPAR WITH THE BRAIN</button><button class="fvote" id="revbtn">REQUEST REVIEW</button></div>`;
+    `<div class="factions" style="margin-top:6px"><button class="fvote" id="sparbtn">SPAR WITH THE BRAIN</button><button class="fvote" id="raidbtn" style="background:var(--crayon);color:white">⚔️ RAID</button><button class="fvote" id="revbtn">REQUEST REVIEW</button></div>`;
   $('#sparbtn').onclick=()=>requireAuth(()=>startBattle());
+  $('#raidbtn').onclick=()=>requireAuth(()=>openBattleArena());
   $('#revbtn').onclick=()=>requireAuth(()=>{ sendReview(); stamp('REVIEW DISPATCHED'); });
   renderSheet();
 }
@@ -3890,6 +3891,47 @@ function revealCard(t, grade, serial, title, isFoil = false, vignette = null) {
   };
 }
 
+/* ---------- 3-LANE BATTLE ARENA (new system) ---------- */
+function openBattleArena() {
+  if (!S.portfolio.length) { stamp('SHIP SOMETHING FIRST. THE BRAIN AWAITS.'); return; }
+  if (typeof BattleUI === 'undefined') { stamp('BATTLE SYSTEM LOADING...'); return; }
+
+  // Convert portfolio to cards format for deck builder
+  const cards = S.portfolio.map((p, i) => ({
+    id: p.id || `card-${i}`,
+    card_id: p.card_id || p.id,
+    name: p.triple ? `${p.triple.subject} ${p.triple.predicate} ${p.triple.object}` : p.name || 'Product',
+    title: p.triple ? `${p.triple.subject} ${p.triple.predicate} ${p.triple.object}` : p.name,
+    category: p.category || deriveCategory(p.triple),
+    faction: (p.evilVotes || 0) > (p.goodVotes || 0) ? 'hell' : 'heaven',
+    power: derivePower(p.tier, p.stage || 1),
+    tier: p.tier,
+    triple: p.triple
+  }));
+
+  // Store cards for BattleUI
+  S.cardInstances = cards;
+
+  // Show deck builder
+  BattleUI.showDeckBuilder(cards);
+}
+
+function deriveCategory(triple) {
+  if (!triple) return 'other';
+  const pred = (triple.predicate || '').toLowerCase();
+  if (pred.includes('surveil') || pred.includes('track') || pred.includes('monitor')) return 'surveillance';
+  if (pred.includes('automat') || pred.includes('replac')) return 'automation';
+  if (pred.includes('predict') || pred.includes('forecast')) return 'prediction';
+  if (pred.includes('generat') || pred.includes('creat')) return 'content_generation';
+  if (pred.includes('personal') || pred.includes('recommend')) return 'personalization';
+  return 'other';
+}
+
+function derivePower(tier, stage) {
+  const base = { 'LEGENDARY': 10, 'UNCOMMON': 6, 'COMMON': 4 }[tier] || 5;
+  return base + (stage - 1) * 2;
+}
+
 /* ---------- PvE BATTLE: the board, not the feed ---------- */
 function rngJS(seedStr){ let a=hashCode(seedStr)||1;
   return ()=>{ a|=0; a=(a+0x6D2B79F5)|0; let t=Math.imul(a^(a>>>15),1|a);
@@ -4421,6 +4463,7 @@ document.addEventListener('keydown',e=>{
   }
 });
 </script>
+<script src="js/battle.js"></script>
 <footer style="text-align:center;padding:16px;font-family:var(--mono);font-size:11px;border-top:2px dashed var(--pencil);margin-top:24px;color:var(--pencil)">
   Evil Brain Labs · Third Worst in AI · <a href="terms.html" style="color:var(--pencil)">Terms</a> · <a href="privacy.html" style="color:var(--pencil)">Privacy</a> · No trackers.
 </footer>

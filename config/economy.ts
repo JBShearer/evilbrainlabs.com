@@ -57,12 +57,15 @@ export const ECONOMY = {
   /** $EVIL bounty per impact for successful defense */
   DEFENDER_BOUNTY_PER_IMPACT: 5,
 
+  /** Cut of siphon-prevented yield given to mercenary defenders */
+  MERC_SIPHON_PREVENTED_CUT: 0.10,
+
   // --- Section 6.4, 6.5, 7: Combat Bonuses ---
   /** Bonus for counter-element advantage */
   COUNTER_BONUS: 2,
 
-  /** Penalty for weakness matchup */
-  WEAKNESS_PENALTY: -1,
+  /** Penalty for weakness matchup (subtracted) */
+  WEAKNESS_PENALTY: 1,
 
   /** Bonus for mono-faction team composition */
   MONO_FACTION_BONUS: 1,
@@ -73,7 +76,13 @@ export const ECONOMY = {
   /** Bonus from community sentiment */
   SENTIMENT_BONUS: 1,
 
-  // --- Section 6.4, 7: Battle Timing ---
+  /** Breach points needed to win before turn 5 */
+  BREACH_POINTS_TO_WIN: 3,
+
+  /** Breach points needed to win after turn 5 */
+  BREACH_POINTS_AFTER_T5: 2,
+
+  // --- Section 6.4, 7: Battle Timing & Structure ---
   /** Seconds to join a battle */
   JOIN_WINDOW_SECONDS: 60,
 
@@ -83,17 +92,44 @@ export const ECONOMY = {
   /** Total turns per battle */
   TURNS: 5,
 
+  /** Players per side */
+  SIDE_SIZE: 3,
+
+  /** Cards per deck */
+  DECK_SIZE: 4,
+
+  /** Lane identifiers (OWNER: see CONTENT_TODO.md for display names) */
+  LANES: ["LANE_A", "LANE_B", "LANE_C"] as const,
+
+  // --- Section 4.3: Minting ---
+  /** Power points per impact level */
+  POWER_PER_IMPACT: 2,
+
+  /** Hysteresis threshold for faction flip (±5% from 50%) */
+  FACTION_FLIP_HYSTERESIS: 0.05,
+
   // --- Section 8.2: Scratch Cards ---
   /** Maximum scratch cards per week */
   SCRATCH_WEEKLY_CAP: 10,
 
-  /** Odds distribution for scratch tiers [common, uncommon, rare, legendary] */
-  SCRATCH_ODDS: [60, 30, 9, 1] as const,
+  /** Odds distribution for scratch tiers */
+  SCRATCH_ODDS: { coins: 0.60, common: 0.30, rare: 0.09, legendary: 0.01 } as const,
+
+  /** Minimum coins from scratch */
+  SCRATCH_COIN_MIN: 15,
+
+  /** Maximum coins from scratch */
+  SCRATCH_COIN_MAX: 40,
+
+  /** Grace period for daily quests */
+  DAILY_GRACE_HOURS: 24,
 
   // --- Section 3: Rate Limiting ---
   /** API requests allowed per minute */
-  RATE_LIMIT_PER_MINUTE: 30,
+  RATE_LIMIT_PER_MIN: 30,
 } as const;
+
+export type Lane = (typeof ECONOMY.LANES)[number];
 
 // Type export for the economy config
 export type EconomyConfig = typeof ECONOMY;
@@ -124,25 +160,6 @@ export function claimCost(seatCount: number): number {
 }
 
 /**
- * Calculate the effective mining rate for a player.
- * Rate scales with total impact across portfolio, modified by efficiency.
- *
- * @param impact - Total impact points from all held seats
- * @param seatCount - Number of seats held
- * @returns $EVIL earned per hour
- *
- * Reference: Section 5.2
- *
- * @example
- * miningRate(100, 1) // 100 (full efficiency with 1 seat)
- * miningRate(100, 3) // 90 (90% efficiency with 3 seats)
- */
-export function miningRate(impact: number, seatCount: number): number {
-  const efficiency = portfolioEfficiency(seatCount);
-  return impact * ECONOMY.MINE_PER_IMPACT_HOUR * efficiency;
-}
-
-/**
  * Calculate portfolio efficiency based on number of seats held.
  * Efficiency decreases by PORTFOLIO_EFFICIENCY_STEP for each seat beyond the first.
  *
@@ -163,6 +180,35 @@ export function portfolioEfficiency(seatCount: number): number {
   // First seat is 100% efficient, each additional reduces by step
   const reduction = (seatCount - 1) * ECONOMY.PORTFOLIO_EFFICIENCY_STEP;
   return Math.max(0, 1 - reduction);
+}
+
+/**
+ * Calculate the effective mining rate for a player.
+ * Rate scales with total impact across portfolio, modified by efficiency.
+ *
+ * @param impact - Total impact points from all held seats
+ * @param seatCount - Number of seats held
+ * @returns $EVIL earned per hour
+ *
+ * Reference: Section 5.2
+ */
+export function miningRate(impact: number, seatCount: number): number {
+  const efficiency = portfolioEfficiency(seatCount);
+  return impact * ECONOMY.MINE_PER_IMPACT_HOUR * efficiency;
+}
+
+/**
+ * Calculate BC mined by one product over elapsed hours.
+ *
+ * @param impact - Impact of the product
+ * @param seatCount - Number of seats held by owner
+ * @param hours - Hours elapsed
+ * @returns $EVIL earned
+ *
+ * Reference: Section 5.2
+ */
+export function minedAmount(impact: number, seatCount: number, hours: number): number {
+  return impact * ECONOMY.MINE_PER_IMPACT_HOUR * portfolioEfficiency(seatCount) * hours;
 }
 
 /**
@@ -202,22 +248,65 @@ export function siphonAmount(miningYield: number): number {
 }
 
 /**
- * Get random scratch card tier based on odds distribution.
+ * Derive card power from impact level.
  *
- * @returns Tier index (0=common, 1=uncommon, 2=rare, 3=legendary)
+ * @param impact - Impact level (1-5)
+ * @returns Power stat
  *
- * Reference: Section 8.2
+ * Reference: Section 4.3
  */
-export function rollScratchTier(): number {
-  const roll = Math.random() * 100;
-  let cumulative = 0;
+export function derivePower(impact: number): number {
+  return impact * ECONOMY.POWER_PER_IMPACT;
+}
 
-  for (let i = 0; i < ECONOMY.SCRATCH_ODDS.length; i++) {
-    cumulative += ECONOMY.SCRATCH_ODDS[i];
-    if (roll < cumulative) return i;
-  }
+/**
+ * Derive card rarity from impact level.
+ *
+ * @param impact - Impact level (1-5)
+ * @returns Rarity tier
+ *
+ * Reference: Section 4.3
+ */
+export function deriveRarity(impact: number): "common" | "uncommon" | "rare" | "legendary" {
+  if (impact >= 5) return "legendary";
+  if (impact === 4) return "rare";
+  if (impact === 3) return "uncommon";
+  return "common";
+}
 
-  return 0; // Fallback to common
+/**
+ * Derive faction from vote counts.
+ *
+ * @param good - Good vote count
+ * @param evil - Evil vote count
+ * @returns Faction
+ *
+ * Reference: Section 4.3
+ */
+export function deriveFaction(good: number, evil: number): "heaven" | "hell" {
+  const ratio = good / Math.max(good + evil, 1);
+  return ratio >= 0.5 ? "heaven" : "hell";
+}
+
+/**
+ * Check if faction should flip with hysteresis.
+ *
+ * @param current - Current faction
+ * @param good - Good vote count
+ * @param evil - Evil vote count
+ * @returns New faction if flip should occur, null otherwise
+ *
+ * Reference: Section 4.3
+ */
+export function factionFlip(
+  current: "heaven" | "hell",
+  good: number,
+  evil: number
+): "heaven" | "hell" | null {
+  const ratio = good / Math.max(good + evil, 1);
+  if (current === "hell" && ratio >= 0.5 + ECONOMY.FACTION_FLIP_HYSTERESIS) return "heaven";
+  if (current === "heaven" && ratio <= 0.5 - ECONOMY.FACTION_FLIP_HYSTERESIS) return "hell";
+  return null;
 }
 
 /**

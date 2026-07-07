@@ -102,10 +102,9 @@ CREATE TABLE IF NOT EXISTS rate_limits (
 CREATE INDEX idx_rate_limits_lookup
   ON rate_limits (user_id, function_name, minute_bucket);
 
--- Auto-cleanup old rate limit entries (older than 1 hour)
-CREATE INDEX idx_rate_limits_cleanup
-  ON rate_limits (minute_bucket)
-  WHERE minute_bucket < now() - interval '1 hour';
+-- Index for cleanup function (no partial index - now() is not immutable)
+CREATE INDEX idx_rate_limits_minute
+  ON rate_limits (minute_bucket);
 
 ALTER TABLE rate_limits ENABLE ROW LEVEL SECURITY;
 

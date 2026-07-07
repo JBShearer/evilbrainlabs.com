@@ -235,6 +235,43 @@ details.memo summary{font-family:var(--hand);font-size:14px;cursor:pointer;list-
 .item .ownedtag{font-family:var(--hand);color:var(--crayon);font-size:12px;transform:rotate(-3deg)}
 #resrow{display:flex;gap:8px}
 
+/* ---------- REGISTRY CARD BROWSER (UCAR Integration) ---------- */
+#card-browser{margin-top:16px;border:3px solid var(--ink);background:var(--manila);box-shadow:4px 4px 0 var(--ink);padding:14px;position:relative}
+#card-browser::before{content:"FROM THE REGISTRY · UNCLAIMED";position:absolute;top:-9px;left:10px;background:var(--manila);padding:0 6px;font-size:10px;letter-spacing:2px;color:var(--pencil)}
+#card-browser-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:14px;margin-top:8px}
+.reg-card{border:3px solid var(--ink);background:#fff;box-shadow:3px 3px 0 var(--ink);padding:12px;display:flex;flex-direction:column;position:relative;transition:transform 0.15s,box-shadow 0.15s}
+.reg-card:hover{transform:translateY(-3px);box-shadow:5px 5px 0 var(--ink)}
+.reg-card.heaven{border-color:#3a7bc8;box-shadow:3px 3px 0 #3a7bc8}.reg-card.heaven:hover{box-shadow:5px 5px 0 #3a7bc8}
+.reg-card.hell{border-color:var(--crayon);box-shadow:3px 3px 0 var(--crayon)}.reg-card.hell:hover{box-shadow:5px 5px 0 var(--crayon)}
+.reg-card .card-faction{position:absolute;top:-10px;right:8px;font-family:var(--hand);font-size:11px;padding:2px 8px;transform:rotate(3deg)}
+.reg-card.heaven .card-faction{background:#3a7bc8;color:#fff}
+.reg-card.hell .card-faction{background:var(--crayon);color:#fff}
+.reg-card .card-art{width:100%;height:120px;background:var(--paper);border:2px solid var(--ink);margin-bottom:8px;display:flex;align-items:center;justify-content:center;overflow:hidden}
+.reg-card .card-art img{max-width:100%;max-height:100%;object-fit:contain}
+.reg-card .card-art svg{width:100%;height:100%}
+.reg-card .card-name{font-family:var(--hand);font-size:14px;margin-bottom:4px;line-height:1.2}
+.reg-card .card-org{font-size:11px;color:var(--pencil);margin-bottom:6px}
+.reg-card .card-stats{display:flex;gap:8px;font-family:var(--mono);font-size:11px;margin-bottom:8px;flex-wrap:wrap}
+.reg-card .card-stat{background:var(--manila);padding:2px 6px;border:1px solid var(--ink)}
+.reg-card .card-stat.power{background:var(--ink);color:var(--paper)}
+.reg-card .card-stat.legendary{background:var(--crayon);color:#fff}
+.reg-card .card-stat.rare{background:#8b5cf6;color:#fff}
+.reg-card .card-stat.uncommon{background:#6b7280;color:#fff}
+.reg-card .claim-btn{width:100%;font-family:var(--hand);font-size:15px;background:var(--ink);color:var(--paper);border:2px solid var(--ink);padding:8px;cursor:pointer;box-shadow:2px 2px 0 var(--crayon);margin-top:auto}
+.reg-card .claim-btn:hover{background:var(--crayon)}
+.reg-card .claim-btn:active{transform:translate(2px,2px);box-shadow:none}
+.reg-card .claim-btn:disabled{opacity:0.5;cursor:not-allowed}
+.reg-card .claim-cost{font-family:var(--mono);font-size:10px;text-align:center;color:var(--pencil);margin-top:4px}
+#card-browser-loading{text-align:center;padding:20px;font-family:var(--type);color:var(--pencil)}
+#card-browser-empty{text-align:center;padding:20px;color:var(--pencil);font-size:13px}
+#card-browser-nav{display:flex;justify-content:space-between;align-items:center;margin-top:12px}
+#card-browser-nav button{font-family:var(--type);font-size:12px;border:2px solid var(--ink);background:#fff;padding:6px 12px;cursor:pointer;box-shadow:2px 2px 0 var(--ink)}
+#card-browser-nav button:active{transform:translate(2px,2px);box-shadow:none}
+#card-browser-nav button:disabled{opacity:0.4;cursor:not-allowed}
+#card-browser-nav .page-info{font-family:var(--mono);font-size:11px;color:var(--pencil)}
+body[data-theme="evil"] .reg-card{background:#1E1A16}
+body[data-theme="evil"] #card-browser{background:#241f1a}
+
 /* ---------- CASE BOOK ---------- */
 #newcase{width:100%;font-family:var(--hand);font-size:18px;background:var(--crayon);color:#fff;border:3px solid var(--ink);padding:10px;box-shadow:3px 3px 0 var(--ink);cursor:pointer;margin-bottom:10px}
 #newcase:active{transform:translate(2px,2px);box-shadow:1px 1px 0 var(--ink)}
@@ -455,6 +492,19 @@ body.defcon #doomgap{color:var(--crayon)}
       <span id="rarity">·</span>
       <div id="sentence">The Machine awaits input. The Machine is patient. The Machine is not.</div>
       <div id="resrow"><button id="shipbtn" disabled style="flex:1">SHIP IT →</button><button id="filebtn" disabled style="flex:1;font-family:var(--hand);font-size:18px;background:var(--manila);color:var(--ink);border:3px solid var(--ink);padding:10px;box-shadow:3px 3px 0 var(--ink);cursor:pointer">FILE IT →</button></div>
+    </div>
+
+    <!-- Registry Card Browser: Unclaimed UCAR cases as minted cards -->
+    <div id="card-browser">
+      <p class="eyebrow" style="margin:-4px 0 6px">CLAIM A CASE · BECOME THE PM</p>
+      <div id="card-browser-grid">
+        <div id="card-browser-loading">Loading registry cards...</div>
+      </div>
+      <div id="card-browser-nav" style="display:none">
+        <button id="cards-prev" disabled>← PREV</button>
+        <span class="page-info"><span id="cards-page">1</span> / <span id="cards-total">1</span></span>
+        <button id="cards-next">NEXT →</button>
+      </div>
     </div>
   </section>
 
@@ -775,6 +825,8 @@ async function handleSupabaseUser(user) {
   }
   renderCareerWidgets();
   renderAll();
+  // Reload card browser to show correct claim costs
+  if (typeof loadUnclaimedCards === 'function') loadUnclaimedCards();
 }
 
 // Initialize on load
@@ -2716,6 +2768,207 @@ async function loadCasesFromDB() {
     console.error('Failed to load cases:', err);
   }
 }
+
+/* ============ REGISTRY CARD BROWSER (UCAR → EBL Minted Cards) ============ */
+// Per EBL_BATTLER_BUILD_PLAN Section 5.3:
+// "The Machine's reels draw ONLY from approved registry cases with no products row."
+
+const CARDS_PER_PAGE = 6;
+let cardBrowserState = {
+  cards: [],
+  page: 1,
+  totalPages: 1,
+  loading: false,
+  seatCount: 0
+};
+
+// Calculate claim cost (mirrors config/economy.ts)
+function calcClaimCost(seatCount) {
+  const CLAIM_BASE = 50, CLAIM_GROWTH = 1.6, SEAT_CAP = 6;
+  if (seatCount >= SEAT_CAP) return Infinity;
+  return Math.floor(CLAIM_BASE * Math.pow(CLAIM_GROWTH, seatCount));
+}
+
+// Load minted cards that haven't been claimed (no products row)
+async function loadUnclaimedCards() {
+  if (!supabaseClient || cardBrowserState.loading) return;
+  cardBrowserState.loading = true;
+
+  const grid = document.getElementById('card-browser-grid');
+  grid.innerHTML = '<div id="card-browser-loading">Loading registry cards...</div>';
+
+  try {
+    // Get user's current seat count for claim cost calculation
+    if (S.user && supabaseSession) {
+      const { count } = await supabaseClient
+        .from('products')
+        .select('id', { count: 'exact', head: true })
+        .eq('owner_id', S.user.id);
+      cardBrowserState.seatCount = count || 0;
+    }
+
+    // Query cards that have been minted but not claimed
+    // LEFT JOIN: cards without a matching products row
+    const { data: cards, error } = await supabaseClient
+      .from('cards')
+      .select(`
+        id, case_id, name, category, impact, power, rarity, faction,
+        alignment_ratio, art_url, art_seed, source_url, minted_at
+      `)
+      .order('minted_at', { ascending: false })
+      .limit(50);
+
+    if (error) {
+      console.error('Error loading cards:', error);
+      grid.innerHTML = '<div id="card-browser-empty">Error loading cards. Check Supabase connection.</div>';
+      return;
+    }
+
+    // Filter out claimed cards (those with a products row)
+    const { data: claimedCaseIds } = await supabaseClient
+      .from('products')
+      .select('case_id');
+    const claimedSet = new Set((claimedCaseIds || []).map(p => p.case_id));
+
+    const unclaimed = (cards || []).filter(c => !claimedSet.has(c.case_id));
+
+    if (unclaimed.length === 0) {
+      grid.innerHTML = '<div id="card-browser-empty">All cases have been claimed! Submit new ones at usecasearmsrace.com</div>';
+      document.getElementById('card-browser-nav').style.display = 'none';
+      return;
+    }
+
+    // Weight by impact^2 for display (higher impact = more prominent)
+    unclaimed.sort((a, b) => (b.impact * b.impact) - (a.impact * a.impact));
+
+    cardBrowserState.cards = unclaimed;
+    cardBrowserState.totalPages = Math.ceil(unclaimed.length / CARDS_PER_PAGE);
+    cardBrowserState.page = 1;
+
+    renderCardBrowser();
+
+  } catch (err) {
+    console.error('Failed to load cards:', err);
+    grid.innerHTML = '<div id="card-browser-empty">Failed to load registry cards.</div>';
+  } finally {
+    cardBrowserState.loading = false;
+  }
+}
+
+function renderCardBrowser() {
+  const grid = document.getElementById('card-browser-grid');
+  const nav = document.getElementById('card-browser-nav');
+  const { cards, page, totalPages, seatCount } = cardBrowserState;
+
+  const start = (page - 1) * CARDS_PER_PAGE;
+  const pageCards = cards.slice(start, start + CARDS_PER_PAGE);
+  const claimCost = calcClaimCost(seatCount);
+  const canClaim = S.user && seatCount < 6 && S.bc >= claimCost;
+
+  grid.innerHTML = pageCards.map(card => {
+    const factionClass = card.faction === 'heaven' ? 'heaven' : 'hell';
+    const factionLabel = card.faction === 'heaven' ? '👼 HEAVEN' : '😈 HELL';
+    const rarityClass = card.rarity || 'common';
+
+    // Truncate long names
+    const displayName = card.name.length > 50 ? card.name.slice(0, 47) + '...' : card.name;
+
+    return `
+      <div class="reg-card ${factionClass}" data-case-id="${card.case_id}" data-card-id="${card.id}">
+        <span class="card-faction">${factionLabel}</span>
+        <div class="card-art">
+          ${card.art_url && card.art_url !== 'pending'
+            ? `<img src="${card.art_url}" alt="${card.name}" onerror="this.parentElement.innerHTML='<span style=\\'color:var(--pencil)\\'>🎴</span>'">`
+            : `<span style="color:var(--pencil);font-size:32px">🎴</span>`}
+        </div>
+        <div class="card-name">${displayName}</div>
+        <div class="card-org">${card.category || 'Uncategorized'}</div>
+        <div class="card-stats">
+          <span class="card-stat power">⚡ ${card.power}</span>
+          <span class="card-stat ${rarityClass}">${(card.rarity || 'common').toUpperCase()}</span>
+          <span class="card-stat">⭐ ${card.impact || 1}</span>
+        </div>
+        <button class="claim-btn" ${!canClaim ? 'disabled' : ''} onclick="claimCard('${card.case_id}')">
+          ${seatCount >= 6 ? 'SEATS FULL' : (S.user ? 'CLAIM IT' : 'SIGN IN')}
+        </button>
+        <div class="claim-cost">${seatCount < 6 ? `Cost: ₿${claimCost}` : 'Portfolio full'}</div>
+      </div>
+    `;
+  }).join('');
+
+  // Pagination
+  if (totalPages > 1) {
+    nav.style.display = 'flex';
+    document.getElementById('cards-page').textContent = page;
+    document.getElementById('cards-total').textContent = totalPages;
+    document.getElementById('cards-prev').disabled = page <= 1;
+    document.getElementById('cards-next').disabled = page >= totalPages;
+  } else {
+    nav.style.display = 'none';
+  }
+}
+
+// Claim a card (call edge function)
+async function claimCard(caseId) {
+  if (!S.user) { openLogin('SIGN IN TO CLAIM A CASE.'); return; }
+  if (cardBrowserState.seatCount >= 6) { stamp('PORTFOLIO FULL. ABANDON ONE FIRST.'); return; }
+
+  const cost = calcClaimCost(cardBrowserState.seatCount);
+  if (S.bc < cost) { stamp('INSUFFICIENT COIN. NEED ₿' + cost); return; }
+
+  try {
+    const response = await fetch(`${CONFIG.SUPABASE_URL}/functions/v1/claim-product`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${supabaseSession.access_token}`
+      },
+      body: JSON.stringify({ case_id: caseId })
+    });
+
+    const result = await response.json();
+    if (!response.ok) {
+      stamp(result.error?.toUpperCase() || 'CLAIM FAILED');
+      return;
+    }
+
+    // Success! Update local state
+    S.bc -= cost;
+    cardBrowserState.seatCount++;
+    document.getElementById('bc').textContent = S.bc;
+    stamp('CLAIMED. YOU ARE THE PM.');
+
+    // Reload cards to remove the claimed one
+    await loadUnclaimedCards();
+
+    // Also refresh portfolio if on career page
+    if (typeof loadPortfolio === 'function') loadPortfolio();
+
+  } catch (err) {
+    console.error('Claim error:', err);
+    stamp('CLAIM ERROR. TRY AGAIN.');
+  }
+}
+
+// Pagination handlers
+document.getElementById('cards-prev')?.addEventListener('click', () => {
+  if (cardBrowserState.page > 1) {
+    cardBrowserState.page--;
+    renderCardBrowser();
+  }
+});
+
+document.getElementById('cards-next')?.addEventListener('click', () => {
+  if (cardBrowserState.page < cardBrowserState.totalPages) {
+    cardBrowserState.page++;
+    renderCardBrowser();
+  }
+});
+
+// Load cards after Supabase initializes
+setTimeout(() => {
+  if (supabaseClient) loadUnclaimedCards();
+}, 1000);
 
 function fileToRegistry(f){
   if (!f.id) f.id = ++caseSeq;

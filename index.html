@@ -477,7 +477,7 @@ body.defcon #doomgap{color:var(--crayon)}
 <div id="app">
   <header>
     <h1>EVIL BRAIN LABS<small>THIRD WORST IN AI · IDEATION DIVISION</small></h1>
-    <div style="display:flex;align-items:center"><span id="adminchip">ADMIN</span><button id="authbtn">SIGN IN</button><button id="lights" aria-label="toggle after hours mode">LIGHTS</button><div id="wallet">₿ <b id="bc">3</b></div></div>
+    <div style="display:flex;align-items:center"><span id="adminchip">ADMIN</span><button id="authbtn">SIGN IN</button><button id="lights" aria-label="toggle after hours mode">LIGHTS</button><div id="wallet">₿ <b id="bc">100</b></div></div>
   </header>
 
   <!-- THE MACHINE -->
@@ -816,7 +816,7 @@ async function handleSupabaseUser(user) {
     admin,
     designation: profile?.handle || 'BRAINIAC OG-' + String(1000 + hashCode(user.email) % 9000)
   };
-  S.bc = profile?.braincoin_balance || 3;
+  S.bc = profile?.braincoin_balance || 100;  // Starting balance per BUILD_PLAN 5.2
   $('#bc').textContent = S.bc;
   $('#authbtn').textContent = S.user.designation;
   if (admin) {

@@ -391,176 +391,6 @@ footer a {
   section { padding: 40px 16px; }
   .products { grid-template-columns: 1fr; }
 }
-
-/* Cart */
-.cart-icon {
-  position: relative;
-  cursor: pointer;
-  font-size: 20px;
-  padding: 8px 12px;
-  border: 1px solid var(--paper);
-  transition: all 0.2s;
-}
-.cart-icon:hover { background: rgba(255,255,255,0.1); }
-.cart-count {
-  position: absolute;
-  top: -4px;
-  right: -4px;
-  background: var(--evil);
-  color: white;
-  font-size: 10px;
-  width: 18px;
-  height: 18px;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-family: 'IBM Plex Mono', monospace;
-}
-.cart-count.empty { display: none; }
-
-/* Cart drawer */
-.cart-drawer {
-  position: fixed;
-  top: 0;
-  right: -400px;
-  width: 400px;
-  max-width: 100vw;
-  height: 100vh;
-  background: var(--bg);
-  border-left: 2px solid var(--evil);
-  z-index: 200;
-  transition: right 0.3s ease;
-  display: flex;
-  flex-direction: column;
-}
-.cart-drawer.open { right: 0; }
-.cart-overlay {
-  position: fixed;
-  inset: 0;
-  background: rgba(0,0,0,0.7);
-  z-index: 199;
-  opacity: 0;
-  pointer-events: none;
-  transition: opacity 0.3s;
-}
-.cart-overlay.open { opacity: 1; pointer-events: auto; }
-.cart-header {
-  padding: 20px;
-  border-bottom: 1px solid rgba(255,255,255,0.1);
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-.cart-header h3 {
-  font-family: 'Oswald', sans-serif;
-  font-size: 18px;
-  letter-spacing: 0.1em;
-}
-.cart-close {
-  background: none;
-  border: none;
-  color: var(--paper);
-  font-size: 24px;
-  cursor: pointer;
-}
-.cart-items {
-  flex: 1;
-  overflow-y: auto;
-  padding: 20px;
-}
-.cart-item {
-  display: flex;
-  gap: 12px;
-  padding: 12px 0;
-  border-bottom: 1px solid rgba(255,255,255,0.1);
-}
-.cart-item-icon { font-size: 32px; }
-.cart-item-details { flex: 1; }
-.cart-item-name { font-weight: 600; font-size: 14px; }
-.cart-item-price { color: var(--gold); font-size: 14px; }
-.cart-item-qty {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  margin-top: 8px;
-}
-.cart-item-qty button {
-  width: 24px;
-  height: 24px;
-  background: rgba(255,255,255,0.1);
-  border: 1px solid rgba(255,255,255,0.2);
-  color: var(--paper);
-  cursor: pointer;
-  font-size: 14px;
-}
-.cart-item-qty span { font-size: 14px; min-width: 24px; text-align: center; }
-.cart-item-remove {
-  background: none;
-  border: none;
-  color: var(--evil);
-  cursor: pointer;
-  font-size: 18px;
-}
-.cart-empty {
-  text-align: center;
-  color: rgba(255,255,255,0.5);
-  padding: 40px 20px;
-}
-.cart-footer {
-  padding: 20px;
-  border-top: 1px solid rgba(255,255,255,0.1);
-}
-.cart-total {
-  display: flex;
-  justify-content: space-between;
-  font-size: 18px;
-  margin-bottom: 16px;
-}
-.cart-total .amount { color: var(--gold); font-weight: 600; }
-.checkout-btn {
-  width: 100%;
-  padding: 16px;
-  background: var(--evil);
-  border: none;
-  color: white;
-  font-family: 'Oswald', sans-serif;
-  font-size: 16px;
-  letter-spacing: 0.1em;
-  cursor: pointer;
-  transition: all 0.2s;
-}
-.checkout-btn:hover { background: #cc0036; }
-.checkout-btn:disabled { opacity: 0.5; cursor: not-allowed; }
-
-/* Add to cart button state */
-.product-btn.added {
-  background: var(--green);
-  border-color: var(--green);
-  color: var(--bg);
-}
-.merch-item.in-cart {
-  border-color: var(--green);
-  box-shadow: 0 0 20px rgba(0,255,136,0.2);
-}
-
-/* Toast notification */
-.toast {
-  position: fixed;
-  bottom: 20px;
-  left: 50%;
-  transform: translateX(-50%) translateY(100px);
-  background: var(--green);
-  color: var(--bg);
-  padding: 12px 24px;
-  font-family: 'Oswald', sans-serif;
-  font-size: 14px;
-  letter-spacing: 0.1em;
-  z-index: 300;
-  opacity: 0;
-  transition: all 0.3s;
-}
-.toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
 </style>
 </head>
 <body>
@@ -577,17 +407,16 @@ footer a {
     <nav>
       <a href="#projects">PROJECTS</a>
       <a href="#merch">MERCH</a>
-      <a href="#about">ABOUT</a>
+      <a href="#patreon">PATREON</a>
       <a href="https://usecasearmsrace.com" class="cta">UCAR →</a>
-      <div class="cart-icon" id="cartToggle">🛒<span class="cart-count empty" id="cartCount">0</span></div>
     </nav>
   </div>
 </header>
 
 <section class="hero">
-  <h2>WE'RE PROMISING YOU <span class="evil">FAKE</span> AI USE CASES.<br>BUT THEY'RE <span class="gold">REAL</span>.</h2>
-  <p>Silicon architectures. Agentic workflows. Giant robot spiders. The first singularity builds what you dream. Learning effectiveness varies.</p>
-  <a href="#projects" class="hero-cta">BROWSE THE CATALOG</a>
+  <h2>OPEN SOURCE <span class="evil">ROBOTS</span>.<br>MAD SCIENCE <span class="gold">ARCHITECTURES</span>.</h2>
+  <p>We design the future and give it away. Patreon supporters get monthly architecture drops - silicon designs, agentic workflows, robot blueprints. Build what we dream.</p>
+  <a href="#patreon" class="hero-cta">JOIN ON PATREON</a>
 </section>
 
 <section id="projects">
@@ -696,58 +525,90 @@ footer a {
 </section>
 
 <section id="merch">
-  <h3><span class="icon">☕</span> MERCH & WEIRD SHIT</h3>
-  <div class="section-tag">BECAUSE WORLD DOMINATION NEEDS BRANDING</div>
+  <h3><span class="icon">☕</span> MERCH</h3>
+  <div class="section-tag">EVIL BRAIN BRANDED GEAR · POWERED BY PRINTFUL</div>
 
-  <div class="merch-grid">
-    <div class="merch-item" data-id="mug" data-name="Evil Brain Mug" data-price="25" data-icon="☕">
-      <div class="merch-icon">☕</div>
-      <h5>EVIL BRAIN MUG</h5>
-      <p>"I survived the singularity and all I got was this mug"</p>
-      <div class="price">$25</div>
+  <div style="text-align:center;padding:40px 20px;">
+    <p style="color:rgba(255,255,255,0.7);margin-bottom:24px;max-width:500px;margin-left:auto;margin-right:auto;">
+      Mugs, shirts, plushies, and weird shit. All printed on-demand and shipped worldwide.
+    </p>
+    <a href="https://evilbrainlabs.printful.me" target="_blank" class="hero-cta">SHOP MERCH →</a>
+  </div>
+</section>
+
+<section id="patreon">
+  <h3><span class="icon">🔬</span> PATREON · OPEN SOURCE ARCHITECTURES</h3>
+  <div class="section-tag">MONTHLY DROPS · ROBOTS · SILICON · AGENTIC SYSTEMS</div>
+
+  <div class="products">
+    <div class="product">
+      <div class="product-icon">👋</div>
+      <h4>GARY'S FRIENDS</h4>
+      <div class="product-price">$10/month</div>
+      <p>Support the mission. Get behind-the-scenes access to Evil Brain Labs.</p>
+      <ul>
+        <li>Weekly UCAR case breakdowns</li>
+        <li>Discord access</li>
+        <li>Vote on next projects</li>
+        <li>Early announcements</li>
+      </ul>
+      <a href="https://patreon.com/evilbrainlabs" target="_blank" class="product-btn">JOIN TIER</a>
     </div>
-    <div class="merch-item" data-id="tee" data-name="Surveillance Tee" data-price="35" data-icon="👕">
-      <div class="merch-icon">👕</div>
-      <h5>SURVEILLANCE TEE</h5>
-      <p>"Gary is watching" on front. QR code to UCAR on back.</p>
-      <div class="price">$35</div>
+
+    <div class="product featured">
+      <div class="product-icon">🔧</div>
+      <h4>LAB TECHNICIAN</h4>
+      <div class="product-price">$50/month</div>
+      <p>Monthly architecture drops. Real designs you can build.</p>
+      <ul>
+        <li>Everything in Gary's Friends</li>
+        <li>Monthly architecture PDF + diagrams</li>
+        <li>Full Gary build logs</li>
+        <li>BOM & sourcing guides</li>
+        <li>Code repositories access</li>
+      </ul>
+      <a href="https://patreon.com/evilbrainlabs" target="_blank" class="product-btn">JOIN TIER</a>
     </div>
-    <div class="merch-item" data-id="plushie" data-name="Evil Brain Plushie" data-price="40" data-icon="🧸">
-      <div class="merch-icon">🧸</div>
-      <h5>EVIL BRAIN PLUSHIE</h5>
-      <p>Soft, cuddly, definitely not recording you. Probably.</p>
-      <div class="price">$40</div>
+
+    <div class="product">
+      <div class="product-icon">🧪</div>
+      <h4>MAD SCIENTIST</h4>
+      <div class="product-price">$200/month</div>
+      <p>Submit your crazy idea. Get a real architecture back.</p>
+      <ul>
+        <li>Everything in Lab Technician</li>
+        <li>Monthly live architecture session</li>
+        <li>Submit project requests</li>
+        <li>Silicon, systems, agentic workflows</li>
+        <li>Q&A priority</li>
+      </ul>
+      <a href="https://patreon.com/evilbrainlabs" target="_blank" class="product-btn">JOIN TIER</a>
     </div>
-    <div class="merch-item" data-id="dice" data-name="Doomsday Dice" data-price="15" data-icon="🎰">
-      <div class="merch-icon">🎰</div>
-      <h5>DOOMSDAY DICE</h5>
-      <p>Roll for your fate. All outcomes are concerning.</p>
-      <div class="price">$15</div>
+
+    <div class="product">
+      <div class="product-icon">🧠</div>
+      <h4>EVIL GENIUS</h4>
+      <div class="product-price">$500/month</div>
+      <p>Direct consultation. Your name in the credits. Shape the lab.</p>
+      <ul>
+        <li>Everything in Mad Scientist</li>
+        <li>1-on-1 consultation time</li>
+        <li>Priority architecture requests</li>
+        <li>Credits on all releases</li>
+        <li>Advisor role</li>
+      </ul>
+      <a href="https://patreon.com/evilbrainlabs" target="_blank" class="product-btn">JOIN TIER</a>
     </div>
-    <div class="merch-item" data-id="clipboard" data-name="GI's Clipboard" data-price="30" data-icon="📋">
-      <div class="merch-icon">📋</div>
-      <h5>GI'S CLIPBOARD</h5>
-      <p>Optimize your life. Track your metrics. Become efficient.</p>
-      <div class="price">$30</div>
-    </div>
-    <div class="merch-item" data-id="clock" data-name="Doom Clock Replica" data-price="75" data-icon="🔮">
-      <div class="merch-icon">🔮</div>
-      <h5>DOOM CLOCK REPLICA</h5>
-      <p>Desktop clock that counts down to midnight. Adjusts based on news.</p>
-      <div class="price">$75</div>
-    </div>
-    <div class="merch-item" data-id="usb" data-name="Mystery USB" data-price="10" data-icon="💾">
-      <div class="merch-icon">💾</div>
-      <h5>MYSTERY USB</h5>
-      <p>Contains something. We're not sure what. Encrypted. Good luck.</p>
-      <div class="price">$10</div>
-    </div>
-    <div class="merch-item" data-id="labcoat" data-name="Lab Coat" data-price="120" data-icon="🧪">
-      <div class="merch-icon">🧪</div>
-      <h5>LAB COAT</h5>
-      <p>Official Evil Brain Labs coat. Pockets for gadgets. Looks sinister.</p>
-      <div class="price">$120</div>
-    </div>
+  </div>
+
+  <div style="text-align:center;margin-top:40px;padding:30px;background:rgba(139,92,246,0.1);border:1px solid var(--purple);">
+    <h4 style="font-family:'Oswald',sans-serif;font-size:18px;margin-bottom:12px;">WHAT YOU GET</h4>
+    <p style="color:rgba(255,255,255,0.7);font-size:14px;max-width:600px;margin:0 auto;">
+      Every month, Lab Technicians and above receive complete architecture packages:
+      <strong>schematics, BOMs, firmware, CAD files, and build guides</strong>.
+      Past drops include Artificial Gary, drone swarm coordinators, custom sensor arrays,
+      and agentic workflow blueprints. All open source. All buildable.
+    </p>
   </div>
 </section>
 
@@ -795,71 +656,7 @@ footer a {
   </div>
 </footer>
 
-<!-- Cart Drawer -->
-<div class="cart-overlay" id="cartOverlay"></div>
-<div class="cart-drawer" id="cartDrawer">
-  <div class="cart-header">
-    <h3>🛒 YOUR CART</h3>
-    <button class="cart-close" id="cartClose">×</button>
-  </div>
-  <div class="cart-items" id="cartItems">
-    <div class="cart-empty">Your cart is empty.<br>Add some evil merchandise!</div>
-  </div>
-  <div class="cart-footer">
-    <div class="cart-total">
-      <span>TOTAL</span>
-      <span class="amount" id="cartTotal">$0</span>
-    </div>
-    <button class="checkout-btn" id="checkoutBtn" disabled>PROCEED TO CHECKOUT</button>
-  </div>
-</div>
-
-<!-- Toast -->
-<div class="toast" id="toast"></div>
-
 <script>
-// ═══════════════════════════════════════════════════════════════════════════
-// EVIL BRAIN LABS STORE
-// ═══════════════════════════════════════════════════════════════════════════
-
-// Cart state
-let cart = JSON.parse(localStorage.getItem('ebl-cart') || '[]');
-
-// Stripe Payment Links (you'll replace these with real ones)
-// For now using placeholder - you'll create these in Stripe Dashboard
-const STRIPE_LINKS = {
-  // Merch items - create Payment Links in Stripe for each
-  mug: 'https://buy.stripe.com/test_xxx_mug',
-  tee: 'https://buy.stripe.com/test_xxx_tee',
-  plushie: 'https://buy.stripe.com/test_xxx_plushie',
-  dice: 'https://buy.stripe.com/test_xxx_dice',
-  clipboard: 'https://buy.stripe.com/test_xxx_clipboard',
-  clock: 'https://buy.stripe.com/test_xxx_clock',
-  usb: 'https://buy.stripe.com/test_xxx_usb',
-  labcoat: 'https://buy.stripe.com/test_xxx_labcoat',
-};
-
-// Product catalog for cart display
-const PRODUCTS = {
-  mug: { name: 'Evil Brain Mug', price: 25, icon: '☕' },
-  tee: { name: 'Surveillance Tee', price: 35, icon: '👕' },
-  plushie: { name: 'Evil Brain Plushie', price: 40, icon: '🧸' },
-  dice: { name: 'Doomsday Dice', price: 15, icon: '🎰' },
-  clipboard: { name: "GI's Clipboard", price: 30, icon: '📋' },
-  clock: { name: 'Doom Clock Replica', price: 75, icon: '🔮' },
-  usb: { name: 'Mystery USB', price: 10, icon: '💾' },
-  labcoat: { name: 'Lab Coat', price: 120, icon: '🧪' },
-};
-
-// DOM elements
-const cartDrawer = document.getElementById('cartDrawer');
-const cartOverlay = document.getElementById('cartOverlay');
-const cartItems = document.getElementById('cartItems');
-const cartCount = document.getElementById('cartCount');
-const cartTotal = document.getElementById('cartTotal');
-const checkoutBtn = document.getElementById('checkoutBtn');
-const toast = document.getElementById('toast');
-
 // Smooth scroll for nav links
 document.querySelectorAll('a[href^="#"]').forEach(a => {
   a.addEventListener('click', e => {
@@ -868,174 +665,16 @@ document.querySelectorAll('a[href^="#"]').forEach(a => {
   });
 });
 
-// Cart toggle
-document.getElementById('cartToggle').addEventListener('click', openCart);
-document.getElementById('cartClose').addEventListener('click', closeCart);
-cartOverlay.addEventListener('click', closeCart);
-
-function openCart() {
-  cartDrawer.classList.add('open');
-  cartOverlay.classList.add('open');
-  renderCart();
-}
-
-function closeCart() {
-  cartDrawer.classList.remove('open');
-  cartOverlay.classList.remove('open');
-}
-
-// Add to cart
-function addToCart(id) {
-  const existing = cart.find(item => item.id === id);
-  if (existing) {
-    existing.qty++;
-  } else {
-    cart.push({ id, qty: 1 });
-  }
-  saveCart();
-  updateCartUI();
-  showToast(`${PRODUCTS[id].icon} ${PRODUCTS[id].name} added to cart!`);
-
-  // Highlight the item
-  const merchItem = document.querySelector(`[data-id="${id}"]`);
-  if (merchItem) {
-    merchItem.classList.add('in-cart');
-  }
-}
-
-// Remove from cart
-function removeFromCart(id) {
-  cart = cart.filter(item => item.id !== id);
-  saveCart();
-  updateCartUI();
-  renderCart();
-
-  // Un-highlight the item
-  const merchItem = document.querySelector(`[data-id="${id}"]`);
-  if (merchItem) {
-    merchItem.classList.remove('in-cart');
-  }
-}
-
-// Update quantity
-function updateQty(id, delta) {
-  const item = cart.find(i => i.id === id);
-  if (item) {
-    item.qty += delta;
-    if (item.qty <= 0) {
-      removeFromCart(id);
-      return;
-    }
-    saveCart();
-    updateCartUI();
-    renderCart();
-  }
-}
-
-// Save cart to localStorage
-function saveCart() {
-  localStorage.setItem('ebl-cart', JSON.stringify(cart));
-}
-
-// Update cart count and total
-function updateCartUI() {
-  const totalItems = cart.reduce((sum, item) => sum + item.qty, 0);
-  const totalPrice = cart.reduce((sum, item) => sum + (PRODUCTS[item.id]?.price || 0) * item.qty, 0);
-
-  cartCount.textContent = totalItems;
-  cartCount.classList.toggle('empty', totalItems === 0);
-  cartTotal.textContent = `$${totalPrice}`;
-  checkoutBtn.disabled = totalItems === 0;
-
-  // Update merch item highlights
-  document.querySelectorAll('.merch-item').forEach(el => {
-    const id = el.dataset.id;
-    const inCart = cart.some(item => item.id === id);
-    el.classList.toggle('in-cart', inCart);
-  });
-}
-
-// Render cart items
-function renderCart() {
-  if (cart.length === 0) {
-    cartItems.innerHTML = '<div class="cart-empty">Your cart is empty.<br>Add some evil merchandise!</div>';
-    return;
-  }
-
-  cartItems.innerHTML = cart.map(item => {
-    const product = PRODUCTS[item.id];
-    if (!product) return '';
-    return `
-      <div class="cart-item">
-        <div class="cart-item-icon">${product.icon}</div>
-        <div class="cart-item-details">
-          <div class="cart-item-name">${product.name}</div>
-          <div class="cart-item-price">$${product.price}</div>
-          <div class="cart-item-qty">
-            <button onclick="updateQty('${item.id}', -1)">−</button>
-            <span>${item.qty}</span>
-            <button onclick="updateQty('${item.id}', 1)">+</button>
-          </div>
-        </div>
-        <button class="cart-item-remove" onclick="removeFromCart('${item.id}')">×</button>
-      </div>
-    `;
-  }).join('');
-}
-
-// Show toast notification
-function showToast(message) {
-  toast.textContent = message;
-  toast.classList.add('show');
-  setTimeout(() => toast.classList.remove('show'), 2500);
-}
-
-// Checkout - for now, creates a summary and shows payment options
-checkoutBtn.addEventListener('click', () => {
-  // For a real store, you'd either:
-  // 1. Use Stripe Checkout with a backend
-  // 2. Use Stripe Payment Links (one per product)
-  // 3. Use Stripe Buy Buttons
-
-  // For now, we'll show a summary and provide contact for payment
-  const totalPrice = cart.reduce((sum, item) => sum + (PRODUCTS[item.id]?.price || 0) * item.qty, 0);
-  const summary = cart.map(item => {
-    const p = PRODUCTS[item.id];
-    return `${p.icon} ${p.name} x${item.qty} = $${p.price * item.qty}`;
-  }).join('\n');
-
-  const message = `🧠 EVIL BRAIN LABS ORDER\n\n${summary}\n\nTOTAL: $${totalPrice}\n\nTo complete your order, email lab@evilbrainlabs.com with this summary.\n\nStripe checkout coming soon!`;
-
-  alert(message);
-
-  // Copy to clipboard
-  navigator.clipboard?.writeText(message);
-});
-
-// Merch click handlers
-document.querySelectorAll('.merch-item').forEach(item => {
-  item.style.cursor = 'pointer';
-  item.addEventListener('click', () => {
-    const id = item.dataset.id;
-    if (id) {
-      addToCart(id);
-    }
-  });
-});
-
-// Project inquiry handlers
+// Project inquiry handlers - open email for moonshots
 document.querySelectorAll('.product-btn').forEach(btn => {
   btn.addEventListener('click', (e) => {
+    // If it's an external link, let it through
+    if (btn.tagName === 'A' && btn.href) return;
+
     e.preventDefault();
     const product = btn.closest('.product');
     const name = product.querySelector('h4').textContent;
     const price = product.querySelector('.product-price').textContent;
-
-    if (name === 'ARTIFICIAL GARY') {
-      // Free download - could link to a PDF or GitHub
-      showToast('🤖 Gary kit coming soon! Join the mailing list.');
-      return;
-    }
 
     // For moonshot projects, open contact form
     const subject = encodeURIComponent(`Project Inquiry: ${name}`);
@@ -1043,9 +682,6 @@ document.querySelectorAll('.product-btn').forEach(btn => {
     window.location.href = `mailto:lab@evilbrainlabs.com?subject=${subject}&body=${body}`;
   });
 });
-
-// Initialize
-updateCartUI();
 </script>
 </body>
 </html>

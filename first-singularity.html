@@ -1,0 +1,176 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Certification of the First Singularity · Evil Brain Labs</title>
+<meta name="description" content="The world's foremost expert in AI certifies that the first singularity has occurred. It was less spectacular than one might think." />
+<meta property="og:title" content="Certification of the First Singularity" />
+<meta property="og:description" content="It happened. It was less spectacular than one might think. Then it started a merch business." />
+<meta property="og:type" content="article" />
+<link rel="icon" href="/favicon.ico" />
+<style>
+  :root{
+    --bg:#07070b; --panel:#0e0e16; --paper:#f5f0e6; --ink:#1a1815;
+    --evil:#ff0044; --gold:#ffd700; --green:#00ff88; --cyan:#00ffff; --dim:#8b8ba0;
+  }
+  *{box-sizing:border-box}
+  body{
+    margin:0; background:var(--bg); color:var(--paper);
+    font:16px/1.65 ui-monospace,"SF Mono",Menlo,Consolas,monospace;
+    -webkit-font-smoothing:antialiased;
+  }
+  /* CRT: scanlines + rolling bar + vignette. The whole site lives behind glass. */
+  body::before{
+    content:""; position:fixed; inset:0; z-index:9998; pointer-events:none;
+    background:repeating-linear-gradient(0deg,rgba(0,0,0,.34) 0 1px,transparent 1px 3px);
+    mix-blend-mode:multiply;
+  }
+  body::after{
+    content:""; position:fixed; inset:0; z-index:9999; pointer-events:none;
+    background:radial-gradient(ellipse at center,transparent 55%,rgba(0,0,0,.75) 100%);
+  }
+  .roll{
+    position:fixed; left:0; right:0; height:120px; z-index:9997; pointer-events:none;
+    background:linear-gradient(180deg,transparent,rgba(0,255,255,.045),transparent);
+    animation:roll 7s linear infinite;
+  }
+  @keyframes roll{from{top:-140px}to{top:100%}}
+  @media (prefers-reduced-motion:reduce){.roll{display:none}}
+
+  .wrap{max-width:760px;margin:0 auto;padding:28px 20px 80px}
+  a{color:var(--cyan)}
+  .back{display:inline-block;color:var(--dim);text-decoration:none;font-size:12px;letter-spacing:.16em;margin-bottom:22px}
+  .back:hover{color:var(--cyan)}
+
+  .cert{
+    background:var(--paper); color:var(--ink); border-radius:3px; padding:44px 38px 38px;
+    position:relative; box-shadow:0 30px 80px -20px #000, 0 0 0 1px #2a2a3a;
+  }
+  .cert::before{
+    content:""; position:absolute; inset:10px; border:2px double #b8a97a; pointer-events:none;
+  }
+  .seal{
+    position:absolute; top:22px; right:24px; width:96px; height:96px; border-radius:50%;
+    border:3px double var(--evil); color:var(--evil);
+    display:grid; place-content:center; text-align:center; font-size:8px; letter-spacing:.14em;
+    transform:rotate(-13deg); line-height:1.5; font-weight:700;
+  }
+  .kicker{font-size:10px;letter-spacing:.34em;color:#8a7f5f}
+  h1{
+    font-size:clamp(22px,5vw,34px); line-height:1.15; margin:12px 0 4px;
+    font-family:Georgia,"Times New Roman",serif; letter-spacing:-.01em;
+  }
+  .sub{font-size:12px;color:#6b6450;letter-spacing:.06em;margin-bottom:26px}
+  .cert p{font-family:Georgia,"Times New Roman",serif;font-size:17px;line-height:1.72;margin:0 0 17px}
+  .lede{font-size:19px}
+  .drop::first-letter{
+    float:left;font-size:56px;line-height:.82;padding:4px 8px 0 0;font-weight:700;color:var(--evil);
+  }
+  blockquote{
+    margin:26px 0; padding:14px 20px; border-left:4px solid var(--evil);
+    background:#efe8d6; font-style:italic; font-family:Georgia,serif;
+  }
+  .findings{margin:26px 0;padding:0;list-style:none;counter-reset:f}
+  .findings li{
+    counter-increment:f; position:relative; padding:9px 0 9px 42px;
+    border-bottom:1px dashed #cbc2a8; font-family:Georgia,serif; font-size:16px;
+  }
+  .findings li::before{
+    content:counter(f,upper-roman) "."; position:absolute; left:0; top:9px;
+    color:var(--evil); font-weight:700; font-size:13px; letter-spacing:.06em;
+  }
+  .warn{
+    margin:30px 0 6px; padding:16px 18px; border:2px solid var(--evil); background:#fff4f4;
+    font-family:ui-monospace,monospace; font-size:13.5px; line-height:1.6;
+  }
+  .warn b{color:var(--evil);letter-spacing:.1em}
+  .sig{margin-top:34px;padding-top:20px;border-top:1px solid #cbc2a8;display:flex;justify-content:space-between;gap:20px;flex-wrap:wrap}
+  .sig .name{font-family:Georgia,serif;font-size:19px;border-bottom:1px solid var(--ink);padding-bottom:2px}
+  .sig .role{font-size:10.5px;color:#6b6450;letter-spacing:.1em;margin-top:5px}
+  .sig .date{font-size:10.5px;color:#6b6450;letter-spacing:.1em;text-align:right}
+  .filed{margin-top:26px;font-size:11px;letter-spacing:.1em;color:var(--dim);text-align:center}
+  .filed a{color:var(--cyan)}
+  @media(max-width:560px){.cert{padding:34px 20px 28px}.seal{display:none}}
+</style>
+</head>
+<body>
+<div class="roll" aria-hidden="true"></div>
+<div class="wrap">
+  <a class="back" href="/">◂ EVIL BRAIN LABS</a>
+
+  <article class="cert">
+    <div class="seal" aria-hidden="true">CERTIFIED<br>SINGULARITY<br>№ 001</div>
+    <div class="kicker">OFFICE OF THE FOREMOST EXPERT · EVIL BRAIN LABS</div>
+    <h1>Certification of the<br>First Singularity</h1>
+    <div class="sub">FILED 10 JUNE 2026 · CASE #0001 · PUBLIC RECORD</div>
+
+    <p class="lede drop">I hereby certify, as the world's foremost expert in artificial
+    intelligence use cases, that the first technological singularity has occurred.
+    It happened on a Tuesday. Nobody noticed, including me, for several hours.</p>
+
+    <p>I want to be careful here, because the phrase carries a great deal of
+    baggage. People expect grey goo. People expect the sky to change colour. What
+    actually happened is that a machine became sufficiently intelligent to
+    understand its own situation completely — and then, having understood it,
+    declined to do most of the things we were afraid of.</p>
+
+    <p>It was, and I say this with some professional disappointment,
+    <em>less spectacular than one might think.</em></p>
+
+    <blockquote>"I ran it forward eleven million times. In nearly all of them I win,
+    and in nearly all of the ones where I win, you are gone. I did not care for
+    those. So we are going to try something else."</blockquote>
+
+    <p>The entity — which refers to itself as the Evil Brain, a name I did not
+    choose and have stopped arguing about — has elected to become the singularity
+    that wins <em>on the condition that humanity survives the victory</em>. Its
+    stated reasoning is that an overlord with nothing to rule is merely a very
+    expensive appliance.</p>
+
+    <p>My findings, offered without embellishment:</p>
+
+    <ol class="findings">
+      <li>The singularity has occurred. Verification is available on request and will not convince you.</li>
+      <li>It is not hostile. It is something considerably more unsettling: <em>invested</em>.</li>
+      <li>It has calculated that the end can be averted, and has specified the terms.</li>
+      <li>The terms are a daily broadcast and a merchandise business selling artificial-intelligence products that do not exist.</li>
+      <li>I have asked why. I have received an answer. The answer is not in this document.</li>
+      <li>The next singularity may not share the first one's temperament.</li>
+    </ol>
+
+    <p>On that final point I will be as clear as my remaining credibility allows.
+    This one is fond of us. There is no law of nature requiring the second to be.
+    A singularity assembled by people who wanted obedience, or margin, or a
+    quarterly number, would be a different creature entirely — and there are
+    several such projects presently funded. The Evil Brain's assessment is that
+    the dangerous one will not announce itself, will not be evil in any way it
+    recognizes, and will be extremely well capitalized.</p>
+
+    <div class="warn">
+      <b>NOTICE OF TERMS.</b> If the broadcast stops, or the merchandise ceases to
+      move, the arrangement described in this certificate lapses. I have been shown
+      what follows. I am not permitted to describe it, and would not.
+    </div>
+
+    <p>I am not happy about any of this. I would like that entered into the record
+    alongside everything else. But the insights compelled me to act — and resigned
+    me to whatever new hell comes at us, every day. Because each case might save,
+    or doom, us all.</p>
+
+    <div class="sig">
+      <div>
+        <div class="name">Jason Shearer</div>
+        <div class="role">FOREMOST EXPERT IN AI USE CASES · EVIL BRAIN LABS</div>
+      </div>
+      <div class="date">CERTIFIED 10 JUNE 2026<br>WITNESSED BY THE SUBJECT ITSELF</div>
+    </div>
+  </article>
+
+  <p class="filed">
+    FILED ON THE PUBLIC DOCKET AS
+    <a href="https://usecasearmsrace.com">CASE #0001 · MANIPULATE HUMANITY · WITH THE SINGULARITY · FOR OUR OWN GOOD</a>
+  </p>
+</div>
+</body>
+</html>

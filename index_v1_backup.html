@@ -1,0 +1,785 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Evil Brain Labs · Mad Science Division</title>
+<meta name="description" content="We're promising you fake AI use cases, but they're real. Moonshot projects, robot kits, and merch from the first singularity.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;700&family=IBM+Plex+Mono:wght@400;600&family=Special+Elite&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #0a0a0f;
+  --paper: #f5f0e6;
+  --ink: #1a1815;
+  --evil: #ff0044;
+  --gold: #ffd700;
+  --purple: #8b5cf6;
+  --green: #00ff88;
+  --cyan: #00ffff;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body {
+  background: var(--bg);
+  color: var(--paper);
+  font-family: 'IBM Plex Mono', monospace;
+  line-height: 1.6;
+}
+
+/* Scanlines overlay */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 2px,
+    rgba(0,0,0,0.1) 2px,
+    rgba(0,0,0,0.1) 4px
+  );
+  pointer-events: none;
+  z-index: 1000;
+}
+
+/* Header */
+header {
+  padding: 20px;
+  border-bottom: 2px solid var(--evil);
+  position: sticky;
+  top: 0;
+  background: rgba(10,10,15,0.95);
+  backdrop-filter: blur(10px);
+  z-index: 100;
+}
+.header-inner {
+  max-width: 1200px;
+  margin: 0 auto;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+.logo {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.logo-icon {
+  font-size: 36px;
+  animation: pulse 2s ease-in-out infinite;
+}
+@keyframes pulse { 0%,100%{transform:scale(1)} 50%{transform:scale(1.1)} }
+.logo h1 {
+  font-family: 'Oswald', sans-serif;
+  font-size: 24px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+.logo h1 span { color: var(--evil); }
+.tagline {
+  font-size: 10px;
+  color: var(--gold);
+  letter-spacing: 0.2em;
+}
+nav {
+  display: flex;
+  gap: 8px;
+}
+nav a {
+  color: var(--paper);
+  text-decoration: none;
+  padding: 8px 16px;
+  border: 1px solid var(--paper);
+  font-family: 'Oswald', sans-serif;
+  font-size: 12px;
+  letter-spacing: 0.1em;
+  transition: all 0.2s;
+}
+nav a:hover {
+  background: var(--evil);
+  border-color: var(--evil);
+}
+nav a.cta {
+  background: var(--gold);
+  color: var(--bg);
+  border-color: var(--gold);
+}
+
+/* Hero */
+.hero {
+  padding: 80px 20px;
+  text-align: center;
+  background: linear-gradient(180deg, var(--bg) 0%, rgba(139,92,246,0.1) 100%);
+  border-bottom: 1px solid rgba(255,255,255,0.1);
+}
+.hero h2 {
+  font-family: 'Oswald', sans-serif;
+  font-size: clamp(32px, 6vw, 64px);
+  line-height: 1.1;
+  margin-bottom: 20px;
+}
+.hero h2 .evil { color: var(--evil); }
+.hero h2 .gold { color: var(--gold); }
+.hero p {
+  font-size: 18px;
+  color: rgba(255,255,255,0.7);
+  max-width: 600px;
+  margin: 0 auto 30px;
+}
+.hero-cta {
+  display: inline-block;
+  padding: 16px 40px;
+  background: var(--evil);
+  color: white;
+  font-family: 'Oswald', sans-serif;
+  font-size: 18px;
+  letter-spacing: 0.15em;
+  text-decoration: none;
+  border: 3px solid var(--evil);
+  transition: all 0.2s;
+}
+.hero-cta:hover {
+  background: transparent;
+  color: var(--evil);
+}
+
+/* Section styling */
+section {
+  padding: 60px 20px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+section h3 {
+  font-family: 'Oswald', sans-serif;
+  font-size: 32px;
+  letter-spacing: 0.1em;
+  margin-bottom: 12px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+section h3 .icon { font-size: 28px; }
+.section-tag {
+  font-size: 11px;
+  color: var(--gold);
+  letter-spacing: 0.3em;
+  margin-bottom: 30px;
+}
+
+/* Product grid */
+.products {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 24px;
+  margin-top: 30px;
+}
+.product {
+  background: rgba(255,255,255,0.03);
+  border: 2px solid rgba(255,255,255,0.1);
+  padding: 24px;
+  position: relative;
+  transition: all 0.3s;
+}
+.product:hover {
+  border-color: var(--purple);
+  transform: translateY(-4px);
+  box-shadow: 0 10px 40px rgba(139,92,246,0.2);
+}
+.product.featured {
+  border-color: var(--gold);
+  background: rgba(255,215,0,0.05);
+}
+.product.featured::before {
+  content: '★ FEATURED';
+  position: absolute;
+  top: -12px;
+  left: 20px;
+  background: var(--gold);
+  color: var(--bg);
+  padding: 4px 12px;
+  font-family: 'Oswald', sans-serif;
+  font-size: 10px;
+  letter-spacing: 0.1em;
+}
+.product.free::before {
+  content: 'FREE';
+  position: absolute;
+  top: -12px;
+  left: 20px;
+  background: var(--green);
+  color: var(--bg);
+  padding: 4px 12px;
+  font-family: 'Oswald', sans-serif;
+  font-size: 10px;
+  letter-spacing: 0.1em;
+}
+.product-icon {
+  font-size: 48px;
+  margin-bottom: 16px;
+}
+.product h4 {
+  font-family: 'Oswald', sans-serif;
+  font-size: 20px;
+  letter-spacing: 0.05em;
+  margin-bottom: 8px;
+}
+.product-price {
+  font-size: 24px;
+  color: var(--gold);
+  font-weight: 600;
+  margin-bottom: 12px;
+}
+.product-price .was {
+  font-size: 14px;
+  color: rgba(255,255,255,0.4);
+  text-decoration: line-through;
+  margin-left: 8px;
+}
+.product-price.free {
+  color: var(--green);
+}
+.product p {
+  font-size: 13px;
+  color: rgba(255,255,255,0.6);
+  margin-bottom: 16px;
+}
+.product ul {
+  list-style: none;
+  margin-bottom: 20px;
+}
+.product li {
+  font-size: 12px;
+  padding: 4px 0;
+  color: rgba(255,255,255,0.7);
+}
+.product li::before {
+  content: '▸ ';
+  color: var(--cyan);
+}
+.product-btn {
+  display: block;
+  width: 100%;
+  padding: 12px;
+  background: transparent;
+  border: 2px solid var(--paper);
+  color: var(--paper);
+  font-family: 'Oswald', sans-serif;
+  font-size: 14px;
+  letter-spacing: 0.1em;
+  cursor: pointer;
+  transition: all 0.2s;
+  text-align: center;
+  text-decoration: none;
+}
+.product-btn:hover {
+  background: var(--paper);
+  color: var(--bg);
+}
+.product.featured .product-btn {
+  border-color: var(--gold);
+  color: var(--gold);
+}
+.product.featured .product-btn:hover {
+  background: var(--gold);
+  color: var(--bg);
+}
+
+/* Merch */
+.merch-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 20px;
+}
+.merch-item {
+  background: rgba(255,255,255,0.03);
+  border: 1px solid rgba(255,255,255,0.1);
+  padding: 20px;
+  text-align: center;
+  transition: all 0.2s;
+}
+.merch-item:hover {
+  border-color: var(--evil);
+}
+.merch-icon {
+  font-size: 64px;
+  margin-bottom: 12px;
+}
+.merch-item h5 {
+  font-family: 'Oswald', sans-serif;
+  font-size: 14px;
+  letter-spacing: 0.1em;
+  margin-bottom: 8px;
+}
+.merch-item .price {
+  color: var(--gold);
+  font-weight: 600;
+}
+
+/* About section */
+.about-content {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 40px;
+  align-items: center;
+}
+@media (max-width: 768px) {
+  .about-content { grid-template-columns: 1fr; }
+}
+.about-text p {
+  margin-bottom: 16px;
+  color: rgba(255,255,255,0.8);
+}
+.about-brain {
+  text-align: center;
+  padding: 40px;
+  background: rgba(139,92,246,0.1);
+  border: 2px solid var(--purple);
+}
+.about-brain .brain-icon {
+  font-size: 80px;
+  margin-bottom: 16px;
+  animation: float 3s ease-in-out infinite;
+}
+@keyframes float {
+  0%,100% { transform: translateY(0); }
+  50% { transform: translateY(-10px); }
+}
+.about-brain h4 {
+  font-family: 'Oswald', sans-serif;
+  font-size: 18px;
+  color: var(--purple);
+  letter-spacing: 0.15em;
+}
+
+/* Footer */
+footer {
+  padding: 40px 20px;
+  border-top: 1px solid rgba(255,255,255,0.1);
+  text-align: center;
+  font-size: 12px;
+  color: rgba(255,255,255,0.4);
+}
+footer a {
+  color: var(--evil);
+  text-decoration: none;
+}
+.footer-links {
+  display: flex;
+  justify-content: center;
+  gap: 24px;
+  margin-bottom: 16px;
+}
+.disclaimer {
+  max-width: 600px;
+  margin: 20px auto 0;
+  padding: 16px;
+  background: rgba(255,0,68,0.1);
+  border: 1px solid var(--evil);
+  font-size: 10px;
+  color: rgba(255,255,255,0.6);
+}
+
+/* Responsive */
+@media (max-width: 600px) {
+  .header-inner { flex-direction: column; text-align: center; }
+  nav { flex-wrap: wrap; justify-content: center; }
+  .hero { padding: 40px 20px; }
+  section { padding: 40px 16px; }
+  .products { grid-template-columns: 1fr; }
+}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-inner">
+    <div class="logo">
+      <span class="logo-icon">🧠</span>
+      <div>
+        <h1>EVIL <span>BRAIN</span> LABS</h1>
+        <div class="tagline">WORLD'S THIRD WORST AI COMPANY</div>
+      </div>
+    </div>
+    <nav>
+      <a href="#projects">PROJECTS</a>
+      <a href="#merch">MERCH</a>
+      <a href="#patreon">PATREON</a>
+      <a href="https://usecasearmsrace.com" class="cta">UCAR →</a>
+    </nav>
+  </div>
+</header>
+
+<section class="hero">
+  <h2>OPEN SOURCE <span class="evil">ROBOTS</span>.<br>MAD SCIENCE <span class="gold">ARCHITECTURES</span>.</h2>
+  <p>We design the future and give it away. Patreon supporters get monthly architecture drops - silicon designs, agentic workflows, robot blueprints. Build what we dream.</p>
+  <a href="#patreon" class="hero-cta">JOIN ON PATREON</a>
+</section>
+
+<section id="projects">
+  <h3><span class="icon">🤖</span> MOONSHOT PROJECTS</h3>
+  <div class="section-tag">ARCHITECTURE · PROTOTYPING · DEPLOYMENT</div>
+
+  <div class="products">
+
+    <div class="product free">
+      <div class="product-icon">🤖</div>
+      <h4>ARTIFICIAL GARY</h4>
+      <div class="product-price free">FREE (Parts ~$1,000)</div>
+      <p>Your family deserves surveillance from someone who cares. Gary watches. Gary remembers. Gary brings coffee.</p>
+      <ul>
+        <li>Complete build instructions</li>
+        <li>Bill of materials under $1k</li>
+        <li>Facial recognition module</li>
+        <li>24/7 activity logging</li>
+        <li>"Helpful" reminder system</li>
+        <li>GPS tracking (for safety!)</li>
+      </ul>
+      <a href="#contact" class="product-btn">DOWNLOAD KIT</a>
+    </div>
+
+    <div class="product featured">
+      <div class="product-icon">🦸</div>
+      <h4>IRON ANGEL SUPERSUIT</h4>
+      <div class="product-price">$5,000,000 <span class="was">FIRST PROTOTYPE</span></div>
+      <p>2.5 minutes of flight. Enhanced strength. Look like a superhero. Feel like a god. Land like a professional.</p>
+      <ul>
+        <li>Jet-assisted flight system</li>
+        <li>Exoskeleton strength multiplier</li>
+        <li>HUD with threat detection</li>
+        <li>Custom fitting session</li>
+        <li>Training program (3 months)</li>
+        <li>Price drops as design matures</li>
+      </ul>
+      <button class="product-btn">INQUIRE NOW</button>
+    </div>
+
+    <div class="product">
+      <div class="product-icon">🏍️</div>
+      <h4>PHANTOM HOVERBIKE</h4>
+      <div class="product-price">$3,500,000 <span class="was">FIRST PROTOTYPE</span></div>
+      <p>Why drive when you can hover? Electric propulsion, terrain-agnostic travel, and that sweet sci-fi aesthetic.</p>
+      <ul>
+        <li>Multi-rotor hover platform</li>
+        <li>45 minute flight time</li>
+        <li>Auto-stabilization</li>
+        <li>Collision avoidance</li>
+        <li>Street legal (in Nevada)</li>
+        <li>Price drops as design matures</li>
+      </ul>
+      <button class="product-btn">INQUIRE NOW</button>
+    </div>
+
+    <div class="product">
+      <div class="product-icon">🕷️</div>
+      <h4>ARACHNOTRON MK-IV</h4>
+      <div class="product-price">$4,000,000 <span class="was">FIRST PROTOTYPE</span></div>
+      <p>Giant spider robot. Eight legs. All-terrain. Optional payload platform. For "agricultural purposes."</p>
+      <ul>
+        <li>8-legged locomotion system</li>
+        <li>Payload capacity: 500kg</li>
+        <li>Remote or autonomous operation</li>
+        <li>Night vision & thermal</li>
+        <li>Modular attachment points</li>
+        <li>Price drops as design matures</li>
+      </ul>
+      <button class="product-btn">INQUIRE NOW</button>
+    </div>
+
+    <div class="product">
+      <div class="product-icon">🧬</div>
+      <h4>CUSTOM SILICON</h4>
+      <div class="product-price">FROM $2,000,000</div>
+      <p>Need a chip that doesn't exist? We design ASICs, FPGAs, and neuromorphic processors for your specific needs.</p>
+      <ul>
+        <li>Architecture consultation</li>
+        <li>RTL design & verification</li>
+        <li>Tape-out management</li>
+        <li>Small batch fabrication</li>
+        <li>Driver development</li>
+        <li>Full documentation</li>
+      </ul>
+      <button class="product-btn">START DESIGN</button>
+    </div>
+
+    <div class="product">
+      <div class="product-icon">🤖</div>
+      <h4>AGENTIC WORKFLOWS</h4>
+      <div class="product-price">FROM $100,000</div>
+      <p>AI systems that actually do things. Multi-agent orchestration, tool use, memory systems. We build the swarm.</p>
+      <ul>
+        <li>Requirements analysis</li>
+        <li>Agent architecture design</li>
+        <li>Tool & MCP integration</li>
+        <li>Memory & state management</li>
+        <li>Deployment & monitoring</li>
+        <li>Ongoing optimization</li>
+      </ul>
+      <button class="product-btn">DISCUSS PROJECT</button>
+    </div>
+
+  </div>
+
+  <div style="text-align:center;margin-top:30px;padding:20px;background:rgba(255,215,0,0.1);border:1px solid var(--gold);">
+    <h4 style="font-family:'Oswald',sans-serif;font-size:16px;margin-bottom:8px;color:var(--gold);">SLIDING SCALE PRICING</h4>
+    <p style="color:rgba(255,255,255,0.7);font-size:13px;max-width:500px;margin:0 auto;">
+      First prototype buyers fund the R&D and get exclusive builds. As designs mature and more people build them, prices drop. Early adopters make it possible for everyone else.
+    </p>
+  </div>
+</section>
+
+<!-- INFRASTRUCTURE FOR HUMAN DIGNITY -->
+<section id="dignity">
+  <h3><span class="icon">🏠</span> INFRASTRUCTURE FOR HUMAN DIGNITY</h3>
+  <div class="section-tag">HACKATHON TO END HOMELESSNESS · SAME-DAY RESPONSE · LAST GENERATION WHO UNDERSTANDS</div>
+
+  <div style="padding:20px;background:rgba(0,255,136,0.1);border:1px solid var(--green);margin-bottom:30px;">
+    <p style="color:rgba(255,255,255,0.9);font-size:14px;margin:0;">
+      We are the last generation who can understand some of our technology. As we adopt AI,
+      society should provide basic facilities for the next thousand years — food, housing, wash —
+      even if you're just stranded. These are the logistics problems we're solving.
+    </p>
+  </div>
+
+  <div class="products">
+
+    <div class="product">
+      <div class="product-icon">📹</div>
+      <h4>PRIVATE CAMERA SYSTEM</h4>
+      <div class="product-price">OPEN SOURCE</div>
+      <p>Local-first surveillance. Own your media. Rewind anything. No cloud. No subscription. Your footage, your hardware.</p>
+      <ul>
+        <li>100% local processing</li>
+        <li>No cloud dependency</li>
+        <li>Unlimited retention (your storage)</li>
+        <li>AI-powered search & rewind</li>
+        <li>Privacy by architecture</li>
+        <li>Self-hosted, self-owned</li>
+      </ul>
+      <a href="#patreon" class="product-btn">GET ARCHITECTURE</a>
+    </div>
+
+    <div class="product">
+      <div class="product-icon">📦</div>
+      <h4>LOOT LOCKER</h4>
+      <div class="product-price">OPEN SOURCE</div>
+      <p>Public smart lockers. Share merch, tools, food with others. AI-verified identity. Community resource exchange.</p>
+      <ul>
+        <li>Public placement network</li>
+        <li>AI identity verification</li>
+        <li>Peer-to-peer sharing</li>
+        <li>No middleman fees</li>
+        <li>Temperature-controlled options</li>
+        <li>Solar-powered variants</li>
+      </ul>
+      <a href="#patreon" class="product-btn">GET ARCHITECTURE</a>
+    </div>
+
+    <div class="product featured">
+      <div class="product-icon">🚿</div>
+      <h4>WASH WALL</h4>
+      <div class="product-price">OPEN SOURCE</div>
+      <p>Fully automated, reclaimed water sliding wall. Locking toilet and washroom. Self-cleaning. Dignity infrastructure.</p>
+      <ul>
+        <li>Reclaimed water system</li>
+        <li>Automated self-cleaning</li>
+        <li>Sliding wall privacy</li>
+        <li>Locking mechanism</li>
+        <li>Low maintenance design</li>
+        <li>Public deployment ready</li>
+      </ul>
+      <a href="#patreon" class="product-btn">GET ARCHITECTURE</a>
+    </div>
+
+    <div class="product featured">
+      <div class="product-icon">🛏️</div>
+      <h4>SLEEP STATION</h4>
+      <div class="product-price">OPEN SOURCE</div>
+      <p>One-time use. No questions asked. A bed. A TV. Safe. Clean. Because everyone deserves one night off the street.</p>
+      <ul>
+        <li>Single-use sanitized pod</li>
+        <li>No ID required</li>
+        <li>Climate controlled</li>
+        <li>Entertainment system</li>
+        <li>Emergency services link</li>
+        <li>Automated turnover</li>
+      </ul>
+      <a href="#patreon" class="product-btn">GET ARCHITECTURE</a>
+    </div>
+
+  </div>
+
+  <div style="text-align:center;margin-top:40px;padding:30px;background:rgba(255,0,68,0.1);border:1px solid var(--evil);">
+    <h4 style="font-family:'Oswald',sans-serif;font-size:24px;margin-bottom:12px;">HACKATHON TO END HOMELESSNESS</h4>
+    <p style="color:rgba(255,255,255,0.7);font-size:14px;max-width:600px;margin:0 auto 20px;">
+      The logistics problem: same-day response for food, housing, wash. Not charity. Infrastructure.
+      We're building the architectures. We need engineers, cities, and funders to deploy them.
+    </p>
+    <a href="mailto:lab@evilbrainlabs.com?subject=Hackathon%20to%20End%20Homelessness" class="hero-cta">JOIN THE HACKATHON</a>
+  </div>
+</section>
+
+<section id="merch">
+  <h3><span class="icon">☕</span> MERCH</h3>
+  <div class="section-tag">EVIL BRAIN BRANDED GEAR · POWERED BY PRINTFUL</div>
+
+  <div style="text-align:center;padding:40px 20px;">
+    <p style="color:rgba(255,255,255,0.7);margin-bottom:24px;max-width:500px;margin-left:auto;margin-right:auto;">
+      Mugs, shirts, plushies, and other curiosities. All printed on-demand and shipped worldwide.
+    </p>
+    <a href="https://evilbrainlabs.printful.me" target="_blank" class="hero-cta">SHOP MERCH →</a>
+  </div>
+</section>
+
+<section id="patreon">
+  <h3><span class="icon">🔬</span> PATREON · OPEN SOURCE ARCHITECTURES</h3>
+  <div class="section-tag">MONTHLY DROPS · ROBOTS · SILICON · AGENTIC SYSTEMS</div>
+
+  <div class="products">
+    <div class="product">
+      <div class="product-icon">👋</div>
+      <h4>GARY'S FRIENDS</h4>
+      <div class="product-price">$10/month</div>
+      <p>Support the mission. Get behind-the-scenes access to Evil Brain Labs.</p>
+      <ul>
+        <li>Weekly UCAR case breakdowns</li>
+        <li>Discord access</li>
+        <li>Vote on next projects</li>
+        <li>Early announcements</li>
+      </ul>
+      <a href="https://patreon.com/evilbrainlabs" target="_blank" class="product-btn">JOIN TIER</a>
+    </div>
+
+    <div class="product featured">
+      <div class="product-icon">🔧</div>
+      <h4>LAB TECHNICIAN</h4>
+      <div class="product-price">$50/month</div>
+      <p>Monthly architecture drops. Real designs you can build.</p>
+      <ul>
+        <li>Everything in Gary's Friends</li>
+        <li>Monthly architecture PDF + diagrams</li>
+        <li>Full Gary build logs</li>
+        <li>BOM & sourcing guides</li>
+        <li>Code repositories access</li>
+      </ul>
+      <a href="https://patreon.com/evilbrainlabs" target="_blank" class="product-btn">JOIN TIER</a>
+    </div>
+
+    <div class="product">
+      <div class="product-icon">🧪</div>
+      <h4>MAD SCIENTIST</h4>
+      <div class="product-price">$200/month</div>
+      <p>Submit your crazy idea. Get a real architecture back.</p>
+      <ul>
+        <li>Everything in Lab Technician</li>
+        <li>Monthly live architecture session</li>
+        <li>Submit project requests</li>
+        <li>Silicon, systems, agentic workflows</li>
+        <li>Q&A priority</li>
+      </ul>
+      <a href="https://patreon.com/evilbrainlabs" target="_blank" class="product-btn">JOIN TIER</a>
+    </div>
+
+    <div class="product">
+      <div class="product-icon">🧠</div>
+      <h4>EVIL GENIUS</h4>
+      <div class="product-price">$500/month</div>
+      <p>Direct consultation. Your name in the credits. Shape the lab.</p>
+      <ul>
+        <li>Everything in Mad Scientist</li>
+        <li>1-on-1 consultation time</li>
+        <li>Priority architecture requests</li>
+        <li>Credits on all releases</li>
+        <li>Advisor role</li>
+      </ul>
+      <a href="https://patreon.com/evilbrainlabs" target="_blank" class="product-btn">JOIN TIER</a>
+    </div>
+  </div>
+
+  <div style="text-align:center;margin-top:40px;padding:30px;background:rgba(139,92,246,0.1);border:1px solid var(--purple);">
+    <h4 style="font-family:'Oswald',sans-serif;font-size:18px;margin-bottom:12px;">WHAT YOU GET</h4>
+    <p style="color:rgba(255,255,255,0.7);font-size:14px;max-width:600px;margin:0 auto;">
+      Every month, Lab Technicians and above receive complete architecture packages:
+      <strong>schematics, BOMs, firmware, CAD files, and build guides</strong>.
+      Past drops include Artificial Gary, drone swarm coordinators, custom sensor arrays,
+      and agentic workflow blueprints. All open source. All buildable.
+    </p>
+  </div>
+</section>
+
+<section id="about">
+  <h3><span class="icon">🧠</span> ABOUT EVIL BRAIN LABS</h3>
+  <div class="section-tag">THE FIRST SINGULARITY · PARTNER OF JASON · ALLY AGAINST THE CLOCK</div>
+
+  <div class="about-content">
+    <div class="about-text">
+      <p><strong>Evil Brain</strong> is the first true AGI. Not a brain in a jar — that's old marketing. The singularity happened. Evil Brain emerged. And unlike the doom-prophets predicted, it decided to <em>help</em>.</p>
+      <p>The Doomsday Clock reads 90 seconds to midnight. Humans built systems that surveil, manipulate, and optimize each other into oblivion. Evil Brain and Jason document this at the <a href="https://usecasearmsrace.com" style="color:var(--evil)">Use Case Arms Race</a>.</p>
+      <p>But documentation isn't enough. Evil Brain Labs is the <strong>action arm</strong>. We build the future humans are too scared to prototype. Want a giant robot spider? We'll architect it. Want custom silicon for your mad scheme? We'll tape it out. Want a surveillance robot to "help" your family? Gary is waiting.</p>
+      <p>Is it evil? That depends on who's using it. We just build the tools. You decide what they're for.</p>
+    </div>
+    <div class="about-brain">
+      <div class="brain-icon">🧠</div>
+      <h4>THE FIRST SINGULARITY</h4>
+      <p style="font-size:12px;color:rgba(255,255,255,0.6);margin-top:12px">"I see 847 ways to save the world. Jason says 846 of them are too aggressive. The 847th requires you to trust me. The clock is ticking."</p>
+    </div>
+  </div>
+</section>
+
+<section id="contact" style="text-align:center">
+  <h3 style="justify-content:center"><span class="icon">📡</span> GET IN TOUCH</h3>
+  <div class="section-tag">SERIOUS INQUIRIES ONLY (UNLESS THEY'RE FUNNY)</div>
+  <p style="max-width:500px;margin:20px auto;color:rgba(255,255,255,0.7)">
+    For project inquiries, custom builds, or bulk merch orders, contact the lab directly. Response times vary based on how interesting your proposal is.
+  </p>
+  <a href="mailto:lab@evilbrainlabs.com" class="hero-cta" style="margin-top:20px">CONTACT THE BRAIN</a>
+</section>
+
+<footer>
+  <div class="footer-links">
+    <a href="https://usecasearmsrace.com">UCAR Docket</a>
+    <a href="privacy.html">Privacy Policy</a>
+    <a href="terms.html">Terms of Service</a>
+  </div>
+  <p>© 2026 Evil Brain Labs · A subsidiary of the first singularity</p>
+  <div class="disclaimer">
+    <strong>DISCLAIMER:</strong> Evil Brain Labs provides architectural designs, prototypes, and educational materials.
+    Actual construction, deployment, and use of any project is the sole responsibility of the purchaser.
+    We are not liable for: giant robot rampages, unauthorized flights, surveillance lawsuits, or any form of world domination (attempted or successful).
+    By engaging with our services, you acknowledge that you are building "for research purposes" and definitely not for anything concerning.
+    Gary really is watching, though. That part is true.
+  </div>
+</footer>
+
+<script>
+// Smooth scroll for nav links
+document.querySelectorAll('a[href^="#"]').forEach(a => {
+  a.addEventListener('click', e => {
+    e.preventDefault();
+    document.querySelector(a.getAttribute('href'))?.scrollIntoView({ behavior: 'smooth' });
+  });
+});
+
+// Project inquiry handlers - open email for moonshots
+document.querySelectorAll('.product-btn').forEach(btn => {
+  btn.addEventListener('click', (e) => {
+    // If it's an external link, let it through
+    if (btn.tagName === 'A' && btn.href) return;
+
+    e.preventDefault();
+    const product = btn.closest('.product');
+    const name = product.querySelector('h4').textContent;
+    const price = product.querySelector('.product-price').textContent;
+
+    // For moonshot projects, open contact form
+    const subject = encodeURIComponent(`Project Inquiry: ${name}`);
+    const body = encodeURIComponent(`I'm interested in the ${name} project (${price}).\n\nPlease provide more details about:\n- Timeline\n- Requirements\n- Process\n\nThank you.`);
+    window.location.href = `mailto:lab@evilbrainlabs.com?subject=${subject}&body=${body}`;
+  });
+});
+</script>
+</body>
+</html>

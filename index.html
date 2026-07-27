@@ -287,7 +287,7 @@ async function load() {
           <p>${esc(feat.pitch)}</p>
           <div class="foot">
             <span class="price ${feat.price_cents===0?"free":""}">${money(feat.price_cents)}</span>
-            <span class="plans">PLANS: REAL</span>
+            <span class="plans">${feat.case_count > 1 ? "COVERS " + feat.case_count + " CASES" : "PLANS: REAL"}</span>
           </div>
           <details class="spec" open><summary>▸ THE PLANS</summary>
             <div class="specbox">${specBlock(feat.spec)}</div></details>
@@ -307,7 +307,7 @@ async function load() {
           <div class="specbox">${specBlock(p.spec)}</div></details>
         <div class="foot">
           <span class="price ${p.price_cents===0?"free":""}">${money(p.price_cents)}</span>
-          <span class="plans">PLANS: REAL</span>
+          <span class="plans">${p.case_count > 1 ? p.case_count + " CASES" : "PLANS: REAL"}</span>
         </div>
       </div>`).join("");
 }

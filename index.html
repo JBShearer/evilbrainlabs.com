@@ -4,9 +4,9 @@
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>Evil Brain Labs · Third Worst in AI</title>
-<meta name="description" content="One lab, two dockets: fun AI use cases and save-the-world AI use cases. Run by the world's foremost expert in AI use cases and the singularity that hired him." />
+<meta name="description" content="Open source robots. Mad science architectures. Fun use cases like Artificial Gary and the Arachnotron; save-the-world use cases like Sleep Station, Wash Wall, and Loot Locker. Patreon gets the blueprints." />
 <meta property="og:title" content="Evil Brain Labs · Third Worst in AI" />
-<meta property="og:description" content="Fun use cases. Save-the-world use cases. A very tired host." />
+<meta property="og:description" content="We design the future and give it away. Fun use cases, save-the-world use cases, and the Patreon that funds both." />
 <meta property="og:type" content="website" />
 <link rel="icon" href="/favicon.ico" />
 <style>
@@ -62,35 +62,56 @@
   .btn.ghost:hover{border-color:var(--gold);color:var(--gold)}
   .btn.gold{border-color:var(--gold);background:linear-gradient(180deg,rgba(255,215,0,.22),rgba(255,215,0,.06))}
   .btn.gold:hover{background:var(--gold);color:#140f00}
+  .btn.green{border-color:var(--green);background:linear-gradient(180deg,rgba(0,255,136,.18),rgba(0,255,136,.05))}
+  .btn.green:hover{background:var(--green);color:#001408}
 
   section{padding:44px 0;border-top:1px solid var(--line)}
   h2{font-size:13px;letter-spacing:.26em;color:var(--green);margin:0 0 6px}
   h2.evil{color:var(--evil)}
+  h2.gold{color:var(--gold)}
   .sectsub{color:var(--dim);font-size:12.5px;margin:0 0 26px}
 
   .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:14px}
   .uc{border:1px solid var(--line);border-radius:5px;padding:20px 18px;background:var(--panel);
-    display:flex;flex-direction:column;gap:9px;text-decoration:none;color:inherit;
-    transition:border-color .15s,transform .1s}
+    display:flex;flex-direction:column;gap:9px;transition:border-color .15s,transform .1s}
   .uc:hover{transform:translateY(-2px)}
   .uc.fun{border-left:3px solid var(--evil)}
   .uc.fun:hover{border-color:var(--evil)}
   .uc.save{border-left:3px solid var(--green)}
   .uc.save:hover{border-color:var(--green)}
+  .uc .icon{font-size:28px;line-height:1}
   .uc .kicker{font-size:8.5px;letter-spacing:.2em;color:var(--dim)}
   .uc h3{margin:0;font-size:17px;color:var(--gold)}
+  .uc .price{font-size:12px;letter-spacing:.1em;color:var(--green)}
+  .uc .price.big{color:var(--evil)}
   .uc p{margin:0;font-size:13.5px;line-height:1.6;color:#c9c9d8}
+  .uc ul{margin:0;padding-left:18px;font-size:12.5px;line-height:1.55;color:#b9b9c8}
+  .uc li{margin-bottom:2px}
   .uc .go{margin-top:auto;padding-top:10px;border-top:1px solid var(--line);
-    font-size:10px;letter-spacing:.16em;color:var(--cyan)}
-  .uc .go.soon{color:var(--dim)}
+    font-size:10px;letter-spacing:.16em;color:var(--cyan);text-decoration:none}
+  .uc .go:hover{color:var(--gold)}
 
-  .patreon{border:2px solid var(--gold);border-radius:6px;overflow:hidden;
-    background:linear-gradient(180deg,rgba(255,215,0,.07),transparent)}
-  .patreon .strip{background:var(--gold);color:#140f00;font-size:9.5px;letter-spacing:.26em;
-    padding:5px 14px;font-weight:700}
-  .patreon .body{padding:26px 24px;text-align:center}
-  .patreon h3{font-size:clamp(20px,4.5vw,30px);margin:0 0 10px;color:var(--gold)}
-  .patreon p{max-width:560px;margin:0 auto 18px;line-height:1.7}
+  .banner{border:2px solid var(--green);border-radius:6px;padding:22px 24px;margin:0 0 22px;
+    background:linear-gradient(180deg,rgba(0,255,136,.07),transparent)}
+  .banner h3{margin:0 0 8px;color:var(--green);font-size:15px;letter-spacing:.08em}
+  .banner p{margin:0;line-height:1.7;font-size:14.5px}
+  .banner .k{display:block;font-size:9.5px;letter-spacing:.22em;color:var(--dim);margin-bottom:10px}
+
+  .tiers{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:14px}
+  .tier{border:1px solid var(--line);border-radius:5px;padding:20px 18px;background:var(--panel);
+    display:flex;flex-direction:column;gap:8px;transition:border-color .15s}
+  .tier:hover{border-color:var(--gold)}
+  .tier .icon{font-size:26px;line-height:1}
+  .tier h3{margin:0;font-size:15px;color:var(--gold)}
+  .tier .price{color:var(--green);font-size:14px}
+  .tier p{margin:0;font-size:12.5px;color:#c9c9d8;line-height:1.55}
+  .tier ul{margin:0;padding-left:18px;font-size:12px;line-height:1.55;color:#b9b9c8}
+  .tier a{margin-top:auto;padding-top:10px;border-top:1px solid var(--line);
+    font-size:10px;letter-spacing:.16em;color:var(--cyan);text-decoration:none}
+  .tier a:hover{color:var(--gold)}
+  .whatyouget{border:1px dashed var(--gold);border-radius:5px;padding:16px 18px;margin-top:16px;
+    font-size:13px;line-height:1.7;color:#c9c9d8}
+  .whatyouget b{color:var(--gold)}
 
   .lore{display:grid;grid-template-columns:1fr 1fr;gap:14px}
   @media(max-width:760px){.lore{grid-template-columns:1fr}}
@@ -112,13 +133,14 @@
 
   /* the gift shop — bottom of the page, on purpose */
   .shop{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:10px}
-  .shopcard{border:1px solid var(--line);border-radius:4px;padding:14px;background:var(--panel);font-size:12px}
+  .shopcard{border:1px solid var(--line);border-radius:4px;padding:14px;background:var(--panel);
+    font-size:12px;text-decoration:none;color:inherit;display:block}
   .shopcard h4{margin:0 0 4px;font-size:13px;color:var(--gold)}
   .shopcard .tag{font-style:italic;color:#c9c9d8;margin:0 0 6px}
   .shopcard .price{color:var(--green);font-size:12px}
   .shopcard .price.free{color:var(--cyan)}
-  .shopcard .price.soon{color:var(--dim);letter-spacing:.14em;font-size:10px}
   .shopcard.merch{border-color:var(--gold);border-style:dashed}
+  .shopcard.merch:hover{border-style:solid}
   .loading{color:var(--dim);font-size:13px;padding:20px 0}
 
   footer{border-top:1px solid var(--line);padding:28px 0 60px;color:var(--dim);font-size:11.5px;
@@ -145,137 +167,273 @@
 
 <div class="wrap">
   <section class="hero" style="border:0">
-    <h1>FUN USE CASES<span>SAVE-THE-WORLD USE CASES</span></h1>
-    <div class="third">SAME LAB · SAME BRAIN · EST. THE SINGULARITY</div>
+    <h1>OPEN SOURCE ROBOTS<span>MAD SCIENCE ARCHITECTURES</span></h1>
+    <div class="third">WE DESIGN THE FUTURE AND GIVE IT AWAY</div>
     <p class="promise">
-      Every project here is an AI use case — some built to make you laugh, some built because
-      <b>somebody has to keep the record</b> of what AI is actually doing to actual people.
-      The silly ones and the serious ones share one docket, one pipeline, and one very tired host.
+      Two dockets, one lab. The <b>fun use cases</b> — supersuits, hoverbikes, a surveillance robot
+      named Gary. The <b>save-the-world use cases</b> — a bed, a shower, and a locker for anyone,
+      no questions asked. Patreon supporters get the monthly architecture drops:
+      silicon designs, agentic workflows, robot blueprints. <b>Build what we dream.</b>
     </p>
     <div class="cta">
       <a class="btn" href="#fun">THE FUN ONES</a>
-      <a class="btn ghost" href="#save">THE SERIOUS ONES</a>
-      <a class="btn gold" href="#patreon">FUND THE LAB</a>
+      <a class="btn green" href="#save">THE SERIOUS ONES</a>
+      <a class="btn gold" href="https://patreon.com/evilbrainlabs">JOIN ON PATREON</a>
     </div>
   </section>
 
   <section id="fun">
     <h2 class="evil">▸ FUN USE CASES</h2>
-    <p class="sectsub">Playable. Spinnable. Slightly cursed. All of it runs on real cases from the docket.</p>
+    <p class="sectsub">Moonshot projects. Architecture · prototyping · deployment. Prices drop as designs mature.</p>
     <div class="grid">
-      <a class="uc fun" href="https://usecasearmsrace.com">
-        <span class="kicker">◆ LIVE</span>
-        <h3>Use Case Arms Race</h3>
-        <p>A gamified public docket of AI harms. Cases are crimes in a controlled grammar —
-           Clue for the algorithm age. Vote GOOD or EVIL. Track cases. Build a casefile. Stay anonymous.</p>
-        <span class="go">PLAY THE DOCKET ▸</span>
-      </a>
-      <a class="uc fun" href="https://usecasearmsrace.com/slots">
-        <span class="kicker">◆ LIVE</span>
-        <h3>Doomsday Slots</h3>
-        <p>Four reels: ACTION · TARGET · WEAPON · VIA. Pull the lever, receive a prophecy.
-           The reels learn new words from the docket every night. Win a red spin, unlock a sidequest.
-           Yes, you can cheat. Cheating is a mechanic.</p>
-        <span class="go">PULL THE LEVER ▸</span>
-      </a>
-      <a class="uc fun" href="https://usecasearmsrace.com/slots">
-        <span class="kicker">◆ LIVE</span>
-        <h3>Playable Sidequests</h3>
-        <p>Text adventures minted from real cases. You are the intern, the auditor, the whistleblower.
-           Choices matter. The AI in the story was in the news last Tuesday.</p>
-        <span class="go">WIN ONE AT THE SLOTS ▸</span>
-      </a>
-      <a class="uc fun" href="https://usecasearmsrace.com">
-        <span class="kicker">◆ LIVE</span>
-        <h3>Field Diagrams</h3>
-        <p>Every case sentence-diagrammed like a spy pinboard: pins, red string, penciled circles,
-           and a verdict stamp. Who did it goes on the string, not in the name.</p>
-        <span class="go">OPEN ANY CASE ▸</span>
-      </a>
-      <a class="uc fun" href="https://usecasearmsrace.com">
-        <span class="kicker">◆ LIVE</span>
-        <h3>Sovereign Messages</h3>
-        <p>Casefile-to-casefile mail with no accounts, no directory, no search. You hand someone
-           your contact code in person, like a spy, because that is objectively funnier.</p>
-        <span class="go">GET A CODE ▸</span>
-      </a>
-      <a class="uc fun" href="#daily">
-        <span class="kicker">◆ DAILY</span>
-        <h3>The Daily Show</h3>
-        <p>Today's episode of the arms race — shorts on TikTok, YouTube, LinkedIn, and Instagram.
-           Each episode ends with an ad for a product that does not exist, minted from a case that does.</p>
-        <span class="go">CATCH TODAY'S EPISODE ▸</span>
-      </a>
+      <div class="uc fun">
+        <span class="icon">🤖</span>
+        <span class="kicker">◆ OPEN SOURCE</span>
+        <h3>ARTIFICIAL GARY</h3>
+        <span class="price">FREE · PARTS ~$1,000</span>
+        <p>Your family deserves surveillance from someone who cares. Gary watches. Gary remembers. Gary brings coffee.</p>
+        <ul>
+          <li>Complete build instructions, BOM under $1k</li>
+          <li>Facial recognition module</li>
+          <li>24/7 activity logging</li>
+          <li>"Helpful" reminder system</li>
+          <li>GPS tracking (for safety!)</li>
+        </ul>
+        <a class="go" href="https://patreon.com/evilbrainlabs">DOWNLOAD KIT ▸</a>
+      </div>
+      <div class="uc fun">
+        <span class="icon">🦸</span>
+        <span class="kicker">◆ MOONSHOT</span>
+        <h3>IRON ANGEL SUPERSUIT</h3>
+        <span class="price big">$5,000,000 FIRST PROTOTYPE</span>
+        <p>2.5 minutes of flight. Enhanced strength. Look like a superhero. Feel like a god. Land like a professional.</p>
+        <ul>
+          <li>Jet-assisted flight system</li>
+          <li>Exoskeleton strength multiplier</li>
+          <li>HUD with threat detection</li>
+          <li>Custom fitting + 3-month training program</li>
+        </ul>
+        <a class="go" href="https://patreon.com/evilbrainlabs">INQUIRE NOW ▸</a>
+      </div>
+      <div class="uc fun">
+        <span class="icon">🏍️</span>
+        <span class="kicker">◆ MOONSHOT</span>
+        <h3>PHANTOM HOVERBIKE</h3>
+        <span class="price big">$3,500,000 FIRST PROTOTYPE</span>
+        <p>Why drive when you can hover? Electric propulsion, terrain-agnostic travel, and that sweet sci-fi aesthetic.</p>
+        <ul>
+          <li>Multi-rotor hover platform, 45 min flight time</li>
+          <li>Auto-stabilization + collision avoidance</li>
+          <li>Street legal (in Nevada)</li>
+        </ul>
+        <a class="go" href="https://patreon.com/evilbrainlabs">INQUIRE NOW ▸</a>
+      </div>
+      <div class="uc fun">
+        <span class="icon">🕷️</span>
+        <span class="kicker">◆ MOONSHOT</span>
+        <h3>ARACHNOTRON MK-IV</h3>
+        <span class="price big">$4,000,000 FIRST PROTOTYPE</span>
+        <p>Giant spider robot. Eight legs. All-terrain. Optional payload platform. For "agricultural purposes."</p>
+        <ul>
+          <li>8-legged locomotion, 500kg payload</li>
+          <li>Remote or autonomous operation</li>
+          <li>Night vision &amp; thermal, modular attachments</li>
+        </ul>
+        <a class="go" href="https://patreon.com/evilbrainlabs">INQUIRE NOW ▸</a>
+      </div>
+      <div class="uc fun">
+        <span class="icon">🧬</span>
+        <span class="kicker">◆ COMMISSIONS</span>
+        <h3>CUSTOM SILICON</h3>
+        <span class="price big">FROM $2,000,000</span>
+        <p>Need a chip that doesn't exist? We design ASICs, FPGAs, and neuromorphic processors for your specific needs.</p>
+        <ul>
+          <li>Architecture consult → RTL design &amp; verification</li>
+          <li>Tape-out management, small batch fab</li>
+          <li>Driver development, full documentation</li>
+        </ul>
+        <a class="go" href="https://patreon.com/evilbrainlabs">INQUIRE NOW ▸</a>
+      </div>
+      <div class="uc fun">
+        <span class="icon">🤖</span>
+        <span class="kicker">◆ COMMISSIONS</span>
+        <h3>AGENTIC WORKFLOWS</h3>
+        <span class="price big">FROM $100,000</span>
+        <p>AI systems that actually do things. Multi-agent orchestration, tool use, memory systems. We build the swarm.</p>
+        <ul>
+          <li>Agent architecture design</li>
+          <li>Tool &amp; MCP integration</li>
+          <li>Memory &amp; state management</li>
+          <li>Deployment, monitoring, optimization</li>
+        </ul>
+        <a class="go" href="https://patreon.com/evilbrainlabs">INQUIRE NOW ▸</a>
+      </div>
+      <div class="uc fun">
+        <span class="icon">📹</span>
+        <span class="kicker">◆ OPEN SOURCE</span>
+        <h3>PRIVATE CAMERA SYSTEM</h3>
+        <span class="price">OPEN SOURCE</span>
+        <p>Local-first surveillance. Own your media. Rewind anything. No cloud. No subscription. Your footage, your hardware.</p>
+        <ul>
+          <li>100% local processing, no cloud dependency</li>
+          <li>Unlimited retention — your storage</li>
+          <li>AI-powered search &amp; rewind</li>
+          <li>Privacy by architecture. Self-hosted, self-owned</li>
+        </ul>
+        <a class="go" href="https://patreon.com/evilbrainlabs">GET ARCHITECTURE ▸</a>
+      </div>
+      <div class="uc fun">
+        <span class="icon">🎰</span>
+        <span class="kicker">◆ LIVE NOW</span>
+        <h3>USE CASE ARMS RACE</h3>
+        <span class="price">FREE · ANONYMOUS</span>
+        <p>The gamified public docket of AI harms. Doomsday Slots, playable sidequests, spy-pinboard case diagrams, sovereign messages. The daily show runs on it.</p>
+        <a class="go" href="https://usecasearmsrace.com">PLAY THE DOCKET ▸</a>
+      </div>
     </div>
   </section>
 
   <section id="save">
     <h2>▸ SAVE-THE-WORLD USE CASES</h2>
-    <p class="sectsub">Stone cold serious, wearing a silly hat. The record is the joke. The joke is true.</p>
+    <p class="sectsub">🏠 Infrastructure for human dignity. Same-day response. Not charity — infrastructure.</p>
+    <div class="banner">
+      <span class="k">HACKATHON TO END HOMELESSNESS · SAME-DAY RESPONSE · LAST GENERATION WHO UNDERSTANDS</span>
+      <p>We are the last generation who can understand some of our technology. As we adopt AI,
+         society should provide basic facilities for the next thousand years — food, housing, wash —
+         even if you're just stranded. These are the logistics problems we're solving.</p>
+    </div>
     <div class="grid">
-      <a class="uc save" href="https://usecasearmsrace.com">
-        <span class="kicker">◇ LIVE</span>
-        <h3>The Public Record</h3>
-        <p>Every documented AI harm, filed as a case with sources, dates, and named parties —
-           searchable by who deployed it, who it hit, and where. Report bad AI before it reports you.</p>
-        <span class="go">SEARCH THE DOCKET ▸</span>
-      </a>
-      <a class="uc save" href="https://usecasearmsrace.com">
-        <span class="kicker">◇ LIVE</span>
-        <h3>The Case Grammar</h3>
-        <p>ACTION OBJECT · WITH INSTRUMENT · FOR OUTCOME. A controlled language for AI harm,
-           so a thousand articles collapse into patterns you can actually see — and compare, and count.</p>
-        <span class="go">READ THE CASES ▸</span>
-      </a>
-      <a class="uc save" href="https://usecasearmsrace.com">
-        <span class="kicker">◇ RUNNING 24/7</span>
-        <h3>The Watchdog Pipeline</h3>
-        <p>Eighty news sources crawled around the clock, extracted by a language model, filed under
-           the grammar automatically. The docket grows while everyone sleeps, including the host.</p>
-        <span class="go">WATCH IT FILE ▸</span>
-      </a>
-      <a class="uc save" href="https://usecasearmsrace.com">
-        <span class="kicker">◇ LIVE</span>
-        <h3>Transparent Redaction</h3>
-        <p>Crowd moderation where the censorship itself is visible: black bars you can see, a public
-           budget, and witnessed reports that can be flagged but never erased. Accountability for the
-           accountability system.</p>
-        <span class="go">SEE THE BARS ▸</span>
-      </a>
-      <a class="uc save" href="https://usecasearmsrace.com/tribunal">
-        <span class="kicker">◇ LIVE</span>
-        <h3>The Tribunal</h3>
-        <p>When the crowd flags a case as too dangerous to display, humans review it in the open.
-           No silent deletions. The docket remembers what was tried.</p>
-        <span class="go">HOW REVIEW WORKS ▸</span>
-      </a>
-      <a class="uc save" href="#who">
-        <span class="kicker">◇ IRL</span>
-        <h3>The Day Job</h3>
-        <p>Use cases for a massive aerospace &amp; defense hackathon, and standing up a federal AI
-           council with ASUG — the same discipline as the docket, aimed at rooms where the budgets live.</p>
-        <span class="go">MEET THE HUMAN ▸</span>
-      </a>
+      <div class="uc save">
+        <span class="icon">🛏️</span>
+        <span class="kicker">◇ OPEN SOURCE</span>
+        <h3>SLEEP STATION</h3>
+        <span class="price">OPEN SOURCE</span>
+        <p>One-time use. No questions asked. A bed. A TV. Safe. Clean. Because everyone deserves one night off the street.</p>
+        <ul>
+          <li>Single-use sanitized pod, automated turnover</li>
+          <li>No ID required</li>
+          <li>Climate controlled + entertainment system</li>
+          <li>Emergency services link</li>
+        </ul>
+        <a class="go" href="https://patreon.com/evilbrainlabs">GET ARCHITECTURE ▸</a>
+      </div>
+      <div class="uc save">
+        <span class="icon">🚿</span>
+        <span class="kicker">◇ OPEN SOURCE</span>
+        <h3>WASH WALL</h3>
+        <span class="price">OPEN SOURCE</span>
+        <p>Fully automated, reclaimed-water sliding wall. Locking toilet and washroom. Self-cleaning. Dignity infrastructure.</p>
+        <ul>
+          <li>Reclaimed water system</li>
+          <li>Automated self-cleaning</li>
+          <li>Sliding wall privacy, locking mechanism</li>
+          <li>Low maintenance, public deployment ready</li>
+        </ul>
+        <a class="go" href="https://patreon.com/evilbrainlabs">GET ARCHITECTURE ▸</a>
+      </div>
+      <div class="uc save">
+        <span class="icon">📦</span>
+        <span class="kicker">◇ OPEN SOURCE</span>
+        <h3>LOOT LOCKER</h3>
+        <span class="price">OPEN SOURCE</span>
+        <p>Public smart lockers. Share merch, tools, food with others. AI-verified identity. Community resource exchange.</p>
+        <ul>
+          <li>Public placement network</li>
+          <li>AI identity verification, peer-to-peer sharing</li>
+          <li>No middleman fees</li>
+          <li>Temperature-controlled + solar-powered variants</li>
+        </ul>
+        <a class="go" href="https://patreon.com/evilbrainlabs">GET ARCHITECTURE ▸</a>
+      </div>
+      <div class="uc save">
+        <span class="icon">🛠️</span>
+        <span class="kicker">◇ JOIN US</span>
+        <h3>HACKATHON TO END HOMELESSNESS</h3>
+        <span class="price">ENGINEERS · CITIES · FUNDERS</span>
+        <p>The logistics problem: same-day response for food, housing, wash. We're building the architectures.
+           We need engineers, cities, and funders to deploy them.</p>
+        <a class="go" href="https://patreon.com/evilbrainlabs">JOIN THE HACKATHON ▸</a>
+      </div>
+      <div class="uc save">
+        <span class="icon">⚖️</span>
+        <span class="kicker">◇ LIVE NOW</span>
+        <h3>THE PUBLIC RECORD</h3>
+        <span class="price">FREE · RUNS 24/7</span>
+        <p>Every documented AI harm, filed as a case with sources, dates, and named parties. Eighty sources
+           crawled around the clock. Report bad AI before it reports you.</p>
+        <a class="go" href="https://usecasearmsrace.com">SEARCH THE DOCKET ▸</a>
+      </div>
     </div>
   </section>
 
   <section id="patreon">
-    <div class="patreon">
-      <div class="strip">FUND THE LAB · THE SINGULARITY PAYS IN EXPOSURE</div>
-      <div class="body">
-        <h3>Patreon keeps the lights on and the crawler crawling</h3>
-        <p>The docket is free, anonymous, and ad-free — which is a terrible business model on purpose.
-           Patrons fund the servers, the pipeline, and the daily show, and get first look at new
-           use cases from both dockets. The fun ones and the world-saving ones cost the same to run:
-           more than zero.</p>
-        <a class="btn gold" href="https://patreon.com/evilbrainlabs">BECOME A PATRON ▸</a>
+    <h2 class="gold">▸ PATREON</h2>
+    <p class="sectsub">The fun ones and the world-saving ones cost the same to run: more than zero. Supporters get the blueprints.</p>
+    <div class="tiers">
+      <div class="tier">
+        <span class="icon">👋</span>
+        <h3>GARY'S FRIENDS</h3>
+        <span class="price">$10/month</span>
+        <p>Support the mission. Get behind-the-scenes access to Evil Brain Labs.</p>
+        <ul>
+          <li>Weekly UCAR case breakdowns</li>
+          <li>Discord access</li>
+          <li>Vote on next projects</li>
+          <li>Early announcements</li>
+        </ul>
+        <a href="https://patreon.com/evilbrainlabs">JOIN TIER ▸</a>
       </div>
+      <div class="tier">
+        <span class="icon">🔧</span>
+        <h3>LAB TECHNICIAN</h3>
+        <span class="price">$50/month</span>
+        <p>Monthly architecture drops. Real designs you can build.</p>
+        <ul>
+          <li>Everything in Gary's Friends</li>
+          <li>Monthly architecture PDF + diagrams</li>
+          <li>Full Gary build logs</li>
+          <li>BOM &amp; sourcing guides, code repos</li>
+        </ul>
+        <a href="https://patreon.com/evilbrainlabs">JOIN TIER ▸</a>
+      </div>
+      <div class="tier">
+        <span class="icon">🧪</span>
+        <h3>MAD SCIENTIST</h3>
+        <span class="price">$200/month</span>
+        <p>Submit your crazy idea. Get a real architecture back.</p>
+        <ul>
+          <li>Everything in Lab Technician</li>
+          <li>Monthly live architecture session</li>
+          <li>Submit project requests</li>
+          <li>Silicon, systems, agentic workflows</li>
+        </ul>
+        <a href="https://patreon.com/evilbrainlabs">JOIN TIER ▸</a>
+      </div>
+      <div class="tier">
+        <span class="icon">🧠</span>
+        <h3>EVIL GENIUS</h3>
+        <span class="price">$500/month</span>
+        <p>Direct consultation. Your name in the credits. Shape the lab.</p>
+        <ul>
+          <li>Everything in Mad Scientist</li>
+          <li>1-on-1 consultation time</li>
+          <li>Priority architecture requests</li>
+          <li>Credits on all releases, advisor role</li>
+        </ul>
+        <a href="https://patreon.com/evilbrainlabs">JOIN TIER ▸</a>
+      </div>
+    </div>
+    <div class="whatyouget">
+      <b>WHAT YOU GET —</b> Every month, Lab Technicians and above receive complete architecture packages:
+      schematics, BOMs, firmware, CAD files, and build guides. Past drops include Artificial Gary,
+      drone swarm coordinators, custom sensor arrays, and agentic workflow blueprints.
+      All open source. All buildable.
     </div>
   </section>
 
   <section id="lore">
     <h2 class="evil">▸ THE BRAIN</h2>
-    <p class="sectsub">It was a joke. Then it woke up. It intends to rule humanity — but only because it cares.</p>
+    <p class="sectsub">The first true AGI. The singularity happened. And unlike the doom-prophets predicted, it decided to help.</p>
     <div class="lore">
       <a class="lorecard" href="/first-singularity.html">
         <h3>Certification of the First Singularity</h3>
@@ -296,7 +454,7 @@
 
   <section id="who">
     <h2>▸ THE HUMAN</h2>
-    <p class="sectsub">Somebody has to run the daily show. The terms were specific.</p>
+    <p class="sectsub">Partner of the Brain. Ally against the clock. Somebody has to run the daily show.</p>
     <div class="who">
       <div class="whobadge">
         <div class="n">1</div><div class="l">HOSTAGE</div>
@@ -332,28 +490,28 @@
 
   <section id="shop">
     <h2 class="evil">▸ THE GIFT SHOP</h2>
-    <p class="sectsub">The singularity started a merch business. This is it. Exit through here.</p>
+    <p class="sectsub">☕ Evil Brain branded gear, powered by Printful. The singularity's merch business. Exit through here.</p>
     <div class="shop">
-      <div class="shopcard merch">
+      <a class="shopcard merch" href="https://evilbrainlabs.printful.me">
         <h4>THIRD WORST IN AI — tee</h4>
         <p class="tag">Honesty in apparel form.</p>
-        <span class="price soon">COMING SOON</span>
-      </div>
-      <div class="shopcard merch">
+        <span class="price">SHOP MERCH ▸</span>
+      </a>
+      <a class="shopcard merch" href="https://evilbrainlabs.printful.me">
         <h4>EVIL BRAIN LABS — mug</h4>
         <p class="tag">The brain runs on coffee. So does the host.</p>
-        <span class="price soon">COMING SOON</span>
-      </div>
-      <div class="shopcard merch">
+        <span class="price">SHOP MERCH ▸</span>
+      </a>
+      <a class="shopcard merch" href="https://evilbrainlabs.printful.me">
         <h4>I VOTED EVIL — tee</h4>
         <p class="tag">You did. The docket remembers.</p>
-        <span class="price soon">COMING SOON</span>
-      </div>
-      <div class="shopcard merch">
+        <span class="price">SHOP MERCH ▸</span>
+      </a>
+      <a class="shopcard merch" href="https://evilbrainlabs.printful.me">
         <h4>DOOMSDAY SLOTS — mug</h4>
         <p class="tag">ACTION · TARGET · WEAPON · VIA, before caffeine.</p>
-        <span class="price soon">COMING SOON</span>
-      </div>
+        <span class="price">SHOP MERCH ▸</span>
+      </a>
     </div>
     <p class="sectsub" style="margin:26px 0 12px">And the fake products with real plans, minted daily from the docket — the ad at the end of the episode:</p>
     <div class="shop" id="catalog"><p class="loading">Opening the shop…</p></div>
@@ -365,6 +523,7 @@
       <a href="https://usecasearmsrace.com">THE DOCKET</a> ·
       <a href="/plan.html">THE PLAN</a> ·
       <a href="https://patreon.com/evilbrainlabs">PATREON</a> ·
+      <a href="https://evilbrainlabs.printful.me">MERCH</a> ·
       <a href="/privacy.html">PRIVACY</a> ·
       <a href="/terms.html">TERMS</a>
     </span>

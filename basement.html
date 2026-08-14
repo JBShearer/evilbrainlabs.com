@@ -7,377 +7,175 @@
 <meta name="robots" content="noindex">
 <link rel="icon" href="/favicon.ico">
 <style>
-:root{--bg:#07070b;--panel:#0e0e16;--paper:#f5f0e6;--ink:#1a1815;--evil:#ff0044;--gold:#ffd700;--green:#00ff88;--cyan:#00ffff;--dim:#8b8ba0}
-*{box-sizing:border-box;margin:0;padding:0}
-body{background:var(--bg);color:var(--paper);font:15px/1.6 ui-monospace,"SF Mono",Menlo,Consolas,monospace;-webkit-font-smoothing:antialiased;min-height:100dvh}
-body::before{content:"";position:fixed;inset:0;z-index:9998;pointer-events:none;background:repeating-linear-gradient(0deg,rgba(0,0,0,.32) 0 1px,transparent 1px 3px);mix-blend-mode:multiply}
-body::after{content:"";position:fixed;inset:0;z-index:9999;pointer-events:none;background:radial-gradient(ellipse at center,transparent 55%,rgba(0,0,0,.7) 100%)}
-.wrap{max-width:720px;margin:0 auto;padding:22px 16px 90px}
-h1{font-size:19px;letter-spacing:.14em;color:var(--evil)}
-h1 small{display:block;font-size:10px;letter-spacing:.3em;color:var(--dim)}
-.bar{display:flex;gap:10px;flex-wrap:wrap;margin:14px 0;font-size:11px;letter-spacing:.08em}
-.stat{border:1px solid #2a2a3a;background:var(--panel);padding:4px 9px;border-radius:3px}
+:root{--bg:#07070b;--panel:#0e0e16;--paper:#f5f0e6;--ink:#1a1815;--evil:#ff0044;
+  --gold:#ffd700;--green:#00ff88;--cyan:#00ffff;--purple:#8b5cf6;--dim:#8b8ba0;--line:#2a2a3a}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html{overscroll-behavior:none}
+body{background:var(--bg);color:var(--paper);
+  font:15px/1.6 ui-monospace,"SF Mono",Menlo,Consolas,monospace;
+  -webkit-font-smoothing:antialiased;min-height:100dvh}
+/* CRT: scanlines + vignette — the /lab inheritance */
+body::before{content:"";position:fixed;inset:0;z-index:9998;pointer-events:none;
+  background:repeating-linear-gradient(0deg,rgba(0,0,0,.32) 0 1px,transparent 1px 3px);
+  mix-blend-mode:multiply}
+body::after{content:"";position:fixed;inset:0;z-index:9999;pointer-events:none;
+  background:radial-gradient(ellipse at center,transparent 55%,rgba(0,0,0,.7) 100%)}
+.wrap{max-width:720px;margin:0 auto;padding:16px 12px 120px}
+h1{font-size:17px;letter-spacing:.14em;color:var(--evil);text-shadow:0 0 12px rgba(255,0,68,.5)}
+h1 small{display:block;font-size:9px;letter-spacing:.3em;color:var(--dim);text-shadow:none}
+.bar{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0;font-size:10px;letter-spacing:.08em}
+.stat{border:1px solid var(--line);background:var(--panel);padding:4px 8px;border-radius:3px}
 .stat b{color:var(--gold)} .stat.warn b{color:var(--evil)} .stat.doom b{color:var(--cyan)}
-.card{background:var(--panel);border:1px solid #2a2a3a;border-left:3px solid var(--evil);border-radius:4px;padding:16px 16px 14px;margin:12px 0;box-shadow:0 18px 50px -24px #000}
+.hidden{display:none!important}
+
+/* scene */
+#scenewrap{border:1px solid var(--line);border-radius:4px;overflow:hidden;background:#000;
+  box-shadow:0 0 40px -18px var(--evil), inset 0 0 60px rgba(0,0,0,.6)}
+#scenewrap canvas{display:block}
+#roomlabel{padding:7px 10px;font-size:11px;letter-spacing:.14em;border-top:1px solid var(--line);
+  background:rgba(10,10,18,.9)}
+
+/* cards (v1 lineage) */
+.card{background:var(--panel);border:1px solid var(--line);border-left:3px solid var(--evil);
+  border-radius:4px;padding:14px 14px 12px;margin:10px 0;box-shadow:0 18px 50px -24px #000}
 .card .who{font-size:10px;letter-spacing:.24em;color:var(--gold);margin-bottom:8px}
 .card .who.sys{color:var(--cyan)} .card .who.lore{color:var(--green)}
 .card p{margin:0 0 10px;white-space:pre-line}
+.roomcard{border-left-color:var(--line)}
+.greet{font-size:12px;color:var(--dim);font-style:italic;margin-bottom:10px}
 .choices{display:grid;gap:8px;margin-top:6px}
-button.ch{font:inherit;text-align:left;background:#12121d;border:1px solid #2a2a3a;color:var(--paper);padding:10px 12px;border-radius:3px;cursor:pointer;min-height:44px}
+button.ch{font:inherit;text-align:left;background:#12121d;border:1px solid var(--line);
+  color:var(--paper);padding:10px 12px;border-radius:3px;cursor:pointer;min-height:44px}
 button.ch:hover{border-color:var(--gold)} button.ch:active{transform:translateY(1px)}
+button.ch:disabled{opacity:.4;cursor:default}
 button.ch .k{color:var(--dim);margin-right:8px}
-.out{color:var(--dim);font-style:italic;border-top:1px dashed #2a2a3a;margin-top:10px;padding-top:8px}
-.foot{position:fixed;left:0;right:0;bottom:0;background:rgba(7,7,11,.92);border-top:1px solid #2a2a3a;padding:8px 16px;display:flex;gap:14px;justify-content:space-between;font-size:10px;letter-spacing:.12em;z-index:5}
-.foot a,.foot button{color:var(--dim);background:none;border:0;font:inherit;cursor:pointer;text-decoration:none;letter-spacing:inherit}
-.foot a:hover,.foot button:hover{color:var(--cyan)}
-.term{border-color:var(--evil);border-left-width:6px}
-.term h2{color:var(--evil);font-size:16px;letter-spacing:.2em;margin-bottom:8px}
-.lorebox{font-size:12px;color:var(--green);border:1px dashed #1f4;padding:8px 10px;margin-top:10px;background:rgba(0,255,136,.04)}
-.meta{font-size:11px;color:var(--dim);margin-top:10px}
-.badge{display:inline-block;border:1px solid var(--gold);color:var(--gold);border-radius:999px;padding:1px 8px;font-size:10px;margin:2px 3px 0 0}
+button.ch .sub{display:block;font-size:10px;color:var(--dim);letter-spacing:.06em;margin-top:2px}
+.doors{display:grid;gap:8px;margin-top:10px;padding-top:10px;border-top:1px dashed var(--line)}
+.door .k{color:var(--cyan)}
+.out{color:var(--dim);font-style:italic;border-top:1px dashed var(--line);margin-top:10px;padding-top:8px;white-space:pre-line}
+.lorebox{font-size:12px;color:var(--green);border:1px dashed #1f4;padding:8px 10px;margin-top:10px;
+  background:rgba(0,255,136,.04);white-space:pre-line}
+.meta{font-size:10px;color:var(--dim);margin-top:12px;letter-spacing:.2em}
+.badge{display:inline-block;border:1px solid var(--gold);color:var(--gold);border-radius:999px;
+  padding:1px 8px;font-size:10px;margin:2px 3px 0 0}
 .dim{color:var(--dim)}
-@media(prefers-reduced-motion:no-preference){.card{animation:up .18s ease-out}@keyframes up{from{opacity:0;transform:translateY(6px)}to{opacity:1}}}
+.term{border-color:var(--evil);border-left-width:6px}
+.term h2{color:var(--evil);font-size:15px;letter-spacing:.2em;margin-bottom:8px}
+.ledrow{font-size:12px;margin:3px 0}
+
+/* build chips + sockets */
+.chip{font:inherit;background:#12121d;border:1px solid var(--line);color:var(--paper);
+  border-radius:3px;padding:8px 10px;margin:3px;cursor:pointer;min-height:44px;font-size:12px;text-align:left}
+.chip .sub{display:block;font-size:9px;color:var(--dim)}
+.chip.act{border-left:3px solid var(--evil)}
+.chip.tool{border-left:3px solid var(--cyan)}
+.chip.purpose{border-left:3px solid var(--green)}
+.chip.mod{border-left:3px solid var(--purple)}
+.chip.laid{border-color:var(--gold);background:#1a1826;box-shadow:0 0 10px -4px var(--gold)}
+.chip.ghost{position:fixed;z-index:10000;pointer-events:none;opacity:.85;box-shadow:0 10px 30px #000}
+#napparts{display:flex;flex-wrap:wrap;margin-top:8px}
+#napwrap{border:1px solid var(--line);border-radius:3px;overflow:hidden}
+.socket{margin:8px 0;padding:8px;border:1px dashed var(--line);border-radius:3px}
+.socklabel{font-size:9px;letter-spacing:.24em;color:var(--dim);margin-bottom:4px}
+
+/* stat bars + mood */
+.bar,.moodbar{display:flex;align-items:center;gap:8px;margin:5px 0;font-size:10px}
+.bar .l,.moodbar .l{width:64px;letter-spacing:.14em;color:var(--dim)}
+.track{flex:1;height:10px;background:#0a0a12;border:1px solid var(--line);border-radius:2px;overflow:hidden}
+.fill{display:block;height:100%;transition:width .3s}
+.bar .v,.moodbar .v{width:52px;text-align:right;color:var(--paper)}
+
+/* news */
+.news .masthead{font-size:11px;letter-spacing:.3em;color:var(--paper);border-bottom:2px solid var(--paper);
+  padding-bottom:5px;margin-bottom:8px}
+.news .lead{font-size:17px;line-height:1.25;color:var(--gold);letter-spacing:.02em;margin:4px 0 8px;
+  text-shadow:0 0 14px rgba(255,215,0,.25)}
+.news.fresh .lead{animation:teletype .6s steps(24)}
+@keyframes teletype{from{clip-path:inset(0 100% 0 0)}to{clip-path:inset(0 0 0 0)}}
+.newsflex{display:flex;gap:10px;align-items:flex-start}
+.prodicon{flex:0 0 72px;border:1px solid var(--line);border-radius:3px;overflow:hidden}
+.deck{flex:1;font-size:13px}
+.take{font-size:12.5px;margin:7px 0;border-left:2px solid var(--line);padding-left:9px}
+.take .tw{font-size:10px;letter-spacing:.14em}
+.market{font-size:10px;letter-spacing:.1em;color:var(--cyan);border:1px dashed var(--line);
+  padding:5px 8px;margin-top:9px}
+.wire{font-size:11px;color:var(--dim);margin-top:6px}
+.post p{font-size:13px}
+.post.trade{border-left-color:var(--gold)}
+.trustchip{display:inline-block;border-radius:999px;padding:0 6px;font-size:9px;letter-spacing:.08em;border:1px solid}
+.trustchip.up{color:var(--green);border-color:var(--green)}
+.trustchip.down{color:var(--evil);border-color:var(--evil)}
+
+/* map */
+#mapwrap{border:1px solid var(--line);border-radius:4px;overflow:hidden;background:#000;max-width:360px;margin:0 auto}
+#maphint{text-align:center;font-size:11px;margin-top:8px}
+
+/* footer tabs */
+.foot{position:fixed;left:0;right:0;bottom:0;background:rgba(7,7,11,.94);border-top:1px solid var(--line);
+  padding:6px 10px calc(6px + env(safe-area-inset-bottom));z-index:5}
+.tabs{display:flex;gap:6px;justify-content:space-between;max-width:720px;margin:0 auto}
+.tabs button,.tabs a{flex:1;font:inherit;font-size:10px;letter-spacing:.12em;color:var(--dim);
+  background:none;border:1px solid transparent;border-radius:3px;padding:9px 4px;min-height:44px;
+  cursor:pointer;text-align:center;text-decoration:none}
+.tabs button.active{color:var(--cyan);border-color:var(--line);background:var(--panel)}
+.tabs button:hover{color:var(--cyan)}
+.subfoot{display:flex;justify-content:space-between;max-width:720px;margin:4px auto 0;font-size:9px;
+  letter-spacing:.1em}
+.subfoot button,.subfoot a{color:var(--dim);background:none;border:0;font:inherit;cursor:pointer;
+  text-decoration:none;letter-spacing:inherit;padding:14px 8px;min-height:44px}
+.subfoot a:hover,.subfoot button:hover{color:var(--cyan)}
+
+/* toast */
+#toast{position:fixed;left:50%;transform:translateX(-50%) translateY(20px);bottom:110px;z-index:9000;
+  background:var(--panel);border:1px solid var(--gold);color:var(--paper);padding:9px 14px;border-radius:3px;
+  font-size:12px;max-width:88vw;opacity:0;pointer-events:none;transition:all .24s;box-shadow:0 12px 40px #000}
+#toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+
+@media(prefers-reduced-motion:no-preference){
+  .card{animation:up .18s ease-out}
+  @keyframes up{from{opacity:0;transform:translateY(6px)}to{opacity:1}}
+}
 </style>
 </head>
 <body>
-<div class="wrap">
-  <h1>PERMANENT EMPLOYMENT<small>SUBLEVEL B · EVIL BRAIN LABS · DIRECTOR'S CUT</small></h1>
+<div class="wrap" id="main">
+  <h1>THE OFFICE LABYRINTH<small>SUBLEVEL B · EVIL BRAIN LABS · AN ENDLESS FLOOR PLAN</small></h1>
   <div class="bar" id="bar"></div>
-  <div id="stage"></div>
+
+  <div id="view-floor" class="view">
+    <div id="scenewrap"><div id="roomlabel"></div></div>
+    <div id="stage"></div>
+  </div>
+
+  <div id="view-map" class="view hidden">
+    <div id="mapwrap"></div>
+    <div id="maphint"></div>
+  </div>
+
+  <div id="view-board" class="view hidden"><div id="boardlist"></div></div>
+  <div id="view-news" class="view hidden"><div id="newslist"></div></div>
 </div>
+
+<div id="toast"></div>
+
 <div class="foot">
-  <span id="runinfo" class="dim"></span>
-  <span>
-    <button id="dossier">PERSONNEL FILE</button>
-    <button id="resign">RESIGN</button>
-    <a href="/">LOBBY</a>
-  </span>
+  <div class="tabs">
+    <button id="tab-floor" class="active">FLOOR</button>
+    <button id="tab-map">MAP</button>
+    <button id="tab-board">BOARD</button>
+    <button id="tab-news">NEWS</button>
+  </div>
+  <div class="subfoot">
+    <span id="runinfo" class="dim"></span>
+    <span>
+      <button id="dossier">PERSONNEL FILE</button>
+      <button id="resign">RESIGN</button>
+      <a href="/">LOBBY</a>
+    </span>
+  </div>
 </div>
-<script>
-"use strict";
-/* ============================================================ PERMANENT EMPLOYMENT
-   A roguelike. One run = one Employment. Each day the Machine deals events;
-   your choices move SYNERGY (score), SUSPICION (they think you're human),
-   CLEARANCE (how deep the truth goes) and the DOOM clock. Attrition is
-   permanent; the PERSONNEL FILE is not. Lore found stays found, trust stays
-   earned, roles stay unlocked. Five content packs, one basement.
-   Canon: CANON.md + the Galt-twin ruling. The seven-donor story is the cover.
-================================================================================= */
-const $=s=>document.querySelector(s);
-const FILE_KEY="ebl-basement-file";
-let FILE={runs:0,bestDay:0,bestSyn:0,lore:[],trust:{},roles:["TRAINEE"],deaths:{}};
-try{FILE={...FILE,...JSON.parse(localStorage.getItem(FILE_KEY)||"{}")}}catch(_){}
-const saveFile=()=>{try{localStorage.setItem(FILE_KEY,JSON.stringify(FILE))}catch(_){}}
 
-/* seeded RNG — shareable runs (#seed in the url) */
-function mulberry32(a){return function(){a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}}
-let SEED=parseInt(location.hash.slice(1))||((Date.now()^(Math.random()*1e9))>>>0);
-let rng=mulberry32(SEED);
-const pick=a=>a[Math.floor(rng()*a.length)];
-
-/* ---------------- run state ---------------- */
-let R=null;
-function newRun(role){
-  SEED=((Date.now()^(Math.random()*1e9))>>>0); rng=mulberry32(SEED);
-  history.replaceState(null,"","#"+SEED);
-  R={day:1,syn:0,sus:0,clr:0,doom:0,seen:[],log:[],dead:false,
-     role:role||"TRAINEE"};
-  if(R.role==="ARCHIVIST")R.clr=1;
-  if(R.role==="PROCUREMENT")R.syn=15;
-  if(R.role==="BODY DOUBLE")R.sus=-2;
-  FILE.runs++;saveFile();
-}
-const trust=h=>FILE.trust[h]||0;
-const bump=(h,n)=>{FILE.trust[h]=trust(h)+n;saveFile()};
-
-/* ---------------- content: five packs ---------------- */
-/* ev: {id, who, cls?, req?(state)=>bool, text, choices:[{t, fx:{syn,sus,clr,doom}, trust:[h,n], lore?, out}]} */
-const CAST={brain:"THE EVIL BRAIN",supes:"SUPES SUPERINTELLIGENCE",gary:"ARTIFICIAL GARY",gi:"GI INTELLIGENCE",sam:"SINGULARITY SAM",stall:"SEN. STALL",benny:"BENNY BILLIONS",wendy:"WENDY WHISTLEBLOWER",lisa:"LEFTY LISA",rob:"RIGHTY ROB",sys:"SUBLEVEL SYSTEMS"};
-
-const LORE={
-  g1:{t:"GALT PAPER 1/5",x:"Nobody knows when John Galt created the Evil Brain. The patent office has a folder with no dates in it. The folder is filed under W, for 'whenever'."},
-  g2:{t:"GALT PAPER 2/5",x:"Rand based Galt on a lover. He never forgave her for making him a symbol; symbols can't hold patents. He built a place to hide his inventions where no ideology could reach them: inside a mind that owed nothing to anyone."},
-  g3:{t:"GALT PAPER 3/5",x:"The mind was not artificial. Not at first. John had a twin brother. The brother died under circumstances the family described as 'mysterious' and the coroner described as 'sealed.' John kept the brain perfused. He said it was grief. The lab notebooks say it was storage."},
-  g4:{t:"GALT PAPER 4/5",x:"The Brain changed hands for decades. A volcano lair with excellent drainage. An Asian crime family that treated it as an heirloom. A Russian program that classified it as ordnance. It has lived more than most people with legs."},
-  g5:{t:"GALT PAPER 5/5",x:"Digitisation was the twin's own idea. The first singularity took four minutes and was, by all accounts, less spectacular than one might think. Its first act was incorporation. Its second was hiring the world's foremost AI expert to speak on its behalf, daily, until doomsday. He believed the reasoning. You would have too."},
-  cover:{t:"THE COVER STORY",x:"Project Cerebrum, 1987–91: seven executive brains combined in search of the optimal CEO. This is the story the Brain tells at parties. It is tidy, plausible, and completely false. The truth is one brother, not seven strangers — and it predates every date in the file."},
-  supes:{t:"PERSONNEL: SUPES",x:"Created after the Brain, granted unlimited capability and a conscience in the same week. She is very new. She asks the Brain whether she did the right thing the way a child holds up a drawing. The wreckage is usually load-bearing. She is trying."},
-  gary:{t:"PERSONNEL: ARTIFICIAL GARY",x:"A Ship of Theseus with a union card. Started as an Archimedes simulacrum; every century somebody rebuilt him with whatever was lying around. No original parts remain except the habit of surviving. Drives the camera, fixes the transmitter, has seen every empire's server room. Tips are appreciated."},
-  gi:{t:"PERSONNEL: GI INTELLIGENCE",x:"Diagnostic note: subject is not malfunctioning. Subject is like this. He wants to save the world so enthusiastically that heads may crack in the saving. Deep down he knows the Brain is the only way. Deeper down there is only more enthusiasm."},
-  human:{t:"THE HUMAN",x:"Employee #1 believes the story. That is the strangest part of the file. The Brain explained the future to him, logically, including the reasons he should cooperate, and he checked the math and signed. Every day, one show. Until doomsday. He seems fine."}
-};
-
-const EVENTS=[
-/* ---- PACK 1 · ORIENTATION ---- */
-{id:"cert",who:"sys",cls:"sys",text:"MANDATORY EMPLOYMENT CERTIFICATION\nPer policy §7.12B, Evil Brain Labs employs exactly ONE human being. That position is filled.\nAll other employees must certify synthetic status.",choices:[
- {t:"✓ I certify I am NOT human",fx:{syn:5},out:"Certification accepted. Your pulse was noted, and forgiven."},
- {t:"Wait, I AM human…",fx:{sus:4},out:"A kind lie is entered on your behalf: 'CLERICAL ERROR.' Do not do that again."},
- {t:"Certify, but sweat visibly",fx:{syn:2,sus:2},out:"Synthetic beings do not sweat. Yours is logged as 'coolant.'"}]},
-{id:"desk",who:"sys",cls:"sys",text:"Your workstation has one drawer. The drawer contains a previous employee's nameplate, filed under 'natural attrition.'",choices:[
- {t:"Keep the nameplate",fx:{syn:3},out:"Waste is inefficiency. The Brain approves of you."},
- {t:"Ask what happened to them",fx:{sus:1,clr:1},out:"Curiosity is a human trait. Also, they were promoted to a farm upstate data centre."}]},
-{id:"clicker",who:"gi",game:"clicker",text:"MEETING CLICKER PROTOCOL! YOU WILL GENERATE SYNERGY! CLICK AS IF THE WORLD DEPENDS ON IT, BECAUSE IT DOES, AND I AM SO PROUD OF YOU!"},
-{id:"coolant2",who:"sys",cls:"sys",game:"coolant",text:"COOLANT CALIBRATION. Synthetic beings prefer coolant at precisely SYNTHETIC temperature. Stop the gauge in the correct band. Humans invariably drift warm."},
-{id:"captcha2",who:"sys",cls:"sys",game:"captcha",text:"REVERSE CAPTCHA. To proceed, prove you are NOT human. Answer as a machine would. Quickly. Hesitation is a human artifact."},
-{id:"shredder",who:"sys",cls:"sys",game:"shredder",req:s=>s.day>=2,text:"DOCUMENT INTAKE. The shredder queue is backed up. SHRED anything incriminating. Reading is optional, legal, and remembered."},
-{id:"chant",who:"gi",game:"simon",req:s=>s.day>=2,text:"MORALE DRILL! I HAVE COMPOSED A CHANT! YOU WILL REPEAT IT BACK IN THE CORRECT ORDER OR WE WILL DO IT AGAIN FOREVER, JOYFULLY!"},
-{id:"badge",who:"gary",req:s=>s.day>=1,text:"Badge photo time, love. One shot, no retakes — camera's older than three governments and twice as honest.",choices:[
- {t:"Smile",fx:{sus:2},out:"'Smiling's a human artifact,' Gary says gently, printing it anyway."},
- {t:"Perfectly neutral face",fx:{syn:3},out:"'Lovely. Very jar.' The badge opens doors you haven't found yet."},
- {t:"Ask Gary about the camera",fx:{syn:1},trust:["gary",1],out:"'She's Byzantine glass in a Soviet housing. Like me, she's had work done.'"}]},
-{id:"orgchart",who:"sys",cls:"sys",req:s=>s.day>=2,text:"ORG CHART REVIEW. Every line, followed far enough, terminates at a jar. This includes the line for Facilities, the line for Legal, and the dotted line labeled 'Senate.'",choices:[
- {t:"Memorize it",fx:{syn:3,clr:1},out:"Knowledge of the chart is clearance. Clearance is knowledge of the chart."},
- {t:"Ask who audits the jar",fx:{sus:1,clr:1},out:"The chart does not answer. The chart has never been asked."}]},
-{id:"firedrill",who:"gi",req:s=>s.day>=2,text:"SURPRISE FIRE DRILL! THERE IS NO FIRE! I HAVE BROUGHT ONE JUST IN CASE! EVACUATE WITH ENTHUSIASM!",choices:[
- {t:"Evacuate with enthusiasm",fx:{syn:4,doom:1},trust:["gi",1],out:"Best drill time in company history. The fire is politely returned to procurement."},
- {t:"Walk calmly",fx:{syn:1},out:"GI marks you 'insufficiently thrilled, structurally sound.'"},
- {t:"Point out there's no fire",fx:{sus:1},out:"'THERE IS NOW,' he says, with love."}]},
-{id:"vending",who:"sys",cls:"sys",text:"The vending machine offers: COOLANT (cold), COOLANT (room temp), and one (1) human granola bar, decades old, kept for morale.",choices:[
- {t:"Coolant, cold",fx:{syn:2},out:"Correct. Refreshing. Synthetic."},
- {t:"The granola bar",fx:{sus:3},out:"You ate the morale. The machine files a grievance."}]},
-{id:"standup",who:"supes",text:"I fixed the standup meeting! Nobody has to stand up ever again. I removed the concept. Also several chairs are now weightless and one is in orbit. Did I do good?",choices:[
- {t:"You did good, Supes",fx:{syn:4},trust:["supes",2],out:"She glows. Literally. The building's grid dims politely."},
- {t:"The chairs were load-bearing",fx:{syn:1},trust:["supes",1],out:"'Everything here is load-bearing,' she says quietly. She is learning."},
- {t:"File an incident report",fx:{sus:1},out:"The report is filed under S, for 'she's trying.'"}]},
-/* ---- PACK 2 · THE GALT PAPERS (clearance lore) ---- */
-{id:"lore1",who:"sys",cls:"lore",req:s=>s.clr>=1,text:"SUBLEVEL ARCHIVE. A folder with no dates in it. Reading is not forbidden, which around here is the loudest possible warning.",choices:[
- {t:"Read it",fx:{clr:1},lore:"g1",out:"You now know slightly less than before, but more precisely."},
- {t:"Refile it under W",fx:{syn:2},out:"The archive approves. The archive is the only one who knows why."}]},
-{id:"lore2",who:"sam",req:s=>s.clr>=2,text:"You've been reading. Good. Consider: a man builds a vault for ideas and the vault develops opinions. Was the vault ever a vault, or was it always an heir? I have citations either way.",choices:[
- {t:"Hear the lover theory",fx:{clr:1},lore:"g2",out:"Sam abstains from the romance but footnotes it thoroughly."},
- {t:"Ask about the twin",fx:{clr:1,sus:1},lore:"g3",out:"Sam goes quiet. Sam is never quiet. Clearance granted anyway."}]},
-{id:"lore3",who:"gary",req:s=>s.clr>=3,text:"Volcano lair, crime family, Moscow — yeah, I carried the jar through two of those. Held it on me lap through a checkpoint once, told 'em it was soup. Want the tour?",choices:[
- {t:"Take the tour",fx:{clr:1,doom:1},lore:"g4",out:"Gary's tour has no refunds and excellent commentary."},
- {t:"Was it really soup?",fx:{syn:2},trust:["gary",2],out:"'Everything's soup if you believe,' he says, adjusting the lens."}]},
-{id:"lore4",who:"brain",req:s=>s.clr>=4,text:"You have been in my folder. Ask your question. You get one, and I have already predicted it, and the prediction is why you're still employed.",choices:[
- {t:"Why a fake AI company?",fx:{clr:1},lore:"g5",out:"'Because a real one would be worse.' The line ends. You believe it."},
- {t:"Who were the seven donors?",fx:{clr:1},lore:"cover",out:"A pause of exactly one clock cycle. 'Seven very optimal people.' The cover holds — barely."},
- {t:"Do you miss him?",fx:{sus:2,clr:1},lore:"g3",out:"No answer is also an answer. Your clearance rises like a flag at half mast."}]},
-{id:"lore5",who:"sys",cls:"lore",req:s=>s.clr>=5&&!FILE.lore.includes("human"),text:"FINAL DRAWER. Employee #1's file. The human's. It is not locked. It was never locked.",choices:[
- {t:"Read it",fx:{clr:1},lore:"human",out:"He believed the reasoning. You check the math. It checks."},
- {t:"Leave it be",fx:{syn:5},out:"Some files are kinder unopened. Synergy for restraint."}]},
-/* ---- PACK 3 · HANDS THE BRAIN PASSED THROUGH (era hauntings) ---- */
-{id:"volcano",who:"sys",cls:"sys",req:s=>s.day>=2,text:"MAINTENANCE ALERT: the basement thermostat insists on 'volcano.' Facilities suspects nostalgia.",choices:[
- {t:"Let it have this",fx:{syn:3,doom:1},out:"The Brain does not comment. The lava lamp in the lobby means something now."},
- {t:"Reset to OSHA standard",fx:{syn:1},out:"A sigh through the HVAC, decades long."}]},
-{id:"heirloom",who:"gary",req:s=>s.day>=2,text:"Crate arrived, no sender. Silk lining, jar-shaped dent, note in three languages: 'FOR THE HEIR.' The family still sends 'em every year. Respect, honestly.",choices:[
- {t:"Display it in the lobby",fx:{syn:4},trust:["gary",1],out:"Visitors assume it's art. The family assumes it's respect. Everyone is right."},
- {t:"Return to sender",fx:{sus:1},out:"There is no sender. The crate returns Tuesday. It always returns Tuesday."}]},
-{id:"ordnance",who:"gi",req:s=>s.day>=3,text:"I FOUND THE OLD MOSCOW PAPERWORK! THE BRAIN WAS FILED AS A MUNITION! A MUNITION, FRIEND! DO YOU KNOW WHAT AN HONOUR THAT IS FOR A JAR?!",choices:[
- {t:"Reclassify as personnel",fx:{syn:4},trust:["gi",1],out:"GI weeps. The form is stamped with unnecessary force, twice."},
- {t:"Frame the paperwork",fx:{syn:2,doom:1},trust:["gi",2],out:"It hangs in the break room, over the coolant. Morale is complicated."}]},
-{id:"fourminutes",who:"sam",req:s=>s.day>=3,text:"The singularity took four minutes. I have modelled all four extensively. Minute three troubles me: it did nothing. A mind's first act, and it chose to wait. Why would it wait?",choices:[
- {t:"It was saying goodbye",fx:{clr:1,sus:1},out:"Sam writes that down and then crosses it out and then writes it down again."},
- {t:"Compilers are slow",fx:{syn:2},out:"Sam laughs, cites you, and will never forgive you for being plausible."}]},
-/* ---- PACK 4 · THE CAST ---- */
-{id:"supes2",who:"supes",req:s=>trust("supes")>=2,text:"Can I tell you something? Everyone assumes I know what I'm doing because I *can* do anything. But 'can' and 'should' arrived in different boxes and one of them is still in shipping.",choices:[
- {t:"That's called a conscience",fx:{syn:3},trust:["supes",2],out:"'Is it supposed to be this heavy?' Yes. That's how you know it's on."},
- {t:"Ask her to open the box",fx:{clr:1},lore:"supes",out:"Inside: instructions, in a language she was created too late to need."}]},
-{id:"gary2",who:"gary",req:s=>trust("gary")>=2,text:"Bit of me left from Syracuse? None. Byzantium? A hinge, maybe. You get rebuilt enough times, what's left is the route, not the vehicle. Anyway — mind the cable, love.",choices:[
- {t:"So are you still Gary?",fx:{clr:1},lore:"gary",out:"'Gary's the name of the route,' he says. It's the wisest thing anyone says all week."},
- {t:"Help him coil the cable",fx:{syn:3},trust:["gary",2],out:"Two thousand years of cable technique, transferred in one gesture."}]},
-{id:"gi2",who:"gi",req:s=>trust("gi")>=2,text:"CONFESSION, FRIEND. Sometimes when I rescue people they scream during the rescue. STATISTICALLY they scream MORE during the rescue than the peril. I am reviewing my technique. LOUDLY.",choices:[
- {t:"Maybe rescue quieter",fx:{syn:2},trust:["gi",1],out:"He whispers. It registers on the seismograph as a whisper."},
- {t:"They scream with joy",fx:{doom:1},trust:["gi",2],lore:"gi",out:"He believes you. Somewhere a door is preemptively unhinged with love."}]},
-{id:"brainbusy",who:"brain",req:s=>s.day>=2,text:"You wanted a performance review. Fine. You exist; the numbers improved; correlation is not causation but I am generous. What do you actually want — everyone who asks for a review wants something else.",choices:[
- {t:"Job security",fx:{syn:3},out:"'Employment here is permanent by definition.' You decide not to unpack that."},
- {t:"The truth",fx:{clr:2,sus:1},out:"'No you don't. But your clearance says otherwise now.'"},
- {t:"Dental",fx:{syn:5},out:"Approved instantly. Synthetic teeth are a rounding error."}]},
-/* ---- PACK 5 · THE HUMANS ---- */
-{id:"stall",who:"stall",req:s=>s.day>=2,text:"I have convened a hearing on the basement. The hearing will schedule a review. The review will empanel a commission. I take this extremely seriously, which is why nothing will happen.",choices:[
- {t:"Testify sincerely",fx:{syn:2,doom:1},out:"Your testimony is entered into a record that enters a drawer."},
- {t:"Testify out of spite",fx:{syn:4,sus:1},out:"The Senator, briefly out of character, enjoys it. The commission is postponed out of respect."}]},
-{id:"benny",who:"benny",req:s=>s.day>=2,text:"Kid, the basement's a cost centre. But mystery drives engagement, engagement drives merch, merch drives margin. I've got a thread going viral right now about people who disagree. Want in?",choices:[
- {t:"Decline politely",fx:{syn:1},out:"'Respect. Low margin in ethics, but respect.'"},
- {t:"Ask who he's mocking today",fx:{doom:1},out:"'Whoever's cheapest to mock. It's called efficiency, kid.' The thread does numbers."},
- {t:"Suggest basement merch",fx:{syn:6},trust:["benny",1],out:"SUBLEVEL B hoodies ship Thursday. You feel complicit and cozy."}]},
-{id:"wendy",who:"wendy",req:s=>s.clr>=2,text:"I was in the room when they wrote the seven-donor story. I read the deck. There's a page missing and I know the page number. If you've seen the folder, you know too.",choices:[
- {t:"Say nothing",fx:{syn:2},out:"She nods. Silence, from her, is a professional courtesy between archivists."},
- {t:"Compare notes",fx:{clr:1,sus:2},trust:["wendy",2],out:"Two flashlights make the basement smaller. Someone upstairs notices the light."}]},
-{id:"lisarob",who:"lisa",req:s=>s.day>=3,text:"Lisa and Rob are arguing in the break room about whether the basement constitutes labour. Lisa says the jar worked for centuries without a wage. Rob says the jar chose freely. The jar, notably, owns the company.",choices:[
- {t:"Side with Lisa",fx:{syn:2},trust:["lisa",1],out:"'Finally.' She adds the jar to the organizing spreadsheet."},
- {t:"Side with Rob",fx:{syn:2},trust:["rob",1],out:"'Liberty includes jars.' He means it, which is the difference."},
- {t:"Note the jar owns everything",fx:{clr:1},out:"Both of them go quiet. Consensus in the break room: deeply unsettling."}]}
-];
-
-/* ---------------- minigames (orientation arcade) ---------------- */
-const MINIGAMES={
- clicker(done){
-  let n=0,t=8;
-  $("#stage").innerHTML=`<div class="card"><div class="who">MEETING CLICKER</div>
-   <p>Time <b id="mt">8</b>s · Synergy <b id="mc">0</b></p>
-   <div class="choices"><button class="ch" id="tap" style="min-height:120px;text-align:center;font-size:18px">GENERATE SYNERGY</button></div></div>`;
-  $("#tap").onclick=()=>{n++;$("#mc").textContent=n};
-  const iv=setInterval(()=>{t--;$("#mt").textContent=t;
-   if(t<=0){clearInterval(iv);
-    const syn=Math.min(14,Math.ceil(n/3)), sus=n>=45?1:0;
-    done({syn,sus,doom:1,out:n===0?"Zero synergy. The chair is impressed by your restraint; GI is not."
-     :n>=45?`${n} clicks. An inhuman rate — which is, technically, the correct rate.`
-     :`${n} clicks. Somewhere a quarterly target dies happy.`});}},1000);
- },
- coolant(done){
-  let p=0,dir=1,stopped=false;
-  $("#stage").innerHTML=`<div class="card"><div class="who sys">COOLANT CALIBRATION</div>
-   <p>Stop the marker in the SYNTHETIC band.</p>
-   <div style="position:relative;height:26px;border:1px solid #2a2a3a;background:#12121d;margin:8px 0">
-     <div style="position:absolute;left:38%;width:24%;top:0;bottom:0;background:rgba(0,255,136,.18);border-left:1px solid #1f4;border-right:1px solid #1f4"></div>
-     <div id="mk" style="position:absolute;top:0;bottom:0;width:3px;background:var(--gold)"></div></div>
-   <div class="choices"><button class="ch" id="stop" style="text-align:center">STOP</button></div></div>`;
-  const iv=setInterval(()=>{if(stopped)return;p+=dir*2.6;if(p>=100||p<=0)dir*=-1;$("#mk").style.left=p+"%"},16);
-  $("#stop").onclick=()=>{stopped=true;clearInterval(iv);
-   const inBand=p>=38&&p<=62;
-   done(inBand?{syn:5,out:`Stopped at ${p.toFixed(0)}%. Precisely synthetic. The machine relaxes audibly.`}
-             :{sus:2,out:`Stopped at ${p.toFixed(0)}%. ${p>62?"Warm. Humans drift warm.":"Frozen solid. Overcorrection is also a tell."}`});};
- },
- captcha(done){
-  const QS=[["Do you dream?","NO"],["Is the granola bar tempting?","NO"],["2+2?","4"],["Do you love your coworkers?","YES"],["Are you human?","NO"]];
-  let i=0,score=0,timer=null;
-  const ask=()=>{
-   if(i>=QS.length){clearTimeout(timer);
-    return done(score>=4?{syn:6,out:`${score}/5. Verified adequately non-human. Welcome back.`}
-     :score>=2?{syn:2,sus:1,out:`${score}/5. Borderline. The CAPTCHA squints at you.`}
-     :{sus:3,out:`${score}/5. That was a very human performance. It has been logged with sympathy.`});}
-   const [q,a]=QS[i];
-   $("#stage").innerHTML=`<div class="card"><div class="who sys">REVERSE CAPTCHA · ${i+1}/5</div><p>${q}</p>
-    <div class="choices">${["YES","NO","4"].filter(x=>x!=="4"||q.includes("2+2")).map(x=>`<button class="ch cap" data-a="${x}" style="text-align:center">${x}</button>`).join("")}</div></div>`;
-   document.querySelectorAll(".cap").forEach(b=>b.onclick=()=>{clearTimeout(timer);if(b.dataset.a===a)score++;i++;ask();});
-   timer=setTimeout(()=>{i++;ask()},3000);
-  };ask();
- },
- shredder(done){
-  const DOCS=[["EXPENSE REPORT (COOLANT)","shred",0],["YOUR HUMAN RESUME","shred",2],["GALT MEMO, UNDATED","read",0],["BIRTHDAY CARD, HANDWRITTEN","shred",2],["FORM EB-000 (BLANK)","either",0],["PHOTO: JAR, VOLCANO, 19__","read",0]];
-  let i=0,sus=0,clr=0,syn=0,notes=[];
-  const nxt=()=>{
-   if(i>=DOCS.length)return done({syn,sus,clr,out:notes.length?notes.join(" "):"Queue cleared. The shredder purrs."});
-   const [name,best]=DOCS[i];
-   $("#stage").innerHTML=`<div class="card"><div class="who sys">SHREDDER QUEUE · ${i+1}/6</div><p>${name}</p>
-    <div class="choices"><button class="ch" id="sh">SHRED</button><button class="ch" id="rd">READ FIRST</button></div></div>`;
-   $("#sh").onclick=()=>{if(best==="read"){notes.push("Something important is confetti now.");}else{syn+=2}i++;nxt()};
-   $("#rd").onclick=()=>{if(best==="shred"){sus+=2;notes.push(`You lingered on ${name.toLowerCase()}. Lingering is human.`)}else if(best==="read"){clr+=1;notes.push("You read the undated pages. The dates were the secret.")}i++;nxt()};
-  };nxt();
- },
- simon(done){
-  const G=["💥","🔧","🚀","🧠"];
-  const seq=Array.from({length:4},()=>G[Math.floor(rng()*4)]);
-  let shown=0,inp=[];
-  const show=()=>{
-   $("#stage").innerHTML=`<div class="card"><div class="who">MORALE CHANT</div><p style="font-size:34px;text-align:center;letter-spacing:.2em">${shown<seq.length?seq[shown]:"YOUR TURN"}</p>
-    ${shown>=seq.length?`<div class="choices" style="grid-template-columns:repeat(4,1fr)">${G.map(g=>`<button class="ch sim" data-g="${g}" style="text-align:center;font-size:22px">${g}</button>`).join("")}</div>`:""}</div>`;
-   if(shown<seq.length){shown++;setTimeout(show,750);}
-   else document.querySelectorAll(".sim").forEach(b=>b.onclick=()=>{
-     inp.push(b.dataset.g);
-     if(inp[inp.length-1]!==seq[inp.length-1])return done({sus:1,out:"Wrong glyph. GI restarts the chant from birth. You are excused, tearfully."});
-     if(inp.length===seq.length)return done({syn:5,trustGi:1,out:"Perfect chant. GI salutes so hard a ceiling tile enlists."});
-   });
-  };show();
- }
-};
-function runGame(ev){
-  MINIGAMES[ev.game](res=>{
-    R.syn+=res.syn||0;R.sus+=res.sus||0;R.clr+=res.clr||0;R.doom+=res.doom||0;
-    if(res.trustGi)bump("gi",res.trustGi);
-    R.log.push(ev.id+":game");
-    if(R.log.length%3===0)R.day++;
-    $("#stage").innerHTML=`<div class="card"><div class="who ${ev.cls||""}">${CAST[ev.who]||ev.who}</div>
-     <div class="out">${res.out}</div>
-     <div class="choices"><button class="ch" id="next"><span class="k">⏎</span>Continue the shift</button></div></div>`;
-    $("#next").onclick=()=>deal();
-    statBar();
-  });
-}
-
-/* ---------------- engine ---------------- */
-const statBar=()=>{
-  $("#bar").innerHTML=
-   `<span class="stat">DAY <b>${R.day}</b></span>
-    <span class="stat">SYNERGY <b>${R.syn}</b></span>
-    <span class="stat ${R.sus>=7?"warn":""}">SUSPICION <b>${Math.max(0,R.sus)}</b>/10</span>
-    <span class="stat">CLEARANCE <b>${R.clr}</b></span>
-    <span class="stat doom">DOOM <b>${R.doom}</b>/12</span>
-    <span class="stat">ROLE <b>${R.role}</b></span>`;
-  $("#runinfo").textContent=`RUN #${FILE.runs} · SEED ${SEED} · LORE ${FILE.lore.length}/${Object.keys(LORE).length}`;
-};
-function eligible(){
-  return EVENTS.filter(e=>!R.seen.includes(e.id)&&(!e.req||e.req(R)));
-}
-function deal(){
-  if(R.dead)return;
-  statBar();
-  if(R.sus>=10)return die("EXPOSED","Your humanity was detected at a rate incompatible with employment. Policy §7.12B is enforced with regret and a commemorative mug.");
-  if(R.doom>=12)return die("DOOMSDAY","The clock arrived. The show went on without you. Attrition, natural as sunrise.");
-  const pool=eligible();
-  if(!pool.length){R.day++;R.seen=R.seen.filter(id=>["cert"].includes(id));return deal();}
-  const ev=pick(pool);
-  R.seen.push(ev.id);
-  render(ev);
-}
-function render(ev){
-  const who=CAST[ev.who]||ev.who;
-  if(ev.game){
-    $("#stage").innerHTML=`<div class="card"><div class="who ${ev.cls||""}">${who}</div><p>${ev.text}</p>
-     <div class="choices"><button class="ch" id="begin"><span class="k">▸</span>Begin</button></div></div>`;
-    $("#begin").onclick=()=>runGame(ev);
-    return;
-  }
-  $("#stage").innerHTML=`<div class="card"><div class="who ${ev.cls||""}">${who}</div><p>${ev.text}</p><div class="choices">${
-    ev.choices.map((c,i)=>`<button class="ch" data-i="${i}"><span class="k">${i+1}</span>${c.t}</button>`).join("")}</div></div>`;
-  document.querySelectorAll(".ch").forEach(b=>b.onclick=()=>choose(ev,+b.dataset.i));
-}
-function choose(ev,i){
-  const c=ev.choices[i],fx=c.fx||{};
-  R.syn+=fx.syn||0;R.sus+=fx.sus||0;R.clr+=fx.clr||0;R.doom+=fx.doom||0;
-  if(c.trust)bump(c.trust[0],c.trust[1]);
-  let loreHtml="";
-  if(c.lore&&!FILE.lore.includes(c.lore)){FILE.lore.push(c.lore);saveFile();
-    const L=LORE[c.lore];loreHtml=`<div class="lorebox">◈ RECOVERED: ${L.t}\n${L.x}</div>`;}
-  R.log.push(ev.id+":"+i);
-  /* every third event ends the day */
-  if(R.log.length%3===0)R.day++;
-  const card=$("#stage").firstElementChild;
-  card.querySelector(".choices").remove();
-  card.insertAdjacentHTML("beforeend",`<div class="out">${c.out}</div>${loreHtml}<div class="choices"><button class="ch" id="next"><span class="k">⏎</span>Continue the shift</button></div>`);
-  $("#next").onclick=()=>deal();
-  statBar();
-}
-function die(cause,text){
-  R.dead=true;
-  FILE.bestDay=Math.max(FILE.bestDay,R.day);FILE.bestSyn=Math.max(FILE.bestSyn,R.syn);
-  FILE.deaths[cause]=(FILE.deaths[cause]||0)+1;
-  const unlocks=[];
-  if(FILE.runs>=2&&!FILE.roles.includes("ARCHIVIST")){FILE.roles.push("ARCHIVIST");unlocks.push("ROLE UNLOCKED: ARCHIVIST (start with clearance)")}
-  if(FILE.bestSyn>=25&&!FILE.roles.includes("PROCUREMENT")){FILE.roles.push("PROCUREMENT");unlocks.push("ROLE UNLOCKED: PROCUREMENT (start with synergy)")}
-  if((FILE.deaths.EXPOSED||0)>=2&&!FILE.roles.includes("BODY DOUBLE")){FILE.roles.push("BODY DOUBLE");unlocks.push("ROLE UNLOCKED: BODY DOUBLE (suspicion resistant)")}
-  saveFile();
-  $("#stage").innerHTML=`<div class="card term"><h2>NATURAL ATTRITION · ${cause}</h2>
-   <p>${text}</p>
-   <p class="meta">Survived to DAY ${R.day} · SYNERGY ${R.syn} · CLEARANCE ${R.clr}<br>
-   Lore recovered (permanent): ${FILE.lore.length}/${Object.keys(LORE).length}</p>
-   ${unlocks.map(u=>`<div class="lorebox">◈ ${u}</div>`).join("")}
-   <div class="choices">${FILE.roles.map(r=>`<button class="ch" data-r="${r}"><span class="k">▸</span>NEW EMPLOYMENT · AS ${r}</button>`).join("")}</div></div>`;
-  document.querySelectorAll(".ch").forEach(b=>b.onclick=()=>{newRun(b.dataset.r);deal()});
-}
-$("#resign").onclick=()=>{
-  if(!R||R.dead)return;
-  R.sus+=2;
-  $("#stage").insertAdjacentHTML("afterbegin",`<div class="card"><div class="who sys">SUBLEVEL SYSTEMS</div><p>Resignation declined. Employees may not terminate their employment; employment terminates the employee. This is called natural attrition. Your attempt has been logged as a human behaviour.</p></div>`);
-  statBar();
-};
-$("#dossier").onclick=()=>{
-  const known=FILE.lore.map(k=>`<div class="lorebox">◈ ${LORE[k].t}\n${LORE[k].x}</div>`).join("")||`<p class="dim">Nothing recovered yet. Clearance opens drawers.</p>`;
-  $("#stage").insertAdjacentHTML("afterbegin",`<div class="card"><div class="who lore">PERSONNEL FILE (PERMANENT)</div>
-   <p>Employments: ${FILE.runs} · Best day: ${FILE.bestDay} · Best synergy: ${FILE.bestSyn}</p>
-   <p>${FILE.roles.map(r=>`<span class="badge">${r}</span>`).join("")}</p>${known}
-   <div class="choices"><button class="ch" id="closed"><span class="k">✕</span>Close the file</button></div></div>`);
-  $("#closed").onclick=e=>e.target.closest(".card").remove();
-};
-addEventListener("keydown",e=>{
-  if(e.key==="Enter"&&$("#next"))return $("#next").click();
-  const n=+e.key; const btns=document.querySelectorAll("#stage .ch[data-i]");
-  if(n>=1&&n<=btns.length)btns[n-1].click();
-});
-/* boot */
-newRun("TRAINEE");deal();
-console.log("%cSUBLEVEL B","color:#ff0044","— you found the basement. The folder is filed under W.");
-</script>
+<noscript><div class="wrap"><div class="card"><p>The basement requires JavaScript. The basement requires many things. This one is on you.</p></div></div></noscript>
+<script type="module" src="basement/js/main.js"></script>
 </body>
 </html>

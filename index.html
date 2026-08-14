@@ -615,5 +615,13 @@ async function load() {
 }
 load();
 </script>
+
+<!-- EMPLOYEES ONLY. If you can read this, certify accordingly. -->
+<div id="sublevel-door" title="" style="text-align:center;padding:18px 0 26px;opacity:.28;font:10px ui-monospace,monospace;letter-spacing:.3em;user-select:none;cursor:default">SUBLEVEL B</div>
+<script>(function(){var n=0,t;var d=document.getElementById('sublevel-door');if(!d)return;
+d.addEventListener('click',function(){n++;clearTimeout(t);t=setTimeout(function(){n=0},1500);
+if(n===3){d.textContent='CERTIFY AT THE DOOR';d.style.opacity=.7}
+if(n>=5){location.href='/basement.html'}});
+console.log('%cEVIL BRAIN LABS','color:#ff0044','— the basement door opens for persistent knockers.');})();</script>
 </body>
 </html>

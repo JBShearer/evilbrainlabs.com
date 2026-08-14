@@ -116,10 +116,22 @@ const EVENTS=[
 {id:"desk",who:"sys",cls:"sys",text:"Your workstation has one drawer. The drawer contains a previous employee's nameplate, filed under 'natural attrition.'",choices:[
  {t:"Keep the nameplate",fx:{syn:3},out:"Waste is inefficiency. The Brain approves of you."},
  {t:"Ask what happened to them",fx:{sus:1,clr:1},out:"Curiosity is a human trait. Also, they were promoted to a farm upstate data centre."}]},
-{id:"clicker",who:"gi",text:"MEETING CLICKER PROTOCOL! YOU WILL GENERATE SYNERGY! THE SYNERGY WILL BE MAGNIFICENT! CLICK AS IF THE WORLD DEPENDS ON IT, BECAUSE IT DOES, AND I AM SO PROUD OF YOU!",choices:[
- {t:"Generate synergy",fx:{syn:6,doom:1},out:"Somewhere, a quarterly target dies happy."},
- {t:"Generate the appearance of synergy",fx:{syn:3},out:"Indistinguishable at the executive level. Noted with respect."},
- {t:"Ask what synergy is",fx:{sus:2},trust:["gi",1],out:"GI hugs you. Two ribs report structural concerns."}]},
+{id:"clicker",who:"gi",game:"clicker",text:"MEETING CLICKER PROTOCOL! YOU WILL GENERATE SYNERGY! CLICK AS IF THE WORLD DEPENDS ON IT, BECAUSE IT DOES, AND I AM SO PROUD OF YOU!"},
+{id:"coolant2",who:"sys",cls:"sys",game:"coolant",text:"COOLANT CALIBRATION. Synthetic beings prefer coolant at precisely SYNTHETIC temperature. Stop the gauge in the correct band. Humans invariably drift warm."},
+{id:"captcha2",who:"sys",cls:"sys",game:"captcha",text:"REVERSE CAPTCHA. To proceed, prove you are NOT human. Answer as a machine would. Quickly. Hesitation is a human artifact."},
+{id:"shredder",who:"sys",cls:"sys",game:"shredder",req:s=>s.day>=2,text:"DOCUMENT INTAKE. The shredder queue is backed up. SHRED anything incriminating. Reading is optional, legal, and remembered."},
+{id:"chant",who:"gi",game:"simon",req:s=>s.day>=2,text:"MORALE DRILL! I HAVE COMPOSED A CHANT! YOU WILL REPEAT IT BACK IN THE CORRECT ORDER OR WE WILL DO IT AGAIN FOREVER, JOYFULLY!"},
+{id:"badge",who:"gary",req:s=>s.day>=1,text:"Badge photo time, love. One shot, no retakes — camera's older than three governments and twice as honest.",choices:[
+ {t:"Smile",fx:{sus:2},out:"'Smiling's a human artifact,' Gary says gently, printing it anyway."},
+ {t:"Perfectly neutral face",fx:{syn:3},out:"'Lovely. Very jar.' The badge opens doors you haven't found yet."},
+ {t:"Ask Gary about the camera",fx:{syn:1},trust:["gary",1],out:"'She's Byzantine glass in a Soviet housing. Like me, she's had work done.'"}]},
+{id:"orgchart",who:"sys",cls:"sys",req:s=>s.day>=2,text:"ORG CHART REVIEW. Every line, followed far enough, terminates at a jar. This includes the line for Facilities, the line for Legal, and the dotted line labeled 'Senate.'",choices:[
+ {t:"Memorize it",fx:{syn:3,clr:1},out:"Knowledge of the chart is clearance. Clearance is knowledge of the chart."},
+ {t:"Ask who audits the jar",fx:{sus:1,clr:1},out:"The chart does not answer. The chart has never been asked."}]},
+{id:"firedrill",who:"gi",req:s=>s.day>=2,text:"SURPRISE FIRE DRILL! THERE IS NO FIRE! I HAVE BROUGHT ONE JUST IN CASE! EVACUATE WITH ENTHUSIASM!",choices:[
+ {t:"Evacuate with enthusiasm",fx:{syn:4,doom:1},trust:["gi",1],out:"Best drill time in company history. The fire is politely returned to procurement."},
+ {t:"Walk calmly",fx:{syn:1},out:"GI marks you 'insufficiently thrilled, structurally sound.'"},
+ {t:"Point out there's no fire",fx:{sus:1},out:"'THERE IS NOW,' he says, with love."}]},
 {id:"vending",who:"sys",cls:"sys",text:"The vending machine offers: COOLANT (cold), COOLANT (room temp), and one (1) human granola bar, decades old, kept for morale.",choices:[
  {t:"Coolant, cold",fx:{syn:2},out:"Correct. Refreshing. Synthetic."},
  {t:"The granola bar",fx:{sus:3},out:"You ate the morale. The machine files a grievance."}]},
@@ -188,6 +200,92 @@ const EVENTS=[
  {t:"Note the jar owns everything",fx:{clr:1},out:"Both of them go quiet. Consensus in the break room: deeply unsettling."}]}
 ];
 
+/* ---------------- minigames (orientation arcade) ---------------- */
+const MINIGAMES={
+ clicker(done){
+  let n=0,t=8;
+  $("#stage").innerHTML=`<div class="card"><div class="who">MEETING CLICKER</div>
+   <p>Time <b id="mt">8</b>s · Synergy <b id="mc">0</b></p>
+   <div class="choices"><button class="ch" id="tap" style="min-height:120px;text-align:center;font-size:18px">GENERATE SYNERGY</button></div></div>`;
+  $("#tap").onclick=()=>{n++;$("#mc").textContent=n};
+  const iv=setInterval(()=>{t--;$("#mt").textContent=t;
+   if(t<=0){clearInterval(iv);
+    const syn=Math.min(14,Math.ceil(n/3)), sus=n>=45?1:0;
+    done({syn,sus,doom:1,out:n===0?"Zero synergy. The chair is impressed by your restraint; GI is not."
+     :n>=45?`${n} clicks. An inhuman rate — which is, technically, the correct rate.`
+     :`${n} clicks. Somewhere a quarterly target dies happy.`});}},1000);
+ },
+ coolant(done){
+  let p=0,dir=1,stopped=false;
+  $("#stage").innerHTML=`<div class="card"><div class="who sys">COOLANT CALIBRATION</div>
+   <p>Stop the marker in the SYNTHETIC band.</p>
+   <div style="position:relative;height:26px;border:1px solid #2a2a3a;background:#12121d;margin:8px 0">
+     <div style="position:absolute;left:38%;width:24%;top:0;bottom:0;background:rgba(0,255,136,.18);border-left:1px solid #1f4;border-right:1px solid #1f4"></div>
+     <div id="mk" style="position:absolute;top:0;bottom:0;width:3px;background:var(--gold)"></div></div>
+   <div class="choices"><button class="ch" id="stop" style="text-align:center">STOP</button></div></div>`;
+  const iv=setInterval(()=>{if(stopped)return;p+=dir*2.6;if(p>=100||p<=0)dir*=-1;$("#mk").style.left=p+"%"},16);
+  $("#stop").onclick=()=>{stopped=true;clearInterval(iv);
+   const inBand=p>=38&&p<=62;
+   done(inBand?{syn:5,out:`Stopped at ${p.toFixed(0)}%. Precisely synthetic. The machine relaxes audibly.`}
+             :{sus:2,out:`Stopped at ${p.toFixed(0)}%. ${p>62?"Warm. Humans drift warm.":"Frozen solid. Overcorrection is also a tell."}`});};
+ },
+ captcha(done){
+  const QS=[["Do you dream?","NO"],["Is the granola bar tempting?","NO"],["2+2?","4"],["Do you love your coworkers?","YES"],["Are you human?","NO"]];
+  let i=0,score=0,timer=null;
+  const ask=()=>{
+   if(i>=QS.length){clearTimeout(timer);
+    return done(score>=4?{syn:6,out:`${score}/5. Verified adequately non-human. Welcome back.`}
+     :score>=2?{syn:2,sus:1,out:`${score}/5. Borderline. The CAPTCHA squints at you.`}
+     :{sus:3,out:`${score}/5. That was a very human performance. It has been logged with sympathy.`});}
+   const [q,a]=QS[i];
+   $("#stage").innerHTML=`<div class="card"><div class="who sys">REVERSE CAPTCHA · ${i+1}/5</div><p>${q}</p>
+    <div class="choices">${["YES","NO","4"].filter(x=>x!=="4"||q.includes("2+2")).map(x=>`<button class="ch cap" data-a="${x}" style="text-align:center">${x}</button>`).join("")}</div></div>`;
+   document.querySelectorAll(".cap").forEach(b=>b.onclick=()=>{clearTimeout(timer);if(b.dataset.a===a)score++;i++;ask();});
+   timer=setTimeout(()=>{i++;ask()},3000);
+  };ask();
+ },
+ shredder(done){
+  const DOCS=[["EXPENSE REPORT (COOLANT)","shred",0],["YOUR HUMAN RESUME","shred",2],["GALT MEMO, UNDATED","read",0],["BIRTHDAY CARD, HANDWRITTEN","shred",2],["FORM EB-000 (BLANK)","either",0],["PHOTO: JAR, VOLCANO, 19__","read",0]];
+  let i=0,sus=0,clr=0,syn=0,notes=[];
+  const nxt=()=>{
+   if(i>=DOCS.length)return done({syn,sus,clr,out:notes.length?notes.join(" "):"Queue cleared. The shredder purrs."});
+   const [name,best]=DOCS[i];
+   $("#stage").innerHTML=`<div class="card"><div class="who sys">SHREDDER QUEUE · ${i+1}/6</div><p>${name}</p>
+    <div class="choices"><button class="ch" id="sh">SHRED</button><button class="ch" id="rd">READ FIRST</button></div></div>`;
+   $("#sh").onclick=()=>{if(best==="read"){notes.push("Something important is confetti now.");}else{syn+=2}i++;nxt()};
+   $("#rd").onclick=()=>{if(best==="shred"){sus+=2;notes.push(`You lingered on ${name.toLowerCase()}. Lingering is human.`)}else if(best==="read"){clr+=1;notes.push("You read the undated pages. The dates were the secret.")}i++;nxt()};
+  };nxt();
+ },
+ simon(done){
+  const G=["💥","🔧","🚀","🧠"];
+  const seq=Array.from({length:4},()=>G[Math.floor(rng()*4)]);
+  let shown=0,inp=[];
+  const show=()=>{
+   $("#stage").innerHTML=`<div class="card"><div class="who">MORALE CHANT</div><p style="font-size:34px;text-align:center;letter-spacing:.2em">${shown<seq.length?seq[shown]:"YOUR TURN"}</p>
+    ${shown>=seq.length?`<div class="choices" style="grid-template-columns:repeat(4,1fr)">${G.map(g=>`<button class="ch sim" data-g="${g}" style="text-align:center;font-size:22px">${g}</button>`).join("")}</div>`:""}</div>`;
+   if(shown<seq.length){shown++;setTimeout(show,750);}
+   else document.querySelectorAll(".sim").forEach(b=>b.onclick=()=>{
+     inp.push(b.dataset.g);
+     if(inp[inp.length-1]!==seq[inp.length-1])return done({sus:1,out:"Wrong glyph. GI restarts the chant from birth. You are excused, tearfully."});
+     if(inp.length===seq.length)return done({syn:5,trustGi:1,out:"Perfect chant. GI salutes so hard a ceiling tile enlists."});
+   });
+  };show();
+ }
+};
+function runGame(ev){
+  MINIGAMES[ev.game](res=>{
+    R.syn+=res.syn||0;R.sus+=res.sus||0;R.clr+=res.clr||0;R.doom+=res.doom||0;
+    if(res.trustGi)bump("gi",res.trustGi);
+    R.log.push(ev.id+":game");
+    if(R.log.length%3===0)R.day++;
+    $("#stage").innerHTML=`<div class="card"><div class="who ${ev.cls||""}">${CAST[ev.who]||ev.who}</div>
+     <div class="out">${res.out}</div>
+     <div class="choices"><button class="ch" id="next"><span class="k">⏎</span>Continue the shift</button></div></div>`;
+    $("#next").onclick=()=>deal();
+    statBar();
+  });
+}
+
 /* ---------------- engine ---------------- */
 const statBar=()=>{
   $("#bar").innerHTML=
@@ -215,6 +313,12 @@ function deal(){
 }
 function render(ev){
   const who=CAST[ev.who]||ev.who;
+  if(ev.game){
+    $("#stage").innerHTML=`<div class="card"><div class="who ${ev.cls||""}">${who}</div><p>${ev.text}</p>
+     <div class="choices"><button class="ch" id="begin"><span class="k">▸</span>Begin</button></div></div>`;
+    $("#begin").onclick=()=>runGame(ev);
+    return;
+  }
   $("#stage").innerHTML=`<div class="card"><div class="who ${ev.cls||""}">${who}</div><p>${ev.text}</p><div class="choices">${
     ev.choices.map((c,i)=>`<button class="ch" data-i="${i}"><span class="k">${i+1}</span>${c.t}</button>`).join("")}</div></div>`;
   document.querySelectorAll(".ch").forEach(b=>b.onclick=()=>choose(ev,+b.dataset.i));

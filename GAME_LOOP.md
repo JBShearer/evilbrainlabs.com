@@ -125,3 +125,30 @@ Acceptance: a player who wants to do nothing but ship should be able to try
 — and be dragged out of the shop within every few ships, snarling. If they
 can grind uninterrupted forever, it's wrong; if they can't ship three in a
 row when things are calm, it's also wrong.
+
+---
+
+## COURSE CORRECTION v3 (pinned 2026-08-14, Jason): THE DOOR COMES BACK
+
+v2 said the labyrinth is where you get TAKEN. It did not say weld the door
+shut. The map was amputated and the world went dead: two ships in, a player
+sat at a bench reading SHIP MORE with every verb grayed. Fix the frame:
+
+1. **The MAP tab returns.** The shop has a door. Between ships you MAY walk
+   the floor — short, capped excursions that always cost a little doom
+   (time is never free). Walking is how you go TOWARD the world: scavenge a
+   part of a kind YOU CHOOSE, visit a coworker, hit an alcove. Summonses
+   still drag you out; the door lets you leave on your own feet too.
+2. **Kill kind-starvation.** The bench says which kind it's missing; the
+   chute must sell parts BY KIND (premium price beats a dice roll). A store
+   that gambles your restock is a slot machine, not procurement.
+3. **Napkin gate bug:** NAPKIN SKETCH grayed while napkins ×1 in stock.
+   A napkin plus any two parts should sketch. Fix the predicate.
+4. **THE SILENCE RULE (acceptance, hard):** after any two consecutive
+   player actions, SOMETHING must move without input — a summons, a board
+   reply, a news wire, a ledger knock, a coworker wandering in. If the
+   player has nothing to do AND nothing is arriving, that state is a bug by
+   definition, not difficulty.
+5. **First knock comes early.** A shipped product's first ledger followup
+   must land within 1-2 ships, not week 5 — teach the loop before you
+   deepen it.

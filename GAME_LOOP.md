@@ -92,3 +92,29 @@ art). No backend required for MVP; UCAR wiring optional later.
    (the arcade five survive as vending/alcove encounters).
 
 Kickoff phrase for a fresh session: **"build the basement loop per GAME_LOOP"**.
+
+---
+
+## COURSE CORRECTION (pinned 2026-08-13, Jason): THE GAME IS SHIPPING USE CASES
+
+The build drifted toward the labyrinth. Wrong emphasis. The labyrinth is the
+hallway; the USE CASE is the game. Invert the ratio:
+
+1. **You always carry a use case.** The napkin is in your pocket from minute
+   one (ACT · TOOL · PURPOSE — the docket grammar). There is no "finding a
+   build room"; every room ADVANCES the carried use case (parts, funding,
+   testing, refinement, a pitch) or PAYS OFF a shipped one (consequence,
+   hearing, second customer). A room that does neither does not spawn.
+2. **Ship cadence is the heartbeat.** A week is a handful of rooms, then a
+   forced SHIP-OR-SHELVE. One use case per week minimum or the Brain notices
+   — like the daily show. Shipping is always reachable once the case is
+   whole; the room you ship FROM flavors the launch.
+3. **Score is the docket, not the corridor.** Progress displays as YOUR
+   docket of shipped use cases (verdicts, filings, consequences) — the
+   ledger promoted from subsystem to scoreboard.
+4. **Real-world echo (post-MVP but soon):** the news cycle quotes actual
+   UCAR docket cases as competitor ships — the fake company shipping into
+   the real arms race.
+
+Doors down, ships up. If a playtester can walk 10 rooms without shipping,
+the tuning is wrong.

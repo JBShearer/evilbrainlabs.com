@@ -95,6 +95,38 @@ Kickoff phrase for a fresh session: **"build the basement loop per GAME_LOOP"**.
 
 ---
 
+## THE POINT (pinned 2026-08-14, Jason — supersedes every correction below)
+
+The corrections below are the record of getting this wrong four ways. Read
+them as history, not instructions. This section wins every conflict.
+
+**Inventing use cases is free. Always. From anywhere.** No parts, no
+inventory, no synergy gates, no chute, no scrap bin. Delete every economy
+that stands between the player and making up something absurd. The grammar
+is a toybox and it is always open. If inventing ever costs a resource, the
+game is broken.
+
+**The world is your invention's aftermath, played as an adventure.** You
+ship a thing, and the world rearranges around it: you present it to world
+leaders, you do the press tour, you run into Supes in the hallway where she
+has already deployed it wrong, GI has already weaponized it with love,
+Benny is already selling the merch. Exploration is not scavenging — it is
+walking through the life your product created, scene by scene, text
+adventure crossed with King's Quest. People, jokes, consequences. You never
+"find shit." You meet your own decisions wearing costumes.
+
+**The loop:** INVENT (free, fast, funny) → the world BECOMES the
+consequences → WANDER it as adventures → something you see makes you want
+to invent the next one. The product is not the goal; the product is the
+plot generator. The fake-PM lifestyle — shipping, presenting, being taken
+seriously by absurd people — is the fantasy being sold.
+
+Keep: the art, the rooms, the cast, the news cycle, the board, the ledger's
+memory. Kill: every resource system. When in doubt between a mechanic and a
+scene, write the scene.
+
+---
+
 ## COURSE CORRECTION v2 (pinned 2026-08-13, Jason — supersedes v1): THE SHOP AND THE SUMMONS
 
 **Pure fiction. No Use Case Arms Race tie-in, ever.** No real docket quotes,

@@ -615,6 +615,43 @@ export const TRADES=[
   done:"You take one. Somewhere, the other eight notice. That's the mostly."},
 ];
 
+/* ---------------- VERDICTS (the in-world stamp) ----------------
+   Two or three vote per ship, never four. Dispositions per CANON;
+   standing nudges. The stamp is the score. Pure fiction.          */
+export function computeVerdict(p,funder,trustMap){
+  const t=id=>trustMap?.[id]||0;
+  const s=p.stats;
+  const RULES={
+    benny:()=> s.mg>=7?"GOOD": s.mg<=3?"EVIL":"ABSTAIN",
+    lisa:()=>  s.mg>=8?"EVIL": s.mc>=7?"GOOD":"EVIL",
+    gi:()=>    s.mh>=6?"GOOD":"ABSTAIN",                 /* magnificent */
+    gary:()=>  s.mc>=6?"GOOD": s.mh>=7?"EVIL":"ABSTAIN",
+    supes:()=> s.mc>=5?"GOOD": s.mh>=9?"EVIL":"GOOD",
+    wendy:()=> s.mh>=6?"EVIL": s.mc>=7?"GOOD":"ABSTAIN",
+    rob:()=>   s.mh>=10?"EVIL":"GOOD",
+    stall:()=> "ABSTAIN",
+    sam:()=>   "ABSTAIN",
+  };
+  const seedRng=(function(){let a=p.seed>>>0;return function(){a|=0;a=a+0x6D2B79F5|0;
+    let x=Math.imul(a^a>>>15,1|a);x=x+Math.imul(x^x>>>7,61|x)^x;return((x^x>>>14)>>>0)/4294967296;}})();
+  const pool=Object.keys(RULES);
+  const voters=[];
+  while(voters.length<3){
+    const c=pool[Math.floor(seedRng()*pool.length)];
+    if(!voters.includes(c))voters.push(c);
+  }
+  const votes=voters.map(who=>{
+    let v=RULES[who]();
+    if(v==="ABSTAIN"&&t(who)>=2&&seedRng()<.5)v="GOOD";     /* they know you */
+    if(v==="ABSTAIN"&&t(who)<=-1&&seedRng()<.5)v="EVIL";    /* they know you */
+    return {who,v};
+  });
+  const g=votes.filter(x=>x.v==="GOOD").length,
+        e=votes.filter(x=>x.v==="EVIL").length;
+  const stamp=g>e?"GOOD":e>g?"EVIL":"REVIEW";
+  return {stamp,votes};
+}
+
 /* ---------------- ROOM TYPE UI METADATA ---------------- */
 export const ROOM_META={
  break:     {icon:"☕", verb:"SKETCH ON A NAPKIN", color:"#ffd700"},

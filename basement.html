@@ -102,6 +102,15 @@ button.ch .sub{display:block;font-size:10px;color:var(--dim);letter-spacing:.06e
 .wire{font-size:11px;color:var(--dim);margin-top:6px}
 .post p{font-size:13px}
 .post.trade{border-left-color:var(--gold)}
+.card.summons{border-left-color:#ff9955;box-shadow:0 0 30px -16px #ff9955}
+.card.summons .who{color:#ff9955}
+.card.summons.subpoena{border-left-color:var(--evil);box-shadow:0 0 34px -12px var(--evil)}
+.card.summons.subpoena .who{color:var(--evil)}
+.streak{display:inline-block;margin-left:8px;color:var(--gold);border:1px solid var(--gold);
+  border-radius:999px;padding:0 8px;font-size:9px;letter-spacing:.14em;
+  text-shadow:0 0 8px rgba(255,215,0,.5)}
+.stamp{display:inline-block;float:right;border:1px solid;border-radius:2px;
+  padding:0 6px;font-size:9px;letter-spacing:.18em;transform:rotate(-3deg)}
 .trustchip{display:inline-block;border-radius:999px;padding:0 6px;font-size:9px;letter-spacing:.08em;border:1px solid}
 .trustchip.up{color:var(--green);border-color:var(--green)}
 .trustchip.down{color:var(--evil);border-color:var(--evil)}
@@ -139,36 +148,31 @@ button.ch .sub{display:block;font-size:10px;color:var(--dim);letter-spacing:.06e
 </head>
 <body>
 <div class="wrap" id="main">
-  <h1>THE OFFICE LABYRINTH<small>SUBLEVEL B · EVIL BRAIN LABS · AN ENDLESS FLOOR PLAN</small></h1>
+  <h1>THE SHOP<small>SUBLEVEL B · EVIL BRAIN LABS · SHIP AFTER SHIP AFTER SHIP</small></h1>
   <div class="bar" id="bar"></div>
 
-  <div id="view-floor" class="view">
+  <div id="view-shop" class="view">
     <div id="scenewrap"><div id="roomlabel"></div></div>
     <div id="stage"></div>
   </div>
 
-  <div id="view-map" class="view hidden">
-    <div id="mapwrap"></div>
-    <div id="maphint"></div>
-  </div>
-
   <div id="view-board" class="view hidden"><div id="boardlist"></div></div>
   <div id="view-news" class="view hidden"><div id="newslist"></div></div>
+  <div id="view-docket" class="view hidden"><div id="docketlist"></div></div>
 </div>
 
 <div id="toast"></div>
 
 <div class="foot">
   <div class="tabs">
-    <button id="tab-floor" class="active">FLOOR</button>
-    <button id="tab-map">MAP</button>
+    <button id="tab-shop" class="active">SHOP</button>
     <button id="tab-board">BOARD</button>
     <button id="tab-news">NEWS</button>
+    <button id="tab-docket">DOCKET</button>
   </div>
   <div class="subfoot">
     <span id="runinfo" class="dim"></span>
     <span>
-      <button id="dossier">PERSONNEL FILE</button>
       <button id="resign">RESIGN</button>
       <a href="/">LOBBY</a>
     </span>

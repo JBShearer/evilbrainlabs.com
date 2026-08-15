@@ -8,13 +8,14 @@ import {mulberry32,hash32,pickW} from "./gen.js";
 import {CONSEQUENCES,consequenceWeights} from "./data.js";
 import * as E from "./engine.js";
 
-export function recordShip({product,funder}){
+export function recordShip({product,funder,verdict}){
   const rec={
     id:product.id, name:product.name, subtitle:product.subtitle,
     run:E.FILE.runs, week:product.week,
     stats:product.stats, seed:product.seed,
     actId:product.act.id, toolId:product.tool.id, purpId:product.purpose.id,
     funderName:funder?.name||"petty cash",
+    verdict:verdict||null,
   };
   E.FILE.ledger=(E.FILE.ledger||[]).concat(rec).slice(-40);
   E.saveFile();
@@ -55,12 +56,14 @@ export function onWeek(){
     h.fired=true;
     out.push(fire(h,false));
   }
-  /* the past knocks: one echo per run, early */
+  /* the past knocks: one echo per run, early. The echo joins R.hooks
+     so hearing-flavored ones can be served as summons. */
   if(!E.R.echoedIn && E.R.week>=2 && (E.FILE.echoes||[]).length){
     E.R.echoedIn=true;
-    const h=E.FILE.echoes.shift();
+    const h={...E.FILE.echoes.shift(),fired:true,summoned:false};
+    E.R.hooks.push(h);
     E.saveFile();
-    out.push(fire({...h,fired:true},true));
+    out.push(fire(h,true));
   }
   E.saveRun();
   return out.filter(Boolean);
@@ -70,13 +73,11 @@ function fire(h,isEcho){
   const C=CONSEQUENCES[h.type];
   if(!C)return null;
   const p=h.product;
+  h.isEcho=isEcho;
   const wire=(isEcho?"FROM A PREVIOUS EMPLOYMENT: ":"")+C.wire(p);
   E.R.wire.push({week:E.R.week,text:wire,type:h.type});
-  /* some consequences want a room */
-  if(h.type==="hearing"||h.type==="recall"||h.type==="grudge"){
-    E.R.hearingQueue.push({...h,isEcho});
-  }
-  /* some move trust */
+  /* hearing-flavored hooks become SUMMONS — the summons module reads
+     fired-but-unsummoned hooks and knocks on the shutter */
   if(h.type==="grudge")E.bump("lisa",1);
   if(h.type==="turn"){E.bump("gary",1);E.bump("supes",1);}
   if(h.type==="clone")E.bump("benny",-1);

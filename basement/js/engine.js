@@ -1,14 +1,16 @@
 /* ============================================================ engine.js
-   Run = Employment. Attrition is permanent; the Personnel File is not.
-   Reads and extends the v1 save (ebl-basement-file): lore stays found,
-   trust stays earned, roles stay unlocked. The labyrinth is new; the
-   filing cabinet is the same filing cabinet.
+   Run = Employment. v3, per COURSE CORRECTION v2: the SHOP is home,
+   shipping is the point, and the streak compounds — right up until
+   the shutter rattles. Attrition is permanent; the Personnel File is
+   not. Reads and extends the old save: lore stays found, trust stays
+   earned, roles stay unlocked. Pre-shop mid-run saves are retired
+   with severance (discarded); the FILE carries on.
 ================================================================ */
 import {mulberry32,hash32,roomAt as genRoom} from "./gen.js";
-import {ACTS,TOOLS,PURPOSES,MODS,productName,productSubtitle} from "./data.js";
+import {ACTS,TOOLS,PURPOSES,MODS,productName,productSubtitle,computeVerdict} from "./data.js";
 
 export const FILE_KEY="ebl-basement-file";
-const RUN_KEY="ebl-basement-run2";
+const RUN_KEY="ebl-basement-run3";
 
 export const byId=(arr)=>Object.fromEntries(arr.map(o=>[o.id,o]));
 export const ACT_BY=byId(ACTS), TOOL_BY=byId(TOOLS), PURP_BY=byId(PURPOSES), MOD_BY=byId(MODS);
@@ -16,11 +18,10 @@ export const ACT_BY=byId(ACTS), TOOL_BY=byId(TOOLS), PURP_BY=byId(PURPOSES), MOD
 /* ---------------- the permanent file ---------------- */
 export let FILE={
   runs:0,bestDay:0,bestSyn:0,lore:[],trust:{},roles:["TRAINEE"],deaths:{},
-  /* v2 */
-  v:2, shipsTotal:0, cyclesTotal:0, ledger:[], echoes:[],
+  v:3, shipsTotal:0, cyclesTotal:0, ledger:[], echoes:[], bestStreak:0,
 };
 try{FILE={...FILE,...JSON.parse(localStorage.getItem(FILE_KEY)||"{}")}}catch(_){}
-FILE.v=2;
+FILE.v=3; FILE.bestStreak??=0;
 export const saveFile=()=>{try{localStorage.setItem(FILE_KEY,JSON.stringify(FILE))}catch(_){}};
 export const trust=h=>FILE.trust[h]||0;
 export const bump=(h,n)=>{if(!h)return;
@@ -45,11 +46,8 @@ export function resumeRun(){
     if(!raw)return false;
     const r=JSON.parse(raw);
     if(!r||r.dead||!r.seed)return false;
+    if(!("heat" in r))return false;      /* pre-shop save: retire it */
     R=r; rng=mulberry32((R.seed^(R.log.length*2654435761))>>>0);
-    R.replyQueue??=[];               /* saves from before step 4 */
-    R.postedThisWeek??=0;
-    R.extUsed??=0;
-    /* sanitize inventory: a part must exist in its slot's catalogue */
     R.inv.act=R.inv.act.filter(id=>ACT_BY[id]);
     R.inv.tool=R.inv.tool.filter(id=>TOOL_BY[id]);
     R.inv.purpose=R.inv.purpose.filter(id=>PURP_BY[id]);
@@ -64,17 +62,18 @@ export function newRun(role,seedOverride){
   R={
     seed, role:role||"TRAINEE",
     week:1, shift:0, syn:0, sus:0, clr:0, doom:0,
-    pos:{x:0,y:0}, visited:{"0,0":1}, steps:0, stepsSinceTick:0,
+    heat:0, streak:0, shipsSinceAttend:0,
+    summons:[], subpoena:false, invasion:null, summonsServed:0, ducked:0,
     inv:{act:[],tool:[],purpose:[],mods:[],coolant:0,napkins:1},
-    product:null, builds:0, ships:0, cycles:0,
-    hooks:[], news:[], board:[], wire:[], replyQueue:[], postedThisWeek:0, extUsed:0,
+    product:null, builds:0, ships:0, cycles:0, extUsed:0,
+    verdicts:{GOOD:0,EVIL:0,REVIEW:0},
+    hooks:[], news:[], board:[], wire:[], replyQueue:[], postedThisWeek:0,
     seenMeetings:[], spent:{}, log:[], dead:false, certified:false,
-    hearingQueue:[], echoedIn:false,
+    echoedIn:false, chuteBought:0,
   };
   if(R.role==="ARCHIVIST")R.clr=1;
   if(R.role==="PROCUREMENT")R.syn=15;
   if(R.role==="BODY DOUBLE")R.sus=-2;
-  /* starting kit, seeded */
   const kit=mulberry32(seed^0xBEEF);
   const deal=(arr,n)=>{const out=[];const a=arr.filter(p=>!p.rare);
     for(let i=0;i<n;i++)out.push(a[Math.floor(kit()*a.length)].id);return out;};
@@ -87,14 +86,13 @@ export function newRun(role,seedOverride){
   return R;
 }
 
-export const roomAt=(x,y)=>{
-  const room=genRoom(R.seed,x,y);
-  if(R.hearingQueue.length && !R.visited[x+","+y] && room.type==="conference"){
-    room.hearing=R.hearingQueue[0];
-  }
-  return room;
-};
-export const hereRoom=()=>roomAt(R.pos.x,R.pos.y);
+/* Destination rooms for summons: still the labyrinth generator, still
+   seeded — you just don't walk there. You are taken. */
+export const roomAt=(x,y)=>genRoom(R.seed,x,y);
+export function roomForSummons(s){
+  const h=hash32(R.seed,s.n,7,13);
+  return {x:(h%23)-11, y:((h>>>8)%23)-11};
+}
 
 /* ---------------- meters + clock ---------------- */
 export function fx(d={}){
@@ -110,17 +108,13 @@ export function tick(n=1){
     R.shift++;
     if(R.shift>=3){
       R.shift=0; R.week++;
+      if(R.week%6===0){R.doom++;emit("quarter",R.week);}  /* the quarter closes */
       emit("week", R.week);
     }
   }
   saveRun();
   emit("meters");
   checkAttrition();
-}
-export function walkTick(){
-  R.steps++; R.stepsSinceTick++;
-  if(R.stepsSinceTick>=4){R.stepsSinceTick=0;tick(1);}
-  else saveRun();
 }
 
 export function checkAttrition(){
@@ -141,8 +135,8 @@ export function makeProduct(actId,toolId,purpId,builtIn,modIds=[]){
   for(const m of modIds){const mod=MOD_BY[m];if(!mod)continue;
     stats.mg+=mod.d.mg;stats.mh+=mod.d.mh;stats.mc+=mod.d.mc;notes.push(mod.name);}
   if(builtIn==="napkin"){
-    for(const k of ["mg","mh","mc"])stats[k]+=Math.floor(prng()*5)-2;   /* the fuzz */
-    stats.mh+=2;                                                        /* the chaos multiplier */
+    for(const k of ["mg","mh","mc"])stats[k]+=Math.floor(prng()*5)-2;
+    stats.mh+=2;
     if(prng()<.18){const k=["mg","mh","mc"][Math.floor(prng()*3)];
       stats[k]+=4;notes.push("NAPKIN MIRACLE");}
   }
@@ -169,24 +163,52 @@ export function consumeParts(actId,toolId,purpId){
 }
 export function grantPart(kind,id){R.inv[kind].push(id);saveRun();}
 
-/* Ship the carried product. Consequence wiring listens on "shipped". */
+/* Streak multiplier: grinding compounds. */
+export const streakMult=(streak)=>1+0.15*Math.min(Math.max(0,streak-1),6);
+
+/* Ship from the bench. The docket stamps it; the heat remembers it. */
 export function ship(funder){
   const p=R.product;
-  if(!p)return null;
+  if(!p||R.subpoena)return null;
   p.funder=funder||null;
   if(funder?.trust)bump(funder.trust[0],funder.trust[1]);
   if(funder?.clr)R.clr+=funder.clr;
-  const mult=p.pitched? (p.mood>=75?2:p.mood>=55?1.5:p.mood>=30?1:.5) : 1;
-  const revenue=Math.round((p.stats.mg*2+4)*mult + (funder?.mg||0)*2);
+  R.streak++;
+  R.shipsSinceAttend++;
+  R.heat=R.shipsSinceAttend+R.ducked*0.5;
+  const sMult=streakMult(R.streak+(R.role==="SHIPWRIGHT"?1:0));
+  const moodMult=p.pitched? (p.mood>=75?2:p.mood>=55?1.5:p.mood>=30?1:.5) : 1;
+  const revenue=Math.round(((p.stats.mg*2+4)*moodMult + (funder?.mg||0)*2)*sMult);
   R.syn+=revenue;
   R.ships++; FILE.shipsTotal++;
+  FILE.bestStreak=Math.max(FILE.bestStreak,R.streak);
   R.doom+=1 + (p.stats.mh>=9?1:0);
+  const verdict=computeVerdict(p,funder,FILE.trust);
+  R.verdicts[verdict.stamp]=(R.verdicts[verdict.stamp]||0)+1;
+  /* offcuts: the shop floor keeps a spare from every build */
+  const orng=mulberry32((p.seed^0x0FC7)>>>0);
+  const okind=["act","tool","purpose"][Math.floor(orng()*3)];
+  const opool={act:ACTS,tool:TOOLS,purpose:PURPOSES}[okind].filter(x=>!x.rare);
+  const opart=opool[Math.floor(orng()*opool.length)];
+  R.inv[okind].push(opart.id);
+  const offcut={kind:okind,id:opart.id};
   R.product=null;
   R.log.push("ship:"+p.name);
+  /* summons TTLs count in ships */
+  for(const s of R.summons)s.ttl--;
   saveFile();
   tick(1);
-  emit("shipped",{product:p,funder,revenue});
-  return {product:p,funder,revenue};
+  emit("shipped",{product:p,funder,revenue,verdict,streak:R.streak,mult:sMult,offcut});
+  return {product:p,funder,revenue,verdict,streak:R.streak,mult:sMult,offcut};
+}
+
+/* The tax is time. Attending resets the grind. */
+export function attendReset(){
+  R.streak=0;
+  R.shipsSinceAttend=0;
+  R.heat=Math.max(0,R.ducked*0.5);
+  R.summonsServed++;
+  saveRun();
 }
 
 /* ---------------- attrition + the permanent record ---------------- */
@@ -196,7 +218,6 @@ export function die(cause,text){
   FILE.bestDay=Math.max(FILE.bestDay,R.week);
   FILE.bestSyn=Math.max(FILE.bestSyn,R.syn);
   FILE.deaths[cause]=(FILE.deaths[cause]||0)+1;
-  /* unfired consequences follow you into the next employment */
   const pending=R.hooks.filter(h=>!h.fired).slice(0,4)
     .map(h=>({...h,run:FILE.runs}));
   FILE.echoes=(FILE.echoes||[]).concat(pending).slice(-6);
@@ -207,6 +228,7 @@ export function die(cause,text){
   if((FILE.deaths.EXPOSED||0)>=2)unlock("BODY DOUBLE","ROLE UNLOCKED: BODY DOUBLE (suspicion resistant)");
   if(FILE.shipsTotal>=5)unlock("FACILITIES","ROLE UNLOCKED: FACILITIES (start with extra parts)");
   if(R.cycles>=3)unlock("PUBLICIST","ROLE UNLOCKED: PUBLICIST (audiences arrive warm)");
+  if(FILE.bestStreak>=5)unlock("SHIPWRIGHT","ROLE UNLOCKED: SHIPWRIGHT (streaks warm one ship sooner)");
   saveFile();saveRun();
   emit("died",{cause,text,unlocks});
 }

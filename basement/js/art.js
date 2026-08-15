@@ -240,6 +240,67 @@ const FURN={
  },
 };
 
+/* ================= THE SHOP =================
+   Home. One room, always available. The shutter is the antagonist's
+   knuckles; the bench is yours. */
+export function drawShop(ctx,frame=0,st={}){
+  R(ctx,0,0,W,H,"#07070b");
+  R(ctx,20,18,W-40,120,"#141017");                       /* warm dark walls */
+  ctx.fillStyle="#0f0c10";
+  ctx.beginPath();ctx.moveTo(20,138);ctx.lineTo(W-20,138);
+  ctx.lineTo(W,H-14);ctx.lineTo(0,H-14);ctx.closePath();ctx.fill();
+  ctx.strokeStyle="rgba(255,255,255,.05)";ctx.lineWidth=1;
+  for(let i=0;i<6;i++){const t=i/5;
+    ctx.beginPath();ctx.moveTo(20+t*(W-40),138);ctx.lineTo(t*W,H-14);ctx.stroke();}
+  /* neon sign */
+  ctx.save();ctx.shadowColor="#ff0044";ctx.shadowBlur=10;
+  text(ctx,"SHIP MORE.",96,40,"#ff0044",11);ctx.restore();
+  text(ctx,"— MANAGEMENT",96,50,"#8b8ba0",5);
+  /* pegboard of parts */
+  R(ctx,28,58,84,52,"#1a1510");
+  for(let r=0;r<3;r++)for(let i=0;i<5;i++){
+    if((r*5+i)%3===0)continue;
+    R(ctx,34+i*16,64+r*16,10,10,["#8b6f3f","#556","#c8607a","#3fd0a0","#99a"][(r*5+i)%5]);}
+  /* the bench */
+  R(ctx,40,116,120,10,"#3a2c1c");R(ctx,44,126,8,44,"#2c2014");R(ctx,144,126,8,44,"#2c2014");
+  for(let i=0;i<3;i++)glowR(ctx,58+i*28,108,12,8,"#101828");   /* sockets */
+  text(ctx,"ACT  TOOL  WHY",100,106,"#8b8ba0",5);
+  if(st.product){                                              /* on the bench */
+    drawProduct(ctx,100,92,40,st.product,st.product.revealed?"full":"sketch");
+  }
+  /* procurement chute */
+  R(ctx,20,70,10,40,"#232c3e");R(ctx,20,106,16,8,"#181f2c");
+  glowR(ctx,22,74,6,4,"#8b5cf6");
+  /* scrap bin */
+  R(ctx,168,150,26,20,"#1c2430");R(ctx,166,148,30,4,"#2c3850");
+  /* streak tally, gold on the wall */
+  const streak=Math.min(st.streak||0,12);
+  for(let i=0;i<streak;i++)
+    glowR(ctx,206+(i%6)*7,60+Math.floor(i/6)*10,3,8,"#ffd700");
+  if(streak)text(ctx,"THE STREAK",224,84,"#8b8ba0",5);
+  /* THE SHUTTER — right wall */
+  const rattle=st.summonses? ((frame%3)-1) : 0;
+  R(ctx,236+rattle,52,58,110,"#1a1f28");
+  for(let i=0;i<7;i++)R(ctx,238+rattle,58+i*15,54,2,"#242b38");
+  R(ctx,258+rattle,150,16,5,"#404a5c");                        /* handle */
+  if(st.summonses){
+    ctx.save();ctx.shadowColor="#ff9955";ctx.shadowBlur=10;
+    text(ctx,"KNOCK",265+rattle,44,"#ff9955",8);ctx.restore();
+    for(let i=0;i<st.summonses;i++)glowR(ctx,242+i*10+rattle,166,6,6,"#ff9955");
+  }
+  if(st.subpoena){                                             /* nailed to it */
+    ctx.save();ctx.translate(265,100);ctx.rotate(.05);
+    R(ctx,-16,-20,32,40,"#e8dcc0");
+    text(ctx,"SUB-",0,-6,"#900",8);text(ctx,"POENA",0,4,"#900",8);
+    glowR(ctx,-2,-24,4,4,"#ff0044");ctx.restore();
+  }
+  /* brain poster, watching */
+  R(ctx,120,62,44,40,"#0e0b12");
+  R(ctx,132,72,20,14,"#ff006e");R(ctx,129,76,4,6,"#d90056");R(ctx,151,76,4,6,"#d90056");
+  R(ctx,136,76,5,4,"#06b6d4");R(ctx,145,76,5,4,"#06b6d4");
+  text(ctx,"THE BRAIN PROVIDES",142,96,"#8b8ba0",4);
+}
+
 /* ================= CAST SPRITES =================
    Small robots, distinct silhouettes, drawn at (x,y) feet-center. */
 const bob=(f)=> (f>>3)%2;

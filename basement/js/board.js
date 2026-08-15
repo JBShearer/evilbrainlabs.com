@@ -5,7 +5,7 @@
    detractors dunk, according to how the floor feels about you.
 ================================================================ */
 import {mulberry32,pick} from "./gen.js";
-import {DEFENDS,DUNKS,TRADES,POST_OPTIONS,ACTS,TOOLS} from "./data.js";
+import {DEFENDS,DUNKS,POST_OPTIONS,TRADES,TOOLS} from "./data.js";
 import * as E from "./engine.js";
 
 export function post(p){
@@ -74,30 +74,29 @@ export function seedBoard(){
   say("sys",pick(rng,HR_NOTICES));
 }
 
-/* ---------------- player posting ---------------- */
+/* ---------------- player posting (free, weekly, remembered) ------------ */
 export function draftOptions(){
   const last=(E.FILE.ledger||[]).at(-1);
   return POST_OPTIONS({
     lastShip:last||null,
     lastShipMayhem:last? last.stats.mh>=6 : false,
-    clr:E.R.clr, sus:E.R.sus,
+    clr:E.shipsClearance(), sus:0,
   });
 }
 
 export function submitPost(opt){
   post({who:"you",text:opt.body});
-  E.fx(opt.fx||{});
   for(const r of opt.replies||[]){
     E.R.replyQueue.push({dueWeek:E.R.week+1,who:r.who,text:r.text,
       trust:r.trust||null,re:"your post"});
   }
   E.R.postedThisWeek=E.R.week;
   E.saveRun();
-  E.tick(1);                       /* posting is a shift. HR checked. */
+  E.tick(1);
 }
 export const canPost=()=>E.R.postedThisWeek!==E.R.week;
 
-/* ---------------- week roll: replies land, trades appear ---------------- */
+/* ---------------- week roll: replies land, classifieds appear ---------- */
 export function onWeek(){
   let landed=0;
   for(const r of E.R.replyQueue){
@@ -107,20 +106,19 @@ export function onWeek(){
     if(r.trust)E.bump(r.trust[0],r.trust[1]);
   }
   E.R.replyQueue=E.R.replyQueue.filter(r=>!r.fired);
-  /* the classifieds */
   const rng=mulberry32((E.R.seed^(E.R.week*2654435761))>>>0);
-  if(rng()<.45&&!E.R.board.some(b=>b.kind==="trade"&&!b.done)){
+  if(rng()<.4&&!E.R.board.some(b=>b.kind==="trade"&&!b.done)){
     const t=pick(rng,TRADES);
-    const part=t.kind==="selltool"||t.kind==="freepart"
-      ? pick(rng,TOOLS.filter(p=>!p.rare)) : (t.kind==="buyact"? null : null);
+    const part=(t.kind==="selltool"||t.kind==="freepart")
+      ? pick(rng,TOOLS.filter(p=>!p.rare)) : null;
     post({who:t.who,kind:"trade",tradeId:t.id,partId:part?.id||null,
-      text:t.text(part? part.low.toUpperCase() : (t.kind==="buyact"?"ACT":"")),done:false});
+      text:t.text(part? part.low.toUpperCase() : "SPARE"),done:false});
   }
   E.saveRun();
   return landed;
 }
 
-/* Accept a trade post (index into R.board). Returns a result line. */
+/* Accept a trade post — the crafting garnish's classifieds. */
 export function acceptTrade(i){
   const b=E.R.board[i];
   if(!b||b.kind!=="trade"||b.done)return null;
@@ -130,19 +128,20 @@ export function acceptTrade(i){
     return {ok:false,line:"THE HANDSHAKE REQUIRES STANDING. Come back when you're on the roster."};
   if(t.kind==="selltool"){
     if(!E.spend(t.cost))return {ok:false,line:"Synergy insufficient. Gary nods anyway. The bench keeps the part warm."};
-    E.grantPart("tool",b.partId);
+    E.grantPart(b.partId);
   }
   if(t.kind==="buyact"){
-    if(E.R.inv.act.length<2)return {ok:false,line:"You'd be selling your only ACT. Even Benny won't do that to you. Today."};
-    const sold=E.R.inv.act.pop();
-    E.R.syn+=t.gain;
+    const ownedIds=Object.keys(E.R.owned).filter(id=>E.R.owned[id]>0);
+    if(!ownedIds.length)return {ok:false,line:"Nothing spare to sell. Benny respects an empty warehouse. Barely."};
+    const id=ownedIds[0];
+    E.R.owned[id]--;E.R.syn+=t.gain;E.saveRun();
   }
   if(t.kind==="laser"){
     if(!E.spend(t.cost))return {ok:false,line:"Twenty-two synergy. The laser waits. Lasers are patient."};
-    E.grantPart("tool","laser");
+    E.grantPart("laser");
   }
   if(t.kind==="freepart"){
-    E.grantPart("tool",b.partId);
+    E.grantPart(b.partId);
     E.fx({doom:t.doom||0});
   }
   b.done=true;

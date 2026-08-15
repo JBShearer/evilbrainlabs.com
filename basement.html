@@ -28,12 +28,24 @@ h1 small{display:block;font-size:9px;letter-spacing:.3em;color:var(--dim);text-s
 .stat b{color:var(--gold)} .stat.warn b{color:var(--evil)} .stat.doom b{color:var(--cyan)}
 .hidden{display:none!important}
 
-/* scene */
-#scenewrap{border:1px solid var(--line);border-radius:4px;overflow:hidden;background:#000;
+/* scene boxes */
+.scenebox{border:1px solid var(--line);border-radius:4px;overflow:hidden;background:#000;
   box-shadow:0 0 40px -18px var(--evil), inset 0 0 60px rgba(0,0,0,.6)}
-#scenewrap canvas{display:block}
-#roomlabel{padding:7px 10px;font-size:11px;letter-spacing:.14em;border-top:1px solid var(--line);
+.scenebox canvas{display:block}
+#worldlabel{padding:7px 10px;font-size:11px;letter-spacing:.14em;border-top:1px solid var(--line);
   background:rgba(10,10,18,.9)}
+#mapwrap{border:1px solid var(--line);border-radius:4px;overflow:hidden;background:#000;
+  max-width:340px;margin:0 auto 10px}
+#mapwrap canvas{display:block;cursor:pointer}
+.partflex{display:flex;flex-wrap:wrap}
+.draftname{font-size:17px;color:var(--gold);letter-spacing:.04em;
+  text-shadow:0 0 14px rgba(255,215,0,.3);margin-bottom:2px}
+.card.inspire{border-left-color:var(--green);box-shadow:0 0 30px -16px var(--green)}
+.scenebtn{border-left-width:3px}
+.ownbadge{display:inline-block;margin-left:5px;color:var(--gold);font-size:9px;
+  text-shadow:0 0 6px rgba(255,215,0,.5)}
+.premtoggle{border-left:3px solid var(--gold)}
+.premtoggle.laid{border-color:var(--gold);background:#1a1826;box-shadow:0 0 10px -4px var(--gold)}
 
 /* cards (v1 lineage) */
 .card{background:var(--panel);border:1px solid var(--line);border-left:3px solid var(--evil);
@@ -148,12 +160,18 @@ button.ch .sub{display:block;font-size:10px;color:var(--dim);letter-spacing:.06e
 </head>
 <body>
 <div class="wrap" id="main">
-  <h1>THE SHOP<small>SUBLEVEL B · EVIL BRAIN LABS · SHIP AFTER SHIP AFTER SHIP</small></h1>
+  <h1>EVIL BRAIN LABS<small>SUBLEVEL B · INVENT FREELY · THE WORLD TAKES IT FROM THERE</small></h1>
   <div class="bar" id="bar"></div>
 
-  <div id="view-shop" class="view">
-    <div id="scenewrap"><div id="roomlabel"></div></div>
-    <div id="stage"></div>
+  <div id="view-invent" class="view">
+    <div id="inventscene" class="scenebox"></div>
+    <div id="inventstage"></div>
+  </div>
+
+  <div id="view-world" class="view hidden">
+    <div id="mapwrap"></div>
+    <div id="worldscene" class="scenebox"><div id="worldlabel"></div></div>
+    <div id="worldstage"></div>
   </div>
 
   <div id="view-board" class="view hidden"><div id="boardlist"></div></div>
@@ -165,7 +183,8 @@ button.ch .sub{display:block;font-size:10px;color:var(--dim);letter-spacing:.06e
 
 <div class="foot">
   <div class="tabs">
-    <button id="tab-shop" class="active">SHOP</button>
+    <button id="tab-invent" class="active">INVENT</button>
+    <button id="tab-world">WORLD</button>
     <button id="tab-board">BOARD</button>
     <button id="tab-news">NEWS</button>
     <button id="tab-docket">DOCKET</button>

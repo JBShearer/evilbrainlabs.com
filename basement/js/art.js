@@ -510,41 +510,46 @@ const TYPE_COLORS={break:"#ffd700",lab:"#00ffff",present:"#ff66aa",closet:"#00ff
   corridor:"#4a4a5e",mailroom:"#d8b08a",archive:"#00cc70",arcade:"#ff7733",
   executive:"#ff0044"};
 
+/* The world map: 9×9 around the office. Beacons are your inventions'
+   aftermaths, glowing where the world rearranged itself. Tap to go —
+   you are your own boss now, whatever the org chart says. */
 export function drawMap(ctx,w,h,state,roomAtFn,frame=0){
   R(ctx,0,0,w,h,"#07070b");
-  const CS=Math.floor(Math.min(w,h)/7);
+  const N=9;
+  const CS=Math.floor(Math.min(w,h)/N);
   const ox=Math.floor(w/2), oy=Math.floor(h/2);
-  const {x:px,y:py}=state.pos;
-  for(let dy=-3;dy<=3;dy++)for(let dx=-3;dx<=3;dx++){
-    const x=px+dx,y=py+dy,key=x+","+y;
+  const beacons={};
+  for(const s of state.scenes||[])beacons[s.roomKey]=s;
+  for(let dy=-4;dy<=4;dy++)for(let dx=-4;dx<=4;dx++){
+    const x=dx,y=dy,key=x+","+y;
     const cx=ox+dx*CS, cy=oy+dy*CS;
     const seen=state.visited[key];
-    const here=dx===0&&dy===0;
-    if(!seen&&!here){ /* unknown: faint static if adjacent through an open door */
+    const beacon=beacons[key];
+    const home=dx===0&&dy===0;
+    if(!seen&&!beacon&&!home){
+      ctx.fillStyle="#0b0b12";
+      ctx.fillRect(cx-CS/2+3,cy-CS/2+3,CS-6,CS-6);
       continue;
     }
     const room=roomAtFn(x,y);
-    ctx.fillStyle=here?"#181826":"#101018";
+    ctx.fillStyle=home?"#1c1826":"#101018";
     ctx.fillRect(cx-CS/2+2,cy-CS/2+2,CS-4,CS-4);
-    ctx.strokeStyle=TYPE_COLORS[room.type]||"#333";
-    ctx.lineWidth=here?2:1;
+    ctx.strokeStyle=TYPE_COLORS[beacon?beacon.roomType:room.type]||"#333";
+    ctx.lineWidth=home?2:1;
     ctx.strokeRect(cx-CS/2+2,cy-CS/2+2,CS-4,CS-4);
-    /* door notches; held doors notch in their holder's color */
-    ctx.fillStyle="#666";
-    if(room.doors.N)ctx.fillRect(cx-2,cy-CS/2,4,3);
-    if(room.doors.S)ctx.fillRect(cx-2,cy+CS/2-3,4,3);
-    if(room.doors.W)ctx.fillRect(cx-CS/2,cy-2,3,4);
-    if(room.doors.E)ctx.fillRect(cx+CS/2-3,cy-2,3,4);
-    const hd=room.held||{};
-    const hcol=w=>CAST[w]?.color||"#666";
-    if(!room.doors.N&&hd.N){ctx.fillStyle=hcol(hd.N);ctx.fillRect(cx-2,cy-CS/2,4,3);}
-    if(!room.doors.S&&hd.S){ctx.fillStyle=hcol(hd.S);ctx.fillRect(cx-2,cy+CS/2-3,4,3);}
-    if(!room.doors.W&&hd.W){ctx.fillStyle=hcol(hd.W);ctx.fillRect(cx-CS/2,cy-2,3,4);}
-    if(!room.doors.E&&hd.E){ctx.fillStyle=hcol(hd.E);ctx.fillRect(cx+CS/2-3,cy-2,3,4);}
-    if(here){const pulse=(frame>>2)%2;                       /* you */
-      ctx.fillStyle=pulse?"#f5f0e6":"#ffd700";
-      ctx.fillRect(cx-3,cy-3,6,6);}
-    else if(room.hearing){ctx.fillStyle="#ff0044";ctx.fillRect(cx-2,cy-2,4,4);}
+    if(home){                                     /* your desk */
+      glowR(ctx,cx-3,cy-3,6,6,"#ffd700");
+    }
+    if(beacon){                                    /* the aftermath glows */
+      const pulse=(frame>>2)%2;
+      const col=beacon.kind==="echo"?"#ff0044":"#ff9955";
+      if(pulse||!beacon.fresh)glowR(ctx,cx-4,cy-4,8,8,col);
+      else R(ctx,cx-3,cy-3,6,6,col);
+      if(beacon.who&&CAST[beacon.who]){
+        ctx.fillStyle=CAST[beacon.who].color;
+        ctx.fillRect(cx-CS/2+2,cy+CS/2-6,CS-4,3);  /* who's waiting, in color */
+      }
+    }
   }
-  text(ctx,"THE FLOOR IS THE RUN",w/2,h-4,"#3a3a4a",6);
+  text(ctx,"THE WORLD YOUR PRODUCTS MADE · TAP TO VISIT",w/2,h-4,"#3a3a4a",6);
 }

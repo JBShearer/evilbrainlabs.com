@@ -10,7 +10,7 @@ import * as E from "./engine.js";
 
 const axisOf=(s)=> s.mg>=s.mh&&s.mg>=s.mc ? "margin" : (s.mh>=s.mc ? "mayhem":"mercy");
 
-export function buildCycle({product,funder,revenue}){
+export function buildCycle({product,funder,verdict}){
   const rng=mulberry32(product.seed^0x9E5);
   const axis=axisOf(product.stats);
   const lead=pick(rng,HEADLINES[axis])(product).toUpperCase();
@@ -30,15 +30,15 @@ export function buildCycle({product,funder,revenue}){
     masthead:pick(rng,MASTHEADS),
     week:E.R.week,
     lead, deck, takes,
-    market:market(revenue,product,rng),
+    market:market(verdict,product,rng),
     wire:wire.slice(0,3),
-    funderLine:funder? "Funded by "+funder.name+". "+(funder.note||"") : "Self-funded, which HR calls 'a hobby.'",
+    funderLine:funder? "Funded by "+funder.name+". "+(funder.note||"") : "Unfunded, unbothered, unstoppable.",
     product:{name:product.name,subtitle:product.subtitle,seed:product.seed,
       stats:product.stats,
       act:{fx:product.act.fx,low:product.act.low,up:product.act.up},
       tool:{chassis:product.tool.chassis,low:product.tool.low},
       purpose:{badge:product.purpose.badge,low:product.purpose.low,who:product.purpose.who}},
-    revenue,
+    verdict,
   };
   E.R.news.unshift(cycle);
   E.R.news=E.R.news.slice(0,12);
@@ -47,9 +47,10 @@ export function buildCycle({product,funder,revenue}){
   return cycle;
 }
 
-function market(rev,p,rng){
-  const doomTick=p.stats.mh>=9?"▲▲":p.stats.mh>=5?"▲":"—";
-  return `SYNERGY +${rev} · DOOM FUTURES ${doomTick} · COOLANT ${(2+rng()*3).toFixed(2)} · JAR: UNCHANGED`;
+function market(verdict,p,rng){
+  const stamp=verdict?.stamp==="REVIEW"?"UNDER REVIEW":(verdict?.stamp||"UNSTAMPED");
+  const chaos=p.stats.mh>=9?"▲▲":p.stats.mh>=5?"▲":"—";
+  return `STAMP: ${stamp} · CHAOS FUTURES ${chaos} · COOLANT ${(2+rng()*3).toFixed(2)} · JAR: UNCHANGED`;
 }
 
 export const castName=(id)=>CAST[id]?.name||id.toUpperCase();

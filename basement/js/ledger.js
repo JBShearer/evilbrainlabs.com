@@ -19,7 +19,8 @@ export function recordShip({product,funder,verdict}){
   };
   E.FILE.ledger=(E.FILE.ledger||[]).concat(rec).slice(-40);
   E.saveFile();
-  /* schedule 1–2 consequences */
+  /* schedule 1–2 consequences. The FIRST followup lands fast — teach
+     the loop before you deepen it (v3, kept by the assembly). */
   const rng=mulberry32(product.seed^0xC0FFEE);
   const n=1+(rng()<.55?1:0);
   const weights=consequenceWeights(product,funder);
@@ -32,7 +33,7 @@ export function recordShip({product,funder,verdict}){
       id:"h"+product.seed.toString(36)+i,
       type, productId:product.id,
       product:snapshot(product),
-      dueWeek:E.R.week+2+Math.floor(rng()*4),
+      dueWeek:E.R.week+(i===0?1:2+Math.floor(rng()*4)),
       fired:false,
     });
   }

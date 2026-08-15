@@ -1,328 +1,309 @@
 /* ============================================================ main.js
-   v4 boot and glue. Tabs: INVENT · WORLD · BOARD · NEWS · DOCKET.
-   Inventing is free; the world is the aftermath; the docket is the
-   memory. Nothing in this file can stop you from making a thing.
+   The one-card runtime. One screen. One card at a time. No tabs.
+   The pixel art draws the scenes, the cast bible voices them, the
+   news generator writes the paper that unfolds over the story, the
+   ledger files what you shipped, and the story remembers you.
 ================================================================ */
 import * as E from "./engine.js";
-import * as Rooms from "./rooms.js";
 import * as Ledger from "./ledger.js";
 import * as News from "./news.js";
-import * as Board from "./board.js";
-import * as World from "./world.js";
-import * as Scenes from "./scenes.js";
-import * as Summons from "./summons.js";
-import {LORE,CAST,shipReactions} from "./data.js";
-import {makeCanvas,drawProduct} from "./art.js";
+import {STORY,stampsLine,TOYBOX_HANDS} from "./story.js";
+import {CAST,ACTS,TOOLS,PURPOSES} from "./data.js";
+import {drawRoom,drawProduct,makeCanvas} from "./art.js";
+import {mulberry32,hash32} from "./gen.js";
 
 const $=s=>document.querySelector(s);
-const esc=Rooms.esc;
+const esc=s=>String(s??"").replace(/[<>&]/g,m=>({"<":"&lt;",">":"&gt;","&":"&amp;"}[m]));
 
-/* ---------------- tabs + swipe ---------------- */
-const TABS=["invent","world","board","news","docket"];
-let tab="invent";
-function showTab(t){
-  tab=t;
-  for(const x of TABS){
-    $("#view-"+x).classList.toggle("hidden",x!==t);
-    $("#tab-"+x).classList.toggle("active",x===t);
-  }
-  if(t==="invent")Rooms.renderInvent();
-  if(t==="world")Rooms.renderWorld();
-  if(t==="board")renderBoard();
-  if(t==="news")renderNews();
-  if(t==="docket")renderDocket();
+/* ---------------- scene canvas ---------------- */
+let sceneCtx=null, frame=0, curRoom=null;
+function mountScene(){
+  const {c,ctx}=makeCanvas(320,240);
+  $("#scenewrap").prepend(c);
+  sceneCtx=ctx;
+  setInterval(()=>{
+    if(document.hidden||!curRoom)return;
+    frame++;drawRoom(sceneCtx,curRoom,frame);
+  },420);
 }
-TABS.forEach(t=>{$("#tab-"+t).onclick=()=>showTab(t);});
-(function swipe(){
-  let x0=null,y0=null;
-  const main=$("#main");
-  main.addEventListener("touchstart",e=>{x0=e.touches[0].clientX;y0=e.touches[0].clientY;},{passive:true});
-  main.addEventListener("touchend",e=>{
-    if(x0==null)return;
-    const dx=e.changedTouches[0].clientX-x0, dy=e.changedTouches[0].clientY-y0;
-    x0=null;
-    if(Math.abs(dx)<60||Math.abs(dy)>Math.abs(dx))return;
-    const i=TABS.indexOf(tab);
-    showTab(TABS[(i+(dx<0?1:TABS.length-1))%TABS.length]);
-  },{passive:true});
-})();
-
-/* ---------------- the bar: joy in front, stakes behind it ------------- */
-function statBar(){
-  const R=E.R; if(!R)return;
-  const last=(E.FILE.ledger||[]).at(-1);
-  const stamp=last?.verdict?.stamp;
-  const stampHtml=stamp?`<span class="stat">STAMP <b style="color:${stamp==="GOOD"?"#00ff88":stamp==="EVIL"?"#ff0044":"#ffd700"}">${stamp==="REVIEW"?"REVIEW":stamp}</b></span>`:"";
-  const streakHtml=R.streak>1?`<span class="stat">STREAK <b>×${E.streakMult(R.streak+(R.role==="SHIPWRIGHT"?1:0)).toFixed(2)}</b></span>`:"";
-  $("#bar").innerHTML=
-   `<span class="stat">WEEK <b>${R.week}</b></span>
-    <span class="stat">INVENTED <b>${E.FILE.shipsTotal}</b></span>
-    <span class="stat">SYNERGY <b>${R.syn}</b></span>
-    <span class="stat ${R.sus>=7?"warn":""}">SUSPICION <b>${Math.max(0,R.sus)}</b>/10</span>
-    <span class="stat doom">DOOM <b>${R.doom}</b>/12</span>
-    ${streakHtml}${stampHtml}`;
-  $("#runinfo").textContent=
-    `RUN #${E.FILE.runs} · SEED ${R.seed} · ROLE ${R.role} · SCENES ${R.scenes.length} · LORE ${E.FILE.lore.length}/${Object.keys(LORE).length}`;
+const NO_DOORS={N:false,S:false,E:false,W:false};
+function backdrop(node,id){
+  const seed=hash32(7,id.length*31,(node.bg||"corridor").length*7,13)>>>0;
+  curRoom={x:0,y:0,type:node.bg||"corridor",seed,
+    doors:NO_DOORS,held:{},palette:seed%6,wear:.3+((seed>>>8)%40)/100,
+    variant:seed%4,hazard:false,
+    cast:(node.who&&node.who!=="sys")?node.who:null};
+  frame++;drawRoom(sceneCtx,curRoom,frame);
 }
-E.on("meters",statBar);
-E.on("newrun",statBar);
 
-/* ---------------- toast ---------------- */
-const toasts=[];
-let toasting=false;
-function toast(msg){
-  toasts.push(msg);
-  if(toasting)return;
-  toasting=true;
-  (function next(){
-    const m=toasts.shift();
-    if(!m){toasting=false;return;}
-    const el=$("#toast");
-    el.textContent=m;el.classList.add("show");
-    setTimeout(()=>{el.classList.remove("show");setTimeout(next,240);},2600);
-  })();
+/* ---------------- story state ---------------- */
+const DAYSET={cert:1,day2:2,callback1:3,day3:4,toybox3_intro:5,finale_gate:6};
+function S(){
+  const R=E.R;
+  return {run:E.FILE.runs, day:R.storyDay||1,
+    p1:R.p1, p2:R.p2, p3:R.p3,
+    sus:Math.max(0,R.sus), doom:R.doom,
+    file:E.FILE, stamps:stampsLine()};
 }
-E.on("toast",toast);
+const nodeText=(node)=>typeof node.text==="function"?node.text(S()):node.text;
 
-/* ---------------- THE LOOP: invent → the world becomes it ------------- */
-E.on("shipped",({product,funder,verdict,revenue,streak,mult})=>{
-  Ledger.recordShip({product,funder,verdict});
-  News.buildCycle({product,funder,verdict});
-  Board.onShip({name:product.name,seed:product.seed});
-  for(const r of shipReactions(product,funder)){
-    E.bump(r.c,r.d);
-  }
-  if(E.R.dead)return;                     /* the launch was the last straw */
-  const scenes=Scenes.spawnAftermath(product);
-  const stampWord=verdict.stamp==="REVIEW"?"UNDER REVIEW":verdict.stamp;
-  toast(`SHIPPED: ${product.name} · +${revenue} SYNERGY${streak>1?` · STREAK ${streak} (×${mult.toFixed(2)})`:""} · ${stampWord}`);
-  toast(`The world is rearranging itself. ${scenes.length} scenes just lit up.`);
-  const knock=Summons.afterShip();
-  if(knock)toast("And the shutter. Someone's knuckles. The company requires you, eventually, optionally, insistently.");
-  showTab("world");
-});
-E.on("attendsummons",(s)=>{
-  showTab("world");
-  Rooms.playSummons(s);
-});
-E.on("quarter",()=>{toast("THE QUARTER CLOSES. DOOM +1. Accounting sends its regards, itemized.");});
-E.on("week",()=>{
-  const surfaced=Ledger.onWeek();
-  for(const s of surfaced){
-    Board.onConsequence(s.board);
-    if(["hearing","recall","grudge"].includes(s.hook.type)){
-      Scenes.spawnEcho(s.hook);
-      toast((s.isEcho?"FROM BEFORE: ":"IT CAME BACK: ")+s.wire);
-    } else {
-      toast("MEANWHILE: "+s.wire);
+function goto(id){
+  if(id==="__rebirth")return rebirth();
+  const node=STORY[id];
+  if(!node)return console.error("missing node",id);
+  if(DAYSET[id])E.R.storyDay=DAYSET[id];
+  if(node.branch)return goto(node.branch(S()));
+  E.R.node=id;E.saveRun();
+  render(id,node);
+}
+
+function render(id,node){
+  backdrop(node,id);
+  $("#daychip").textContent="DAY "+(E.R.storyDay||1);
+  if(node.kind==="toybox")return toyboxUI(id,node);
+  if(node.kind==="paper")return paperUI(id,node);
+  if(node.kind==="minigame")return minigameIntro(id,node);
+  const stage=$("#stage");
+  const name=node.who?(CAST[node.who]?.name||node.who.toUpperCase()):"";
+  const deathHere=node.ending&&node.death&&!E.R.dead;
+  if(deathHere)E.die(node.death,"");     /* file it; the card is the screen */
+  stage.innerHTML=`<div class="card ${node.ending?"term":""}">
+    ${name?`<div class="who ${node.who==="sys"?"sys":""}">${esc(name)}</div>`:""}
+    <p>${esc(nodeText(node))}</p>
+    <div class="choices">${node.choices.map((c,i)=>
+      `<button class="ch" data-i="${i}"><span class="k">${i+1}</span>${esc(c.t)}</button>`).join("")}</div>
+  </div>`;
+  stage.querySelectorAll(".ch[data-i]").forEach(b=>b.onclick=()=>{
+    const c=node.choices[+b.dataset.i];
+    if(c.trust&&c.trust[1])E.bump(c.trust[0],c.trust[1]);
+    if(c.fx){E.R.doom+=c.fx.doom||0;E.R.sus+=c.fx.sus||0;E.saveRun();}
+    if(deathCheck())return;
+    let loreHtml="";
+    if(c.lore&&!E.FILE.lore.includes(c.lore)){
+      E.FILE.lore.push(c.lore);E.saveFile();
+      loreHtml=`<div class="lorebox">◈ RECOVERED: A PAGE FROM UNDER W</div>`;
     }
-  }
-  const landed=Board.onWeek();
-  if(landed)toast(landed===1?"The board replied to you.":"The board has opinions. "+landed+" of them.");
-  World.weekTick();
-  Summons.onWeek();
-  statBar();
-});
-E.on("died",({cause,text,unlocks})=>{
-  showTab("invent");
-  $("#inventstage").innerHTML=
-   `<div class="card term"><h2>NATURAL ATTRITION · ${esc(cause)}</h2>
-    <p>${esc(text)}</p>
-    <p class="meta">Survived to WEEK ${E.R.week} · INVENTED ${E.R.ships} this employment · BEST STREAK ${E.FILE.bestStreak}</p>
-    <p class="meta">The docket, the standing, and the lore are permanent. The rest is paperwork.</p>
-    ${unlocks.map(u=>`<div class="lorebox">◈ ${esc(u)}</div>`).join("")}
-    <div class="choices">${E.FILE.roles.map(r=>
-      `<button class="ch" data-r="${esc(r)}"><span class="k">▸</span>NEW EMPLOYMENT · AS ${esc(r)}</button>`).join("")}</div></div>`;
-  document.querySelectorAll("#inventstage .ch[data-r]").forEach(b=>b.onclick=()=>{
-    certGate(null,b.dataset.r);
-  });
-});
-E.on("sceneplayed",()=>{statBar();});
-E.on("boardpost",({who,text,re})=>{Board.post({who,text,re});});
-E.on("faded",(s)=>{
-  Board.post({who:"sys",
-    text:`MOMENT PASSED: the ${s.roomType||"scene"} about ${s.product?.name||"your product"} resolved itself without you. The building tidies its own plots eventually.`});
-});
-E.on("resigned",()=>{
-  const stage=tab==="invent"?$("#inventstage"):$("#worldstage");
-  (stage||$("#inventstage")).insertAdjacentHTML("afterbegin",
-   `<div class="card"><div class="who sys">SUBLEVEL SYSTEMS</div>
-    <p>Resignation declined. Employees may not terminate their employment; employment terminates the employee. This is called natural attrition. Your attempt has been logged as a human behaviour.</p></div>`);
-  statBar();
-});
-
-/* ---------------- board tab ---------------- */
-function boardAuthor(p){
-  if(p.who==="you")return "YOU · EMPLOYEE #REDACTED";
-  if(p.who==="anon")return "ANONYMOUS (OBVIOUSLY THE BRAIN)";
-  if(p.who==="sys")return "SUBLEVEL SYSTEMS";
-  return (CAST[p.who]?.name||p.who).toUpperCase();
-}
-function renderBoard(){
-  const posts=E.R.board;
-  const can=Board.canPost();
-  $("#boardlist").innerHTML=
-   `<div class="card"><div class="who sys">SUBLEVEL B MESSAGE BOARD</div>
-    <p class="dim">Monitored for morale, by morale. Everything posted is remembered, mostly fondly now.</p>
-    <div class="choices"><button class="ch" id="draftpost" ${can?"":"disabled"}><span class="k">✎</span>${can?"DRAFT A POST":"POSTED THIS WEEK (THE BOARD SAVORS YOU)"}</button></div></div>`+
-   (posts.length?posts.map((p,i)=>
-    `<div class="card post ${p.kind==="trade"?"trade":""}"><div class="who ${p.who==="sys"?"sys":p.who==="anon"?"lore":""}" ${CAST[p.who]?`style="color:${CAST[p.who].color}"`:""}>${esc(boardAuthor(p))} <span class="dim">· WEEK ${p.week}${p.kind==="trade"?" · CLASSIFIEDS":""}</span></div>
-     <p>${esc(p.text)}</p>${p.re?`<div class="meta">re: ${esc(p.re)}</div>`:""}
-     ${p.kind==="trade"?(p.done?`<div class="meta">— TRADED —</div>`
-       :`<div class="choices"><button class="ch tradebtn" data-t="${i}"><span class="k">⇄</span>TAKE THE DEAL</button></div>`):""}</div>`).join("")
-    :`<div class="card"><p class="dim">The board is quiet. Invent something. The board loves an inventor.</p></div>`);
-  $("#draftpost")?.addEventListener("click",composeUI);
-  document.querySelectorAll(".tradebtn").forEach(b=>b.onclick=()=>{
-    const res=Board.acceptTrade(+b.dataset.t);
-    if(res){toast(res.line);statBar();}
-    renderBoard();
-  });
-}
-function composeUI(){
-  const opts=Board.draftOptions();
-  $("#boardlist").firstElementChild.outerHTML=
-   `<div class="card"><div class="who">DRAFTS (PICK ONE, IT PICKS YOU BACK)</div>
-    <div class="choices">${opts.map((o,i)=>
-      `<button class="ch" data-o="${i}">${esc(o.label)}<span class="sub">"${esc(o.body.slice(0,64))}${o.body.length>64?"…":""}"</span></button>`).join("")}
-      <button class="ch" id="nodraft"><span class="k">✕</span>Log off. Wise.</button></div></div>`;
-  document.querySelectorAll("#boardlist .ch[data-o]").forEach(b=>b.onclick=()=>{
-    Board.submitPost(opts[+b.dataset.o]);
-    toast("Posted. The board is reading. The board is always reading.");
-    renderBoard();
-  });
-  $("#nodraft").onclick=renderBoard;
-}
-
-/* ---------------- news tab ---------------- */
-function renderNews(){
-  const list=$("#newslist");
-  if(!E.R.news.length){
-    list.innerHTML=`<div class="card"><div class="who sys">THE NEWS CYCLE</div>
-      <p class="dim">Nothing yet. The presses idle. Somewhere a headline waits for you to deserve it. Invent something.</p></div>`;
-    return;
-  }
-  list.innerHTML=E.R.news.map((n,i)=>`
-   <div class="card news ${i===0?"fresh":""}">
-     <div class="masthead">${esc(n.masthead)}<span class="dim"> · WEEK ${n.week} · YEAR OF THE JAR</span></div>
-     <div class="lead">${esc(n.lead)}</div>
-     <div class="newsflex">
-       <div class="prodicon" data-i="${i}"></div>
-       <p class="deck">${esc(n.deck)}</p>
-     </div>
-     <p class="dim">${esc(n.funderLine)}</p>
-     ${n.takes.map(t=>`<div class="take"><span class="tw" style="color:${CAST[t.who]?.color||"#f5f0e6"}">${esc(CAST[t.who]?.name||t.who)}:</span> ${esc(t.text)}</div>`).join("")}
-     <div class="market">${esc(n.market)}</div>
-     ${n.wire.map(w=>`<div class="wire">◈ ${esc(w)}</div>`).join("")}
-   </div>`).join("");
-  list.querySelectorAll(".prodicon").forEach(el=>{
-    const n=E.R.news[+el.dataset.i];
-    const {c,ctx}=makeCanvas(72,72);
-    el.appendChild(c);
-    ctx.fillStyle="#0a0a12";ctx.fillRect(0,0,72,72);
-    drawProduct(ctx,36,40,44,{seed:n.product.seed,stats:n.product.stats,
-      act:{fx:n.product.act.fx},tool:{chassis:n.product.tool.chassis},
-      purpose:{badge:n.product.purpose.badge}},"full");
+    if(!c.out)return goto(c.goto);
+    const ch=stage.querySelector(".choices");
+    ch.remove();
+    stage.querySelector(".card").insertAdjacentHTML("beforeend",
+      `<div class="out">${esc(c.out)}</div>${loreHtml}
+       <div class="choices"><button class="ch" id="next"><span class="k">⏎</span>CONTINUE</button></div>`);
+    $("#next").onclick=()=>goto(c.goto);
   });
 }
 
-/* ---------------- docket tab (the memory) ---------------- */
-const STAMP_COLOR={GOOD:"#00ff88",EVIL:"#ff0044",REVIEW:"#ffd700"};
-function renderDocket(){
-  const F=E.FILE;
-  const recs=(F.ledger||[]).slice().reverse();
-  const stamps=recs.reduce((m,r)=>{const s=r.verdict?.stamp||"REVIEW";m[s]=(m[s]||0)+1;return m;},{});
-  const lore=F.lore.map(k=>LORE[k]?`<div class="lorebox">◈ ${esc(LORE[k].t)}\n${esc(LORE[k].x)}</div>`:"").join("")
-    ||`<p class="dim">Nothing recovered yet. The archive opens for inventors. Keep shipping.</p>`;
-  const trustRows=Object.entries(F.trust).filter(([,v])=>v).sort((a,b)=>b[1]-a[1])
-    .map(([k,v])=>`<span class="badge">${esc(CAST[k]?.name||k)} ${v>0?"+":""}${v}</span>`).join("")
-    ||'<span class="dim">No one remembers you yet. They will.</span>';
-  $("#docketlist").innerHTML=
-   `<div class="card"><div class="who lore">THE SHIPPED DOCKET (IN-WORLD, PERMANENT, FICTIONAL)</div>
-    <p>Invented, lifetime: <b>${F.shipsTotal}</b></p>
-    <p>Stamps: <span style="color:#00ff88">GOOD ${stamps.GOOD||0}</span> ·
-       <span style="color:#ff0044">EVIL ${stamps.EVIL||0}</span> ·
-       <span style="color:#ffd700">UNDER REVIEW ${stamps.REVIEW||0}</span></p></div>`+
-   (recs.slice(0,20).map(r=>{
-     const st=r.verdict?.stamp||"REVIEW";
-     const votes=(r.verdict?.votes||[]).map(v=>
-       `<span class="dim">${esc(CAST[v.who]?.name||v.who)}: ${v.v==="ABSTAIN"?"abstains":v.v}</span>`).join(" · ");
-     return `<div class="card post">
-       <div class="who">${esc(r.name)}
-         <span class="stamp" style="color:${STAMP_COLOR[st]};border-color:${STAMP_COLOR[st]}">${st==="REVIEW"?"UNDER REVIEW":st}</span></div>
-       <p class="dim">${esc(r.subtitle)} · week ${r.week} · ${esc(r.funderName)}</p>
-       ${votes?`<p style="font-size:11px">${votes}</p>`:""}
-     </div>`;}).join("")||'<div class="card"><p class="dim">The docket is empty. The docket is patient.</p></div>')+
-   `<div class="card"><div class="who lore">PERSONNEL FILE</div>
-    <p>Employments: ${F.runs} · This one: week ${E.R.week}, role ${esc(E.R.role)} · Summons served ${E.R.summonsServed}, ducked ${E.R.ducked}</p>
-    <p>${F.roles.map(r=>`<span class="badge">${esc(r)}</span>`).join("")}</p>
-    <p class="meta">STANDING WITH THE CAST</p><p>${trustRows}</p>
-    <p class="meta">RECOVERED LORE</p>${lore}</div>`;
+/* death by meters, anywhere: the story routes it */
+let diedCause=null;
+E.on("died",({cause})=>{diedCause=cause;});
+function deathCheck(){
+  if(E.R.dead){goto(diedCause==="EXPOSED"?"end_exposed":"end_doomsday");return true;}
+  if(E.R.sus>=10){goto("end_exposed");return true;}
+  if(E.R.doom>=12){goto("end_doomsday");return true;}
+  return false;
 }
 
-$("#resign").onclick=()=>E.resign();
+/* ---------------- the toybox: three quick taps ---------------- */
+function toyboxUI(id,node){
+  const hands=TOYBOX_HANDS[node.moment];
+  const deck={
+    act:hands?ACTS.filter(p=>hands.act.includes(p.id)):ACTS,
+    tool:hands?TOOLS.filter(p=>hands.tool.includes(p.id)):TOOLS.filter(p=>!p.rare),
+    purpose:hands?PURPOSES.filter(p=>hands.purpose.includes(p.id)):PURPOSES,
+  };
+  const sel={act:null,tool:null,purpose:null};
+  const stage=$("#stage");
+  const draw=()=>{
+    const ready=sel.act&&sel.tool&&sel.purpose;
+    const draft=ready?E.makeProduct(sel.act,sel.tool,sel.purpose):null;
+    stage.innerHTML=`<div class="card">
+      <div class="who">${esc(node.title||"THE TOYBOX")}</div>
+      <p class="dim">${esc(nodeText(node))}</p>
+      ${["act","tool","purpose"].map(kind=>`
+        <div class="socket"><div class="socklabel">${kind==="act"?"WHAT IT DOES":kind==="tool"?"WHAT IT IS":"WHO IT'S FOR"}</div>
+        <div class="partflex">${deck[kind].map(p=>
+          `<button class="chip ${kind} ${sel[kind]===p.id?"laid":""}" data-k="${kind}" data-id="${p.id}">${esc(kind==="act"?p.up:p.low.toUpperCase())}</button>`).join("")}
+        </div></div>`).join("")}
+      ${ready?`<p class="draftname">${esc(draft.name)}</p><p class="dim">${esc(draft.subtitle)}</p>`:""}
+      <div class="choices">
+        <button class="ch" id="shipit" ${ready?"":"disabled"}><span class="k">🚀</span>SHIP IT</button>
+        <button class="ch" id="surprise"><span class="k">☈</span>SURPRISE ME</button>
+      </div></div>`;
+    if(ready){
+      const holder=document.createElement("div");
+      holder.id="draftart";
+      stage.querySelector(".draftname").before(holder);
+      const {c,ctx}=makeCanvas(120,80);
+      holder.appendChild(c);
+      ctx.fillStyle="#0a0a12";ctx.fillRect(0,0,120,80);
+      drawProduct(ctx,60,42,52,draft,node.moment==="napkin"?"sketch":"full");
+    }
+    stage.querySelectorAll(".chip").forEach(el=>el.onclick=()=>{
+      sel[el.dataset.k]=el.dataset.id;draw();
+    });
+    $("#surprise").onclick=()=>{
+      for(const kind of ["act","tool","purpose"])
+        sel[kind]=deck[kind][Math.floor(Math.random()*deck[kind].length)].id;
+      draw();
+    };
+    $("#shipit").onclick=()=>{
+      if(!(sel.act&&sel.tool&&sel.purpose))return;
+      shipFromStory(sel,node);
+    };
+  };
+  draw();
+}
+
+function shipFromStory(sel,node){
+  const builtIn=node.moment==="napkin"?"napkin":"toybox";
+  const p=E.makeProduct(sel.act,sel.tool,sel.purpose,builtIn);
+  const res=E.ship(p,null);
+  if(!res)return;
+  Ledger.recordShip({product:p,funder:null,verdict:res.verdict});
+  const cycle=News.buildCycle({product:p,funder:null,verdict:res.verdict});
+  const slot=!E.R.p1?"p1":!E.R.p2?"p2":"p3";
+  E.R[slot]={name:p.name,subtitle:p.subtitle,stats:p.stats,seed:p.seed,
+    act:{id:p.act.id,low:p.act.low,we:p.act.we,up:p.act.up,fx:p.act.fx},
+    tool:{id:p.tool.id,low:p.tool.low,chassis:p.tool.chassis},
+    purpose:{id:p.purpose.id,low:p.purpose.low,who:p.purpose.who,badge:p.purpose.badge}};
+  E.R.lastCycle=cycle;
+  E.saveRun();
+  if(deathCheck())return;
+  goto(node.next);
+}
+
+/* ---------------- the paper: unfolds right there ---------------- */
+function paperUI(id,node){
+  const n=E.R.lastCycle;
+  const p=E.R[node.product];
+  const paper=$("#paper");
+  paper.innerHTML=`<div class="sheet">
+    <div class="masthead">${esc(n.masthead)}<span class="dim"> · DAY ${E.R.storyDay||1} · YEAR OF THE JAR</span></div>
+    <div class="lead">${esc(n.lead)}</div>
+    <div class="newsflex"><div class="prodicon" id="papericon"></div>
+      <p class="deck">${esc(n.deck)}</p></div>
+    ${n.takes.slice(0,2).map(t=>`<div class="take"><span class="tw" style="color:${CAST[t.who]?.color||"#f5f0e6"}">${esc(CAST[t.who]?.name||t.who)}:</span> ${esc(t.text)}</div>`).join("")}
+    <div class="market">${esc(n.market)}</div>
+    <p class="foldhint">— tap the paper to fold it away —</p>
+  </div>`;
+  paper.classList.add("show");
+  const {c,ctx}=makeCanvas(72,72);
+  $("#papericon").appendChild(c);
+  ctx.fillStyle="#0a0a12";ctx.fillRect(0,0,72,72);
+  drawProduct(ctx,36,40,44,{seed:p.seed,stats:p.stats,
+    act:{fx:p.act.fx},tool:{chassis:p.tool.chassis},purpose:{badge:p.purpose.badge}},"full");
+  paper.onclick=()=>{
+    paper.classList.remove("show");
+    paper.onclick=null;
+    setTimeout(()=>goto(node.next),260);
+  };
+}
+
+/* ---------------- minigames: moments inside scenes ---------------- */
+function minigameIntro(id,node){
+  const stage=$("#stage");
+  const name=node.who?(CAST[node.who]?.name||node.who.toUpperCase()):"";
+  stage.innerHTML=`<div class="card">
+    ${name?`<div class="who ${node.who==="sys"?"sys":""}">${esc(name)}</div>`:""}
+    <p>${esc(nodeText(node))}</p>
+    <div class="choices"><button class="ch" id="begin"><span class="k">▸</span>BEGIN</button></div></div>`;
+  $("#begin").onclick=()=>MINIGAMES[node.game](id,(res)=>{
+    if(res.trustGi)E.bump("gi",res.trustGi);
+    if(res.sus){E.R.sus+=res.sus;E.saveRun();}
+    if(deathCheck())return;
+    const stage2=$("#stage");
+    stage2.innerHTML=`<div class="card">
+      ${name?`<div class="who ${node.who==="sys"?"sys":""}">${esc(name)}</div>`:""}
+      <div class="out">${esc(res.out)}</div>
+      <div class="choices"><button class="ch" id="next"><span class="k">⏎</span>CONTINUE</button></div></div>`;
+    $("#next").onclick=()=>goto(node.next);
+  });
+}
+let gameTimers=[];
+const gInterval=(fn,ms)=>{const t=setInterval(fn,ms);gameTimers.push(t);return t;};
+const gTimeout=(fn,ms)=>{const t=setTimeout(fn,ms);gameTimers.push(t);return t;};
+const MINIGAMES={
+ simon(id,done){
+  const G=["💥","🔧","🚀","🧠"];
+  const rng=mulberry32((hash32(3,id.length,E.FILE.runs,5))>>>0);
+  const seq=Array.from({length:4},()=>G[Math.floor(rng()*4)]);
+  let shown=0,inp=[];
+  const show=()=>{
+   $("#stage").innerHTML=`<div class="card"><div class="who">MORALE CHANT</div><p style="font-size:34px;text-align:center;letter-spacing:.2em">${shown<seq.length?seq[shown]:"YOUR TURN"}</p>
+    ${shown>=seq.length?`<div class="choices" style="grid-template-columns:repeat(4,1fr)">${G.map(g=>`<button class="ch sim" data-g="${g}" style="text-align:center;font-size:22px">${g}</button>`).join("")}</div>`:""}</div>`;
+   if(shown<seq.length){shown++;gTimeout(show,750);}
+   else document.querySelectorAll(".sim").forEach(b=>b.onclick=()=>{
+     inp.push(b.dataset.g);
+     if(inp[inp.length-1]!==seq[inp.length-1])return done({sus:1,out:"Wrong glyph. GI restarts the chant from birth, twice, then excuses you tearfully with a participation ribbon."});
+     if(inp.length===seq.length)return done({trustGi:1,out:"Perfect chant. GI salutes so hard a ceiling tile enlists. You are, he announces, MORALE ITSELF."});
+   });
+  };show();
+ },
+ coolant(id,done){
+  let p=0,dir=1,stopped=false;
+  $("#stage").innerHTML=`<div class="card"><div class="who sys">COOLANT CALIBRATION</div>
+   <p>Stop the marker in the SYNTHETIC band.</p>
+   <div style="position:relative;height:26px;border:1px solid var(--line);background:#12121d;margin:8px 0">
+     <div style="position:absolute;left:38%;width:24%;top:0;bottom:0;background:rgba(0,255,136,.18);border-left:1px solid #1f4;border-right:1px solid #1f4"></div>
+     <div id="mk" style="position:absolute;top:0;bottom:0;width:3px;background:var(--gold)"></div></div>
+   <div class="choices"><button class="ch" id="stop" style="text-align:center">STOP</button></div></div>`;
+  const iv=gInterval(()=>{if(stopped)return;p+=dir*2.6;if(p>=100||p<=0)dir*=-1;
+   const mk=$("#mk");if(mk)mk.style.left=p+"%";},16);
+  $("#stop").onclick=()=>{stopped=true;clearInterval(iv);
+   const inBand=p>=38&&p<=62;
+   done(inBand?{out:`Stopped at ${p.toFixed(0)}%. Precisely synthetic. The machine plays a short fanfare it has been saving, then dispenses a coolant on the house. Historic.`}
+    :{sus:2,out:`Stopped at ${p.toFixed(0)}%. ${p>62?"Warm. Humans drift warm. The machine forgives you, audibly, and files the forgiveness.":"Frozen solid. Overcorrection is also a tell, the machine notes, with real sympathy."}`});};
+ },
+ captcha(id,done){
+  const QS=[["Do you dream?","NO"],["Is the granola bar tempting?","NO"],["2+2?","4"],["Do you love your coworkers?","YES"],["Are you human?","NO"]];
+  let i=0,score=0,timer=null;
+  const ask=()=>{
+   if(i>=QS.length){clearTimeout(timer);
+    return done(score>=4?{out:`${score}/5. Verified adequately non-human. HR prints a tiny diploma and applauds with two fingers.`}
+     :score>=2?{sus:1,out:`${score}/5. Borderline. The clipboard squints at you fondly.`}
+     :{sus:2,out:`${score}/5. A very human performance. It has been logged with sympathy and, honestly, some admiration.`});}
+   const [q,a]=QS[i];
+   $("#stage").innerHTML=`<div class="card"><div class="who sys">REVERSE CAPTCHA · ${i+1}/5</div><p>${q}</p>
+    <div class="choices">${["YES","NO","4"].filter(x=>x!=="4"||q.includes("2+2")).map(x=>`<button class="ch cap" data-a="${x}" style="text-align:center">${x}</button>`).join("")}</div></div>`;
+   document.querySelectorAll(".cap").forEach(b=>b.onclick=()=>{clearTimeout(timer);if(b.dataset.a===a)score++;i++;ask();});
+   timer=gTimeout(()=>{i++;ask()},3000);
+  };ask();
+ },
+};
+
+/* ---------------- rebirth: the story remembers ---------------- */
+function rebirth(){
+  E.newRun("TRAINEE");
+  E.R.storyDay=1;
+  goto("cert");
+}
 
 /* ---------------- boot ---------------- */
-function certGate(seed,role){
-  showTab("invent");
-  $("#inventstage").innerHTML=
+$("#resign").onclick=()=>{
+  $("#stage").insertAdjacentHTML("afterbegin",
    `<div class="card"><div class="who sys">SUBLEVEL SYSTEMS</div>
-    <p>MANDATORY EMPLOYMENT CERTIFICATION\nPer policy §7.12B, Evil Brain Labs employs exactly ONE human being. That position is filled.\nAll other employees must certify synthetic status before receiving the toybox.</p>
-    <div class="choices">
-      <button class="ch" data-c="0"><span class="k">1</span>✓ I certify I am NOT human</button>
-      <button class="ch" data-c="1"><span class="k">2</span>Wait, I AM human…</button>
-      <button class="ch" data-c="2"><span class="k">3</span>Certify, but sweat visibly</button>
-    </div></div>`;
-  document.querySelectorAll("#inventstage .ch").forEach(b=>b.onclick=()=>{
-    E.newRun(role||"TRAINEE",seed);
-    const c=+b.dataset.c;
-    if(c===0)E.R.syn+=5;
-    if(c===1)E.R.sus+=4;
-    if(c===2){E.R.syn+=2;E.R.sus+=2;}
-    toast(c===0?"Certification accepted. Your pulse was noted, and forgiven."
-      :c===1?"A kind lie is entered on your behalf: 'CLERICAL ERROR.'"
-      :"Synthetic beings do not sweat. Yours is logged as coolant.");
-    E.R.certified=true;
-    Board.seedBoard();
-    E.saveRun();
-    statBar();
-    Rooms.renderInvent();
-    toast("The toybox is open. It does not close. Make something absurd.");
-  });
-}
-
-function boot(){
-  Rooms.mountScenes(Rooms.mapTap);
-  if(E.resumeRun()){
-    statBar();
-    Rooms.renderInvent();
-    toast("Welcome back. The toybox kept itself open, out of respect.");
-    return;
-  }
-  const hashSeed=parseInt(location.hash.slice(1))||null;
-  if(E.FILE.runs>0){
-    showTab("invent");
-    $("#inventstage").innerHTML=
-     `<div class="card"><div class="who sys">SUBLEVEL SYSTEMS</div>
-      <p>Welcome back. Your file is where you left it, which is to say: open, on someone's desk.</p>
-      <div class="choices">${E.FILE.roles.map(r=>
-        `<button class="ch" data-r="${esc(r)}"><span class="k">▸</span>NEW EMPLOYMENT · AS ${esc(r)}</button>`).join("")}</div></div>`;
-    document.querySelectorAll("#inventstage .ch[data-r]").forEach(b=>b.onclick=()=>certGate(hashSeed,b.dataset.r));
-  } else {
-    certGate(hashSeed,"TRAINEE");
-  }
-  statBar();
-}
+    <p>Resignation declined. Employees may not terminate their employment; employment terminates the employee. This is called natural attrition. Your attempt has been logged as a human behaviour.</p></div>`);
+  E.R.sus+=1;E.saveRun();
+};
 
 addEventListener("keydown",e=>{
-  const stage=tab==="invent"?"#inventstage":tab==="world"?"#worldstage":null;
-  if(!stage)return;
-  if(e.key==="Enter"&&$(stage+" #next"))return $(stage+" #next").click();
+  if(e.key==="Enter"&&$("#next"))return $("#next").click();
+  if($("#paper").classList.contains("show"))return $("#paper").click();
   const n=+e.key;
-  const btns=document.querySelectorAll(stage+" .ch[data-i]");
+  const btns=document.querySelectorAll("#stage .ch[data-i]");
   if(n>=1&&n<=btns.length)btns[n-1].click();
 });
 
+function boot(){
+  mountScene();
+  if(E.resumeRun()&&E.R.node&&STORY[E.R.node]){
+    goto(E.R.node);
+    return;
+  }
+  E.newRun("TRAINEE",parseInt(location.hash.slice(1))||null);
+  E.R.storyDay=1;
+  goto("cert");
+}
 boot();
-window.__EBL={E,Rooms,Ledger,News,Board,World,Scenes,Summons,showTab};
-console.log("%cSUBLEVEL B — THE POINT","color:#ff0044",
-  "— invent freely. The world will take it from here. It always does.");
+window.__EBL={E,Ledger,News,STORY,goto,S};
+console.log("%cSUBLEVEL B","color:#ff0044","— one card at a time. The story remembers.");

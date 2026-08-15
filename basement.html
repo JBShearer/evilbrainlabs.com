@@ -14,143 +14,82 @@ html{overscroll-behavior:none}
 body{background:var(--bg);color:var(--paper);
   font:15px/1.6 ui-monospace,"SF Mono",Menlo,Consolas,monospace;
   -webkit-font-smoothing:antialiased;min-height:100dvh}
-/* CRT: scanlines + vignette — the /lab inheritance */
 body::before{content:"";position:fixed;inset:0;z-index:9998;pointer-events:none;
   background:repeating-linear-gradient(0deg,rgba(0,0,0,.32) 0 1px,transparent 1px 3px);
   mix-blend-mode:multiply}
 body::after{content:"";position:fixed;inset:0;z-index:9999;pointer-events:none;
   background:radial-gradient(ellipse at center,transparent 55%,rgba(0,0,0,.7) 100%)}
-.wrap{max-width:720px;margin:0 auto;padding:16px 12px 120px}
-h1{font-size:17px;letter-spacing:.14em;color:var(--evil);text-shadow:0 0 12px rgba(255,0,68,.5)}
-h1 small{display:block;font-size:9px;letter-spacing:.3em;color:var(--dim);text-shadow:none}
-.bar{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0;font-size:10px;letter-spacing:.08em}
-.stat{border:1px solid var(--line);background:var(--panel);padding:4px 8px;border-radius:3px}
-.stat b{color:var(--gold)} .stat.warn b{color:var(--evil)} .stat.doom b{color:var(--cyan)}
-.hidden{display:none!important}
+.wrap{max-width:640px;margin:0 auto;padding:14px 12px 70px}
+header{display:flex;align-items:baseline;justify-content:space-between;margin-bottom:10px}
+h1{font-size:15px;letter-spacing:.14em;color:var(--evil);text-shadow:0 0 12px rgba(255,0,68,.5)}
+h1 small{display:block;font-size:8px;letter-spacing:.3em;color:var(--dim);text-shadow:none}
+#daychip{font-size:10px;letter-spacing:.2em;color:var(--gold);border:1px solid var(--line);
+  background:var(--panel);padding:4px 10px;border-radius:999px}
 
-/* scene boxes */
-.scenebox{border:1px solid var(--line);border-radius:4px;overflow:hidden;background:#000;
+#scenewrap{border:1px solid var(--line);border-radius:4px;overflow:hidden;background:#000;
   box-shadow:0 0 40px -18px var(--evil), inset 0 0 60px rgba(0,0,0,.6)}
-.scenebox canvas{display:block}
-#worldlabel{padding:7px 10px;font-size:11px;letter-spacing:.14em;border-top:1px solid var(--line);
-  background:rgba(10,10,18,.9)}
-#mapwrap{border:1px solid var(--line);border-radius:4px;overflow:hidden;background:#000;
-  max-width:340px;margin:0 auto 10px}
-#mapwrap canvas{display:block;cursor:pointer}
-.partflex{display:flex;flex-wrap:wrap}
-.draftname{font-size:17px;color:var(--gold);letter-spacing:.04em;
-  text-shadow:0 0 14px rgba(255,215,0,.3);margin-bottom:2px}
-.card.inspire{border-left-color:var(--green);box-shadow:0 0 30px -16px var(--green)}
-.scenebtn{border-left-width:3px}
-.ownbadge{display:inline-block;margin-left:5px;color:var(--gold);font-size:9px;
-  text-shadow:0 0 6px rgba(255,215,0,.5)}
-.premtoggle{border-left:3px solid var(--gold)}
-.premtoggle.laid{border-color:var(--gold);background:#1a1826;box-shadow:0 0 10px -4px var(--gold)}
+#scenewrap canvas{display:block}
 
-/* cards (v1 lineage) */
 .card{background:var(--panel);border:1px solid var(--line);border-left:3px solid var(--evil);
-  border-radius:4px;padding:14px 14px 12px;margin:10px 0;box-shadow:0 18px 50px -24px #000}
+  border-radius:4px;padding:15px 15px 13px;margin:10px 0;box-shadow:0 18px 50px -24px #000}
 .card .who{font-size:10px;letter-spacing:.24em;color:var(--gold);margin-bottom:8px}
-.card .who.sys{color:var(--cyan)} .card .who.lore{color:var(--green)}
+.card .who.sys{color:var(--cyan)}
 .card p{margin:0 0 10px;white-space:pre-line}
-.roomcard{border-left-color:var(--line)}
-.greet{font-size:12px;color:var(--dim);font-style:italic;margin-bottom:10px}
 .choices{display:grid;gap:8px;margin-top:6px}
 button.ch{font:inherit;text-align:left;background:#12121d;border:1px solid var(--line);
-  color:var(--paper);padding:10px 12px;border-radius:3px;cursor:pointer;min-height:44px}
+  color:var(--paper);padding:11px 12px;border-radius:3px;cursor:pointer;min-height:44px}
 button.ch:hover{border-color:var(--gold)} button.ch:active{transform:translateY(1px)}
 button.ch:disabled{opacity:.4;cursor:default}
 button.ch .k{color:var(--dim);margin-right:8px}
-button.ch .sub{display:block;font-size:10px;color:var(--dim);letter-spacing:.06em;margin-top:2px}
-.doors{display:grid;gap:8px;margin-top:10px;padding-top:10px;border-top:1px dashed var(--line)}
-.door .k{color:var(--cyan)}
 .out{color:var(--dim);font-style:italic;border-top:1px dashed var(--line);margin-top:10px;padding-top:8px;white-space:pre-line}
 .lorebox{font-size:12px;color:var(--green);border:1px dashed #1f4;padding:8px 10px;margin-top:10px;
   background:rgba(0,255,136,.04);white-space:pre-line}
-.meta{font-size:10px;color:var(--dim);margin-top:12px;letter-spacing:.2em}
-.badge{display:inline-block;border:1px solid var(--gold);color:var(--gold);border-radius:999px;
-  padding:1px 8px;font-size:10px;margin:2px 3px 0 0}
 .dim{color:var(--dim)}
 .term{border-color:var(--evil);border-left-width:6px}
-.term h2{color:var(--evil);font-size:15px;letter-spacing:.2em;margin-bottom:8px}
-.ledrow{font-size:12px;margin:3px 0}
 
-/* build chips + sockets */
+/* toybox */
 .chip{font:inherit;background:#12121d;border:1px solid var(--line);color:var(--paper);
-  border-radius:3px;padding:8px 10px;margin:3px;cursor:pointer;min-height:44px;font-size:12px;text-align:left}
-.chip .sub{display:block;font-size:9px;color:var(--dim)}
+  border-radius:3px;padding:9px 10px;margin:3px;cursor:pointer;min-height:44px;font-size:12px;text-align:left}
 .chip.act{border-left:3px solid var(--evil)}
 .chip.tool{border-left:3px solid var(--cyan)}
 .chip.purpose{border-left:3px solid var(--green)}
-.chip.mod{border-left:3px solid var(--purple)}
 .chip.laid{border-color:var(--gold);background:#1a1826;box-shadow:0 0 10px -4px var(--gold)}
-.chip.ghost{position:fixed;z-index:10000;pointer-events:none;opacity:.85;box-shadow:0 10px 30px #000}
-#napparts{display:flex;flex-wrap:wrap;margin-top:8px}
-#napwrap{border:1px solid var(--line);border-radius:3px;overflow:hidden}
-.socket{margin:8px 0;padding:8px;border:1px dashed var(--line);border-radius:3px}
+.partflex{display:flex;flex-wrap:wrap}
+.socket{margin:8px 0;padding:7px;border:1px dashed var(--line);border-radius:3px}
 .socklabel{font-size:9px;letter-spacing:.24em;color:var(--dim);margin-bottom:4px}
+.draftname{font-size:17px;color:var(--gold);letter-spacing:.04em;
+  text-shadow:0 0 14px rgba(255,215,0,.3);margin:8px 0 2px}
+#draftart{border:1px solid var(--line);border-radius:3px;overflow:hidden;margin-top:8px;max-width:140px}
 
-/* stat bars + mood */
-.bar,.moodbar{display:flex;align-items:center;gap:8px;margin:5px 0;font-size:10px}
-.bar .l,.moodbar .l{width:64px;letter-spacing:.14em;color:var(--dim)}
-.track{flex:1;height:10px;background:#0a0a12;border:1px solid var(--line);border-radius:2px;overflow:hidden}
-.fill{display:block;height:100%;transition:width .3s}
-.bar .v,.moodbar .v{width:52px;text-align:right;color:var(--paper)}
-
-/* news */
-.news .masthead{font-size:11px;letter-spacing:.3em;color:var(--paper);border-bottom:2px solid var(--paper);
-  padding-bottom:5px;margin-bottom:8px}
-.news .lead{font-size:17px;line-height:1.25;color:var(--gold);letter-spacing:.02em;margin:4px 0 8px;
-  text-shadow:0 0 14px rgba(255,215,0,.25)}
-.news.fresh .lead{animation:teletype .6s steps(24)}
+/* THE PAPER — unfolds over the story, a beat, not a destination */
+#paper{position:fixed;inset:0;z-index:9000;display:flex;align-items:center;justify-content:center;
+  background:rgba(4,4,8,.86);opacity:0;pointer-events:none;transition:opacity .25s}
+#paper.show{opacity:1;pointer-events:auto}
+#paper .sheet{width:min(92vw,560px);max-height:86dvh;overflow-y:auto;background:var(--panel);
+  border:1px solid var(--paper);border-radius:2px;padding:18px 18px 14px;
+  box-shadow:0 40px 120px #000;transform:rotate(90deg) scale(.1);transform-origin:center;
+  transition:transform .45s cubic-bezier(.2,1.4,.4,1)}
+#paper.show .sheet{transform:rotate(0deg) scale(1)}
+.masthead{font-size:12px;letter-spacing:.3em;color:var(--paper);border-bottom:2px solid var(--paper);
+  padding-bottom:6px;margin-bottom:9px}
+.lead{font-size:19px;line-height:1.25;color:var(--gold);letter-spacing:.02em;margin:4px 0 9px;
+  text-shadow:0 0 14px rgba(255,215,0,.25);animation:teletype .6s steps(24)}
 @keyframes teletype{from{clip-path:inset(0 100% 0 0)}to{clip-path:inset(0 0 0 0)}}
 .newsflex{display:flex;gap:10px;align-items:flex-start}
 .prodicon{flex:0 0 72px;border:1px solid var(--line);border-radius:3px;overflow:hidden}
-.deck{flex:1;font-size:13px}
-.take{font-size:12.5px;margin:7px 0;border-left:2px solid var(--line);padding-left:9px}
+.deck{flex:1;font-size:13.5px}
+.take{font-size:12.5px;margin:8px 0;border-left:2px solid var(--line);padding-left:9px}
 .take .tw{font-size:10px;letter-spacing:.14em}
 .market{font-size:10px;letter-spacing:.1em;color:var(--cyan);border:1px dashed var(--line);
   padding:5px 8px;margin-top:9px}
-.wire{font-size:11px;color:var(--dim);margin-top:6px}
-.post p{font-size:13px}
-.post.trade{border-left-color:var(--gold)}
-.card.summons{border-left-color:#ff9955;box-shadow:0 0 30px -16px #ff9955}
-.card.summons .who{color:#ff9955}
-.card.summons.subpoena{border-left-color:var(--evil);box-shadow:0 0 34px -12px var(--evil)}
-.card.summons.subpoena .who{color:var(--evil)}
-.streak{display:inline-block;margin-left:8px;color:var(--gold);border:1px solid var(--gold);
-  border-radius:999px;padding:0 8px;font-size:9px;letter-spacing:.14em;
-  text-shadow:0 0 8px rgba(255,215,0,.5)}
-.stamp{display:inline-block;float:right;border:1px solid;border-radius:2px;
-  padding:0 6px;font-size:9px;letter-spacing:.18em;transform:rotate(-3deg)}
-.trustchip{display:inline-block;border-radius:999px;padding:0 6px;font-size:9px;letter-spacing:.08em;border:1px solid}
-.trustchip.up{color:var(--green);border-color:var(--green)}
-.trustchip.down{color:var(--evil);border-color:var(--evil)}
+.foldhint{text-align:center;font-size:10px;letter-spacing:.18em;color:var(--dim);margin-top:12px}
 
-/* map */
-#mapwrap{border:1px solid var(--line);border-radius:4px;overflow:hidden;background:#000;max-width:360px;margin:0 auto}
-#maphint{text-align:center;font-size:11px;margin-top:8px}
-
-/* footer tabs */
 .foot{position:fixed;left:0;right:0;bottom:0;background:rgba(7,7,11,.94);border-top:1px solid var(--line);
-  padding:6px 10px calc(6px + env(safe-area-inset-bottom));z-index:5}
-.tabs{display:flex;gap:6px;justify-content:space-between;max-width:720px;margin:0 auto}
-.tabs button,.tabs a{flex:1;font:inherit;font-size:10px;letter-spacing:.12em;color:var(--dim);
-  background:none;border:1px solid transparent;border-radius:3px;padding:9px 4px;min-height:44px;
-  cursor:pointer;text-align:center;text-decoration:none}
-.tabs button.active{color:var(--cyan);border-color:var(--line);background:var(--panel)}
-.tabs button:hover{color:var(--cyan)}
-.subfoot{display:flex;justify-content:space-between;max-width:720px;margin:4px auto 0;font-size:9px;
-  letter-spacing:.1em}
-.subfoot button,.subfoot a{color:var(--dim);background:none;border:0;font:inherit;cursor:pointer;
-  text-decoration:none;letter-spacing:inherit;padding:14px 8px;min-height:44px}
-.subfoot a:hover,.subfoot button:hover{color:var(--cyan)}
-
-/* toast */
-#toast{position:fixed;left:50%;transform:translateX(-50%) translateY(20px);bottom:110px;z-index:9000;
-  background:var(--panel);border:1px solid var(--gold);color:var(--paper);padding:9px 14px;border-radius:3px;
-  font-size:12px;max-width:88vw;opacity:0;pointer-events:none;transition:all .24s;box-shadow:0 12px 40px #000}
-#toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+  padding:4px 14px calc(4px + env(safe-area-inset-bottom));display:flex;justify-content:space-between;
+  font-size:9px;letter-spacing:.12em;z-index:5}
+.foot button,.foot a{color:var(--dim);background:none;border:0;font:inherit;cursor:pointer;
+  text-decoration:none;letter-spacing:inherit;padding:10px 6px;min-height:40px}
+.foot button:hover,.foot a:hover{color:var(--cyan)}
 
 @media(prefers-reduced-motion:no-preference){
   .card{animation:up .18s ease-out}
@@ -160,42 +99,22 @@ button.ch .sub{display:block;font-size:10px;color:var(--dim);letter-spacing:.06e
 </head>
 <body>
 <div class="wrap" id="main">
-  <h1>EVIL BRAIN LABS<small>SUBLEVEL B · INVENT FREELY · THE WORLD TAKES IT FROM THERE</small></h1>
-  <div class="bar" id="bar"></div>
-
-  <div id="view-invent" class="view">
-    <div id="inventscene" class="scenebox"></div>
-    <div id="inventstage"></div>
-  </div>
-
-  <div id="view-world" class="view hidden">
-    <div id="mapwrap"></div>
-    <div id="worldscene" class="scenebox"><div id="worldlabel"></div></div>
-    <div id="worldstage"></div>
-  </div>
-
-  <div id="view-board" class="view hidden"><div id="boardlist"></div></div>
-  <div id="view-news" class="view hidden"><div id="newslist"></div></div>
-  <div id="view-docket" class="view hidden"><div id="docketlist"></div></div>
+  <header>
+    <h1>EVIL BRAIN LABS<small>SUBLEVEL B · EMPLOYEES ONLY</small></h1>
+    <span id="daychip">DAY 1</span>
+  </header>
+  <div id="scenewrap"></div>
+  <div id="stage"></div>
 </div>
 
-<div id="toast"></div>
+<div id="paper"></div>
 
 <div class="foot">
-  <div class="tabs">
-    <button id="tab-invent" class="active">INVENT</button>
-    <button id="tab-world">WORLD</button>
-    <button id="tab-board">BOARD</button>
-    <button id="tab-news">NEWS</button>
-    <button id="tab-docket">DOCKET</button>
-  </div>
-  <div class="subfoot">
-    <span id="runinfo" class="dim"></span>
-    <span>
-      <button id="resign">RESIGN</button>
-      <a href="/">LOBBY</a>
-    </span>
-  </div>
+  <span class="dim">PERMANENT EMPLOYMENT</span>
+  <span>
+    <button id="resign">RESIGN</button>
+    <a href="/">LOBBY</a>
+  </span>
 </div>
 
 <noscript><div class="wrap"><div class="card"><p>The basement requires JavaScript. The basement requires many things. This one is on you.</p></div></div></noscript>

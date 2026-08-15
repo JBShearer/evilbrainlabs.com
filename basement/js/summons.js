@@ -116,6 +116,10 @@ export function afterShip(){
   R.summons=R.summons.filter(s=>!s.resolved);
   if(R.summons.length>=2)return null;
   const s=Math.min(R.shipsSinceAttend,5);
+  /* PITY TIMER: probability curves can cold-streak. Four uninterrupted
+     ships means the company arrives, no dice involved — per GAME_LOOP v2,
+     "dragged out every few ships" is a promise, not an average. */
+  if(s>=4)return spawn();
   let p=CURVE[s]+(dueHooks().length?0.35:0)+R.ducked*0.08;
   if(E.rng()>=Math.min(.95,p))return null;
   return spawn();

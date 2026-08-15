@@ -361,8 +361,32 @@ function chuteUI(){
     <p>It thuds when it has something for you. It is always ready to have something for you, at a price it calls 'friendship.'</p>
     <div class="choices">${STOCK.map((s,i)=>
       `<button class="ch" data-i="${i}">${esc(s.n)}<span class="sub">${s.cost} SYNERGY · ${esc(s.b)}</span></button>`).join("")}
-    <button class="ch" id="chuteback"><span class="k">✕</span>Back to the bench</button></div></div>`;
+    <button class="ch" id="chuteback"><span class="k">✕</span>Back to the bench</button></div>
+    <div class="choices" id="emerg"></div></div>`;
   $("#chuteback").onclick=()=>renderShop();
+  /* ANTI-SOFTLOCK: broke, benched, and unbothered is a dead game, not a hard
+     one. When you cannot afford the cheapest stock AND cannot assemble a full
+     product AND nobody is summoning you, the chute produces an emergency
+     requisition: free parts, one napkin, and a note in your file. */
+  (function(){
+    const R=E.R;
+    const kinds=["act","tool","purpose"];
+    const canAssemble=kinds.every(k=>(R.inv.parts||[]).some(p=>p.kind===k));
+    const broke=(R.syn||0)<3;
+    const busy=(R.summons&&R.summons.length)||R.invasion;
+    if(canAssemble||!broke||busy)return;
+    $("#emerg").innerHTML=`<button class="ch" id="emreq">▣ EMERGENCY REQUISITION<span class="sub">free · logged in your personnel file · the Brain will mention it</span></button>`;
+    $("#emreq").onclick=()=>{
+      const rng=mulberry32((E.R.seed^(E.R.chuteBought+=7))>>>0);
+      const got=[];
+      for(let i=0;i<3;i++)got.push(grantRandomPart(rng));
+      E.R.inv.napkins=(E.R.inv.napkins||0)+1;
+      E.fx({sus:1});
+      E.saveRun();
+      E.emit("toast","THUD. THUD. THUD. A note flutters down: 'Idle hands are a rounding error. — Anonymous (obviously the Brain)'");
+      renderShop();
+    };
+  })();
   stage.querySelectorAll(".ch[data-i]").forEach(b=>b.onclick=()=>{
     const s=STOCK[+b.dataset.i];
     if(!E.spend(s.cost)){E.emit("toast","DECLINED. The chute displays your balance to the room, helpfully.");return;}

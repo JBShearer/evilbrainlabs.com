@@ -1,4 +1,29 @@
 # SUBLEVEL B — THE OFFICE LABYRINTH
+
+## THE ASSEMBLY (pinned 2026-08-14 — read this before anything else)
+
+Every section in this document is a CHAPTER of one game, not a candidate to
+replace the others. Nothing below supersedes anything. Where two sections
+pull against each other, that tension is the design — resolve it by tuning,
+never by deletion. The versions in git are parts, not alternatives.
+
+The one game, assembled from every part Jason has provided:
+
+- **The napkin is free invention, anywhere, always** — the toybox (THE POINT).
+- **The shop is the bench** — where found parts become a crafting layer that
+  makes products richer. Parts enrich; they never gate (v2 + THE POINT, both
+  true at once).
+- **The labyrinth is adventures** — people, scenes, discoveries, King's
+  Quest — and what you find there feeds the bench and the imagination
+  (original spec + v3).
+- **The summons drags you out** when you overwork — stakes on your time (v2).
+- **Doom, suspicion, inventory, minigames, the certification gag** — the
+  stakes and the toys, from v1 and the arcade. They stay.
+- **News, board, ledger, relationships** — the world remembering (steps 3-5).
+
+The builder's job from here is INTEGRATION passes, never removal passes.
+Deleting a system that ever made Jason smile is the only forbidden move.
+
 ## Core game design (pinned 2026-08-13, from Jason's spec — build against THIS)
 
 **One line:** a touch-first roguelike crawl through an endless procedurally
@@ -95,7 +120,7 @@ Kickoff phrase for a fresh session: **"build the basement loop per GAME_LOOP"**.
 
 ---
 
-## THE POINT (pinned 2026-08-14, Jason — supersedes every correction below)
+## THE POINT (pinned 2026-08-14, Jason — one chapter of the assembly, not a replacement)
 
 The corrections below are the record of getting this wrong four ways. Read
 them as history, not instructions. This section wins every conflict.
@@ -121,13 +146,13 @@ to invent the next one. The product is not the goal; the product is the
 plot generator. The fake-PM lifestyle — shipping, presenting, being taken
 seriously by absurd people — is the fantasy being sold.
 
-Keep: the art, the rooms, the cast, the news cycle, the board, the ledger's
-memory. Kill: every resource system. When in doubt between a mechanic and a
-scene, write the scene.
+Keep everything. Parts and inventory return as garnish and crafting joy —
+never as a gate on inventing. When in doubt between a mechanic and a scene,
+write the scene AROUND the mechanic.
 
 ---
 
-## COURSE CORRECTION v2 (pinned 2026-08-13, Jason — supersedes v1): THE SHOP AND THE SUMMONS
+## CHAPTER: THE SHOP AND THE SUMMONS (2026-08-13)
 
 **Pure fiction. No Use Case Arms Race tie-in, ever.** No real docket quotes,
 no real case echoes. Delete any UCAR wiring, planned or built. The game lives

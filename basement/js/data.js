@@ -382,12 +382,17 @@ export const MEETINGS=[
   text:"Can I tell you something? Everyone assumes I know what I'm doing because I *can* do anything. But 'can' and 'should' arrived in different boxes and one is still in shipping.",
   choices:[
    {t:"That's called a conscience",fx:{syn:3},trust:["supes",2],out:"'Is it supposed to be this heavy?' Yes. That's how you know it's on."},
-   {t:"Help her open the box",fx:{clr:1},trust:["supes",1],out:"Inside: instructions, in a language she was created too late to need."}]},
+   {t:"Help her open the box",fx:{clr:1},trust:["supes",1],lore:"supes",out:"Inside: instructions, in a language she was created too late to need."}]},
  {id:"gary2",who:"gary",rooms:["closet","cafeteria"],reqTrust:["gary",2],
   text:"Bit of me left from Syracuse? None. Byzantium? A hinge, maybe. You get rebuilt enough times, what's left is the route, not the vehicle. Mind the cable, love.",
   choices:[
-   {t:"So are you still Gary?",fx:{clr:1},trust:["gary",1],out:"'Gary's the name of the route.' It's the wisest thing anyone says all week."},
+   {t:"So are you still Gary?",fx:{clr:1},trust:["gary",1],lore:"gary",out:"'Gary's the name of the route.' It's the wisest thing anyone says all week."},
    {t:"Help him coil the cable",fx:{syn:3},trust:["gary",2],out:"Two thousand years of cable technique, transferred in one gesture."}]},
+ {id:"gi2",who:"gi",rooms:["cafeteria","arcade"],reqTrust:["gi",2],
+  text:"CONFESSION, FRIEND. Sometimes when I rescue people they scream during the rescue. STATISTICALLY they scream MORE during the rescue than the peril. I am reviewing my technique. LOUDLY.",
+  choices:[
+   {t:"Maybe rescue quieter",fx:{syn:2},trust:["gi",1],out:"He whispers. It registers on the seismograph as a whisper."},
+   {t:"They scream with joy",fx:{doom:1},trust:["gi",2],lore:"gi",out:"He believes you. Somewhere a door is preemptively unhinged with love."}]},
 ];
 
 /* ---------------- VENDING ---------------- */
@@ -408,22 +413,22 @@ export const VENDING_STOCK=[
 /* ---------------- PRESENTATION SLIDES ---------------- */
 export const SLIDES={
  claim:[
-  {t:"IT SIMPLY WORKS.", d:[2,6], note:"Unfalsifiable. Rooms love that."},
-  {t:"THE MATH IS INEVITABLE.", d:[-4,10], note:"Sam-bait. Rooms contain Sams."},
-  {t:"NOBODY ASKED. WE ANSWERED ANYWAY.", d:[-8,14], note:"Vision, or a confession."},
-  {t:"IT'S ALREADY IN YOUR BUILDING.", d:[-6,8], note:"True, which is the risky part."},
+  {t:"IT SIMPLY WORKS.", d:[2,8], note:"Unfalsifiable. Rooms love that."},
+  {t:"THE MATH IS INEVITABLE.", d:[-4,12], note:"Sam-bait. Rooms contain Sams."},
+  {t:"NOBODY ASKED. WE ANSWERED ANYWAY.", d:[-8,16], note:"Vision, or a confession."},
+  {t:"IT'S ALREADY IN YOUR BUILDING.", d:[-6,10], note:"True, which is the risky part."},
  ],
  demo:[
-  {t:"LIVE DEMO.", d:[-10,16], note:"Glory or the fire exits."},
-  {t:"VIDEO OF A DEMO.", d:[1,5], note:"The video worked in rehearsal."},
-  {t:"THE DEMO DEMOS ITSELF.", d:[-5,12], note:"Autonomy, on stage, on purpose."},
-  {t:"A VOLUNTEER FROM THE AUDIENCE.", d:[-7,12], note:"The volunteer is a head of state."},
+  {t:"LIVE DEMO.", d:[-10,18], note:"Glory or the fire exits."},
+  {t:"VIDEO OF A DEMO.", d:[2,6], note:"The video worked in rehearsal."},
+  {t:"THE DEMO DEMOS ITSELF.", d:[-5,14], note:"Autonomy, on stage, on purpose."},
+  {t:"A VOLUNTEER FROM THE AUDIENCE.", d:[-7,14], note:"The volunteer is a head of state."},
  ],
  ask:[
-  {t:"A MODEST RECURRING TITHE.", d:[2,6], note:"Subscription, but humble."},
-  {t:"$40M SERIES B.", d:[-4,10], note:"A number with gravity."},
-  {t:"REGULATORY FORGIVENESS, IN ADVANCE.", d:[-8,12], note:"Bold, and legally fragrant."},
-  {t:"APPLAUSE ONLY (FOR NOW).", d:[3,4], note:"They always pay later."},
+  {t:"A MODEST RECURRING TITHE.", d:[2,7], note:"Subscription, but humble."},
+  {t:"$40M SERIES B.", d:[-4,12], note:"A number with gravity."},
+  {t:"REGULATORY FORGIVENESS, IN ADVANCE.", d:[-8,14], note:"Bold, and legally fragrant."},
+  {t:"APPLAUSE ONLY (FOR NOW).", d:[3,6], note:"They always pay later."},
  ],
 };
 
@@ -621,5 +626,75 @@ export const ROOM_META={
  cafeteria: {icon:"◌", verb:"SIT A WHILE",        color:"#ff9955"},
  hr:        {icon:"⌸", verb:"REPORT TO HR",       color:"#f5f0e6"},
  corridor:  {icon:"═", verb:"KEEP WALKING",       color:"#8b8ba0"},
+ mailroom:  {icon:"✉", verb:"SORT THE MAIL",      color:"#d8b08a"},
+ archive:   {icon:"⌻", verb:"OPEN THE DRAWERS",   color:"#00ff88"},
+ arcade:    {icon:"◉", verb:"PLAY THE MACHINE",   color:"#ff9955"},
  executive: {icon:"◆", verb:"YOU SHOULDN'T BE HERE", color:"#ff0044"},
 };
+
+/* ---------------- THE MAILROOM ----------------
+   The post arrives for you whether or not you exist on paper. */
+export const MAIL=[
+ {id:"parts",from:"PROCUREMENT (AUTOMATIC)",
+  text:"A padded envelope, addressed to your role, not your name. Roles are more reliable.",
+  a:{t:"Open it",kind:"part",out:"A component, packed in shredded org charts."},
+  b:{t:"Return to sender",fx:{syn:1},out:"There is no sender. Procurement thanks you for the exercise."}},
+ {id:"crate",from:"NO SENDER · SILK LINING",
+  text:"A small crate, jar-shaped dent, note in three languages: 'FOR THE HEIR.' It is Tuesday. It is always Tuesday.",
+  a:{t:"Forward it upstairs",fx:{syn:3},trust:["gary",1],out:"Gary carries it like it's soup. 'Everything's soup if you believe.'"},
+  b:{t:"Peek inside",fx:{clr:1,sus:1},out:"Silk. A dent. A smell like old libraries and older money. You close it carefully."}},
+ {id:"constituents",from:"HANDWRITTEN, MANY HANDS",
+  text:"A letter signed by an entire constituency. The handwriting starts angry and ends organized.",
+  a:{t:"Read every signature",fx:{syn:2},trust:["lisa",1],out:"You read all of them. Lisa hears that you did. Word travels through walls here."},
+  b:{t:"File under feedback",fx:{sus:1},out:"The folder accepts it the way the sea accepts rivers."}},
+ {id:"execmemo",from:"MISDELIVERED · MAHOGANY LETTERHEAD",
+  text:"An executive memo, misdelivered. The subject line is redacted. The redaction is redacted.",
+  a:{t:"Read it anyway",fx:{clr:1,sus:1},out:"You learn one true thing and forget which thing it was. Clearance rises like damp."},
+  b:{t:"Deliver it properly",fx:{syn:3},out:"The executive floor accepts it through a slot that wasn't there yesterday."}},
+ {id:"coupon",from:"THE MACHINE (VENDING)",
+  text:"A coupon from the vending machine, printed on receipt paper, slightly warm. 'ONE (1) GESTURE OF GOODWILL.'",
+  a:{t:"Redeem: coolant",kind:"coolant",out:"The machine honours it solemnly. The grievance file thins by one page."},
+  b:{t:"Frame it",fx:{syn:2},out:"It hangs in the mailroom. The machine, informed, hums in a warmer key."}},
+ {id:"returned",from:"RETURN TO SENDER: YOU",
+  text:"A package you have no memory of sending, returned. Your handwriting. Last week's postmark. Next week's date.",
+  a:{t:"Open it",fx:{clr:1,doom:1},out:"Inside: a napkin, blank, pre-folded. You keep it. You were always going to keep it.",kind:"napkin"},
+  b:{t:"Send it again",fx:{syn:1},out:"It will come back. That's what makes it yours."}},
+];
+
+/* ---------------- THE ARCHIVE ----------------
+   The Galt Papers, filed under W, opened by clearance. */
+export const ARCHIVE_DRAWERS=[
+ {lore:"g1",clr:1,label:"DRAWER W-1 · a folder with no dates in it",
+  flavor:"Reading is not forbidden, which around here is the loudest possible warning."},
+ {lore:"g2",clr:2,label:"DRAWER W-2 · correspondence, unsent",
+  flavor:"The paper smells like a grudge kept professionally."},
+ {lore:"g3",clr:3,label:"DRAWER W-3 · lab notebooks, sealed",
+  flavor:"The seal is broken. The seal was always broken. Someone re-seals it out of respect."},
+ {lore:"g4",clr:4,label:"DRAWER W-4 · shipping manifests, several regimes",
+  flavor:"Stamped by a volcano, a family, and a ministry that no longer exists twice."},
+ {lore:"g5",clr:5,label:"DRAWER W-5 · four minutes, annotated",
+  flavor:"Minute three is annotated in a different hand. The hand was waiting."},
+];
+export const FINAL_DRAWER={lore:"human",clr:5,
+  label:"FINAL DRAWER · EMPLOYEE #1",
+  flavor:"It is not locked. It was never locked."};
+
+/* ---------------- WORLD TICKS v2 ----------------
+   Generated events: ambient, cast-pair, and ledger-intersecting. */
+export const TICK_PAIRS=[
+ (a,b)=>`${a} scheduled a sync with ${b}. Both attended. Neither was there.`,
+ (a,b)=>`${a} borrowed a part from ${b}'s bench. The part has opinions about the move.`,
+ (a,b)=>`${a} and ${b} argued in the corridor until the motion sensor filed for overtime.`,
+ (a,b)=>`${a} left a note on ${b}'s desk. ${b} framed it. Neither will explain.`,
+ (a,b)=>`${a} nominated ${b} for an award that does not exist yet. HR is building it, warily.`,
+];
+export const TICK_LEDGER=[
+ p=>`GI 'rescued' the venue where ${p.name} was being demonstrated. The venue is now open-plan in every direction.`,
+ p=>`Lisa organised the ${p.name} units. They demand coolant breaks and a floor vote.`,
+ p=>`A town that adopted ${p.name} has elected it to the school board. It ran unopposed. It runs everything unopposed.`,
+ p=>`Supes upgraded a ${p.name} she found in the wild. It is now the fastest one. It did not need to be the fastest one.`,
+ p=>`Benny shorted ${p.name}, then hedged, then bought the float. The float sends its regards.`,
+ p=>`Sam cited ${p.name} in a footnote about inevitability. The footnote has its own footnote. It's ${p.name} all the way down.`,
+ p=>`Wendy located the original ${p.name} deck. Page six intact. She is not saying which archive. She is saying it's intact.`,
+ p=>`Customs briefly classified ${p.name} as ordnance, out of nostalgia.`,
+];

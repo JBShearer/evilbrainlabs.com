@@ -8,6 +8,7 @@ import * as Rooms from "./rooms.js";
 import * as Ledger from "./ledger.js";
 import * as News from "./news.js";
 import * as Board from "./board.js";
+import * as World from "./world.js";
 import {LORE,CAST,shipReactions} from "./data.js";
 import {makeCanvas,drawMap,drawProduct} from "./art.js";
 import {roomAt as genRoomAt} from "./gen.js";
@@ -102,6 +103,8 @@ E.on("week",()=>{
     toast("Something is waiting for you in a conference room.");
   const landed=Board.onWeek();
   if(landed)toast(landed===1?"The board replied to you.":"The board has opinions about you. "+landed+" of them.");
+  const tick=World.weekTick();
+  if(tick?.ledgerHit)toast("MEANWHILE: "+tick.text);
 });
 E.on("resigned",()=>{
   $("#stage").insertAdjacentHTML("afterbegin",

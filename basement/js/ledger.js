@@ -1,7 +1,7 @@
 /* ============================================================ ledger.js
    Every shipped product is a permanent record with delayed hooks.
    Week-5 ship, week-9 knock at a conference room door. Attrition does
-   not clear the docket: unfired hooks follow you into the next
+   not clear the paperwork: unfired hooks follow you into the next
    employment, where "a previous employee" shipped them. It was you.
 ================================================================ */
 import {mulberry32,hash32,pickW} from "./gen.js";

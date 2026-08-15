@@ -48,6 +48,11 @@ export function resumeRun(){
     R=r; rng=mulberry32((R.seed^(R.log.length*2654435761))>>>0);
     R.replyQueue??=[];               /* saves from before step 4 */
     R.postedThisWeek??=0;
+    R.extUsed??=0;
+    /* sanitize inventory: a part must exist in its slot's catalogue */
+    R.inv.act=R.inv.act.filter(id=>ACT_BY[id]);
+    R.inv.tool=R.inv.tool.filter(id=>TOOL_BY[id]);
+    R.inv.purpose=R.inv.purpose.filter(id=>PURP_BY[id]);
     return true;
   }catch(_){return false;}
 }
@@ -62,7 +67,7 @@ export function newRun(role,seedOverride){
     pos:{x:0,y:0}, visited:{"0,0":1}, steps:0, stepsSinceTick:0,
     inv:{act:[],tool:[],purpose:[],mods:[],coolant:0,napkins:1},
     product:null, builds:0, ships:0, cycles:0,
-    hooks:[], news:[], board:[], wire:[], replyQueue:[], postedThisWeek:0,
+    hooks:[], news:[], board:[], wire:[], replyQueue:[], postedThisWeek:0, extUsed:0,
     seenMeetings:[], spent:{}, log:[], dead:false, certified:false,
     hearingQueue:[], echoedIn:false,
   };
@@ -171,8 +176,8 @@ export function ship(funder){
   p.funder=funder||null;
   if(funder?.trust)bump(funder.trust[0],funder.trust[1]);
   if(funder?.clr)R.clr+=funder.clr;
-  const mult=p.pitched? (p.mood>=80?2:p.mood>=55?1.5:p.mood>=30?1:.5) : 1;
-  const revenue=Math.round((p.stats.mg*3+4)*mult + (funder?.mg||0)*2);
+  const mult=p.pitched? (p.mood>=75?2:p.mood>=55?1.5:p.mood>=30?1:.5) : 1;
+  const revenue=Math.round((p.stats.mg*2+4)*mult + (funder?.mg||0)*2);
   R.syn+=revenue;
   R.ships++; FILE.shipsTotal++;
   R.doom+=1 + (p.stats.mh>=9?1:0);

@@ -104,15 +104,18 @@ export function heldAt(seed,x,y){
    three build verbs are always reachable in the first minutes.    */
 
 const TYPE_WEIGHTS = [
-  ["break",      13],
-  ["lab",        11],
-  ["present",    10],
-  ["closet",     14],
-  ["vending",    10],
-  ["conference", 16],
-  ["cafeteria",  10],
-  ["hr",          8],
-  ["corridor",   14],
+  ["break",      12],
+  ["lab",        10],
+  ["present",     9],
+  ["closet",     13],
+  ["vending",     9],
+  ["conference", 14],
+  ["cafeteria",   9],
+  ["hr",          7],
+  ["corridor",   12],
+  ["mailroom",    8],
+  ["arcade",      6],
+  ["archive",     3],   /* the sub-basement keeps its own hours */
   ["executive",   1],   /* a floor that shouldn't exist */
 ];
 
@@ -123,6 +126,8 @@ const PINNED = {
   "2,0":  "lab",
   "0,-2": "present",
   "-1,0": "vending",
+  "0,1":  "arcade",
+  "-2,0": "mailroom",
 };
 
 export function roomTypeAt(seed,x,y){
@@ -156,7 +161,8 @@ export function roomAt(seed,x,y){
 function hazardChance(type){
   return {corridor:.34, closet:.30, conference:.16, hr:.22,
           break:.08, lab:.10, present:.08, vending:.10,
-          cafeteria:.12, executive:.5}[type] ?? .15;
+          cafeteria:.12, mailroom:.15, archive:.2, arcade:.08,
+          executive:.5}[type] ?? .15;
 }
 
 /* Who tends to haunt which room. null = empty room. */
@@ -171,6 +177,9 @@ function castFor(type,rng){
     cafeteria:  [["lisa",2],["rob",2],["wendy",2],["gi",1],["sam",1],[null,4]],
     hr:         [["wendy",2],[null,5]],
     corridor:   [["gi",1],["gary",1],[null,9]],
+    mailroom:   [["gary",2],["benny",1],[null,7]],
+    archive:    [["wendy",3],["sam",1],[null,6]],
+    arcade:     [["gi",1],["supes",1],[null,8]],
     executive:  [["brain",8],["sam",2]],
   }[type] || [[null,1]];
   return pickW(rng,T);
@@ -187,6 +196,9 @@ const ROOM_NOUNS = {
   cafeteria:["CAFETERIA","CANTEEN","THE TROUGH","MEAL HALL"],
   hr:["HR ANNEX","PEOPLE OPERATIONS","COMPLIANCE SUITE","HR (ALWAYS OPEN)"],
   corridor:["CORRIDOR","HALLWAY","SERVICE PASSAGE","LONG HALL"],
+  mailroom:["MAILROOM","POST ANNEX","PARCEL INTAKE","DEAD LETTERS"],
+  archive:["THE ARCHIVE","RECORDS SUB-ANNEX","DRAWER ROOM","FILED UNDER W"],
+  arcade:["VENDING ALCOVE (HUMS DIFFERENTLY)","THE ARCADE NICHE","ORIENTATION ALCOVE","BREAK ARCADE"],
   executive:["EXECUTIVE FLOOR","THE FLOOR THAT ISN'T","MAHOGANY LEVEL"],
 };
 export function roomName(room){

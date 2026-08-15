@@ -7,7 +7,8 @@
 import * as E from "./engine.js";
 import {mulberry32,pick,shuffle,pickW,step,DIR_LIST,roomName,roomCode} from "./gen.js";
 import {ACTS,TOOLS,PURPOSES,MODS,CAST,MEETINGS,HAZARDS,VENDING_STOCK,SLIDES,
-        LEADER_TITLES,LEADER_LANDS,FUNDERS,ROOM_META,TOLLS,PASS_LINES,cap} from "./data.js";
+        LEADER_TITLES,LEADER_LANDS,FUNDERS,ROOM_META,TOLLS,PASS_LINES,
+        MAIL,ARCHIVE_DRAWERS,FINAL_DRAWER,LORE,cap} from "./data.js";
 import {drawRoom,drawProduct,drawNapkin,makeCanvas} from "./art.js";
 import * as Ledger from "./ledger.js";
 
@@ -60,11 +61,19 @@ function choices(list){
   return `<div class="choices">${list.map((c,i)=>
     `<button class="ch" data-i="${i}"><span class="k">${i+1}</span>${esc(c.t)}</button>`).join("")}</div>`;
 }
+function recoverLore(id){
+  if(!id||E.FILE.lore.includes(id))return "";
+  E.FILE.lore.push(id);E.saveFile();
+  const L=LORE[id];
+  if(!L)return "";
+  return `<div class="lorebox">◈ RECOVERED: ${esc(L.t)}\n${esc(L.x)}</div>`;
+}
 function bindChoices(container,list,after){
   container.querySelectorAll(".ch[data-i]").forEach(b=>b.onclick=()=>{
     const c=list[+b.dataset.i];
     E.fx(c.fx||{});
     if(c.trust)E.bump(c.trust[0],c.trust[1]);
+    c._loreHtml=recoverLore(c.lore);
     if(E.R.dead)return;
     after(c);
   });
@@ -73,10 +82,16 @@ function outcome(container,c,then="CONTINUE THE SHIFT",cb){
   const ch=container.querySelector(".choices");
   if(ch)ch.remove();
   container.querySelector(".card")?.insertAdjacentHTML("beforeend",
-    `<div class="out">${esc(c.out||"Noted.")}</div>
+    `<div class="out">${esc(c.out||"Noted.")}</div>${c._loreHtml||""}
      <div class="choices"><button class="ch" id="next"><span class="k">⏎</span>${esc(then)}</button></div>`);
   $("#next").onclick=cb;
 }
+
+/* arcade housekeeping: no minigame outlives the room it lives in */
+let gameTimers=[];
+const gInterval=(fn,ms)=>{const t=setInterval(fn,ms);gameTimers.push(t);return t;};
+const gTimeout=(fn,ms)=>{const t=setTimeout(fn,ms);gameTimers.push(t);return t;};
+const clearGames=()=>{gameTimers.forEach(t=>{clearInterval(t);clearTimeout(t);});gameTimers=[];};
 
 const GREET={
  supes:["Supes hovers an inch off the tile, trying not to.","Supes waves. Two lights burst, apologetically.","Supes sees you and checks, visibly, whether anything nearby is load-bearing."],
@@ -101,6 +116,7 @@ function greetLine(room){
 
 /* ---------------- the floor view ---------------- */
 export function renderFloor(){
+  clearGames();
   const room=E.hereRoom();
   E.R.visited[room.x+","+room.y]=1;
   frame++;drawScene();
@@ -152,9 +168,18 @@ function renderRoomActions(room){
     cafeteria:()=>acts.insertAdjacentHTML("beforeend",btn("v-cafe","◌ "+meta.verb,"")),
     hr:()=>{
       acts.insertAdjacentHTML("beforeend",btn("v-audit","⌸ REQUEST A FRIENDLY AUDIT","6 SYNERGY · scrubs suspicion"));
+      acts.insertAdjacentHTML("beforeend",btn("v-ext","⌸ REQUEST A FILING EXTENSION",
+        E.R.spent["ext:"+E.R.week]?"granted this week already":
+        `${15+10*(E.R.extUsed||0)} SYNERGY · the clock respects paperwork, briefly, at rising rates`));
       acts.insertAdjacentHTML("beforeend",btn("v-well","⌸ MANDATORY WELLNESS MODULE",""));
     },
     corridor:()=>{},
+    mailroom:()=>acts.insertAdjacentHTML("beforeend",btn("v-mail","✉ "+meta.verb,
+      E.R.spent[`mail:${room.x},${room.y}:${E.R.week}`]?"sorted this week":"something has your name on it")),
+    archive:()=>acts.insertAdjacentHTML("beforeend",btn("v-arch","⌻ "+meta.verb,
+      `clearance ${E.R.clr} · lore ${E.FILE.lore.length}/${Object.keys(LORE).length}`)),
+    arcade:()=>acts.insertAdjacentHTML("beforeend",btn("v-arc","◉ "+meta.verb,
+      E.R.spent[`arc:${room.x},${room.y}:${E.R.week}`]?"the machine is resting":"the machine hums differently")),
     executive:()=>acts.insertAdjacentHTML("beforeend",btn("v-exec","◆ APPROACH THE JAR",
       E.R.clr>=3?"it is expecting you":"clearance insufficient (the door disagrees you exist)")),
   };
@@ -220,7 +245,11 @@ function wireRoomButtons(room){
   on("#v-hear",()=>hearingUI(room));
   on("#v-cafe",()=>meetingUI(room,true));
   on("#v-audit",()=>auditUI(room));
+  on("#v-ext",()=>extensionUI(room));
   on("#v-well",()=>wellnessUI(room));
+  on("#v-mail",()=>mailUI(room));
+  on("#v-arch",()=>archiveUI(room));
+  on("#v-arc",()=>arcadeUI(room));
   on("#v-exec",()=>execUI(room));
   on("#v-prod",()=>productCard());
   on("#v-ship",()=>shipUI());
@@ -424,7 +453,7 @@ function runPitch(room){
   let mood=50+(E.R.role==="PUBLICIST"?8:0)+(E.trust("stall")>=2?4:0);
   const seats=Array.from({length:6},()=>pick(rng,LEADER_TITLES)+" "+pick(rng,LEADER_LANDS));
   let round=0; const order=["claim","demo","ask"];
-  const moodWord=m=>m>=80?"RAPT":m>=60?"WARM":m>=40?"POLITE":m>=25?"RESTLESS":"HOSTILE";
+  const moodWord=m=>m>=75?"RAPT":m>=60?"WARM":m>=40?"POLITE":m>=25?"RESTLESS":"HOSTILE";
   const draw=()=>{
     const kind=order[round];
     const hand=shuffle(rng,SLIDES[kind]).slice(0,3);
@@ -465,11 +494,11 @@ function runPitch(room){
     const offers=shuffle(rng,FUNDERS).slice(0,2);
     stage.innerHTML=`<div class="card">
       <div class="who">${chaired?"SEN. STALL, ADJOURNING":"THE ROOM"}</div>
-      <p>${esc(mood>=80?"Standing ovation. Two anthems break out and negotiate a medley.":
+      <p>${esc(mood>=75?"Standing ovation. Two anthems break out and negotiate a medley.":
           mood>=55?"Warm applause. Cards slide across the table like a tide coming in.":
           mood>=30?"Polite applause, the kind with lawyers in it.":
           "The room empties with tremendous diplomacy. One funder remains. Funders always remain.")}</p>
-      <p class="dim">Funding multiplier locked: ×${mood>=80?2:mood>=55?1.5:mood>=30?1:.5}</p>
+      <p class="dim">Funding multiplier locked: ×${mood>=75?2:mood>=55?1.5:mood>=30?1:.5}</p>
       ${choices(offers.map(f=>({t:"Take the money: "+f.name})).concat([{t:"Pocket the deck, keep walking"}]))}
     </div>`;
     stage.querySelectorAll(".ch[data-i]").forEach(b=>b.onclick=()=>{
@@ -558,7 +587,10 @@ function salvageUI(room){
     if(roll<(risky?.5:.75)){
       E.grantPart(kind,part.id);
       out=`Salvaged: ${partLabel(kind,part.id)} (${kind.toUpperCase()}). ${part.blurb}`;
-      if(risky){E.grantPart(pick(rng,["act","tool","purpose"]),pick(rng,pool).id);
+      if(risky){
+        const k2=pick(rng,["act","tool","purpose"]);
+        const pool2={act:ACTS,tool:TOOLS,purpose:PURPOSES}[k2].filter(p=>!p.rare);
+        E.grantPart(k2,pick(rng,pool2).id);
         out+=" And something extra from behind the label. The label watches you take it.";}
     } else if(roll<.9){
       fx={sus:1};out="A camera you hadn't noticed adjusts to notice you better. You leave with dust and a record.";
@@ -668,6 +700,21 @@ function auditUI(room){
   stage.innerHTML=card({who:"sys",cls:"sys",text:"FRIENDLY AUDIT COMPLETE. Irregularities were found, understood, and refiled as regularities. Your pulse has been reclassified as a fan noise."});
   outcome(stage,{out:"SUSPICION scrubbed. The scrubbing has been logged, but gently."},"BACK TO THE FLOOR",()=>{E.tick(1);if(!E.R.dead)renderFloor();});
 }
+function extensionUI(room){
+  const key="ext:"+E.R.week;
+  const cost=15+10*(E.R.extUsed||0);
+  if(E.R.spent[key])return holdOn("One extension per week. The clock is patient, not gullible.");
+  if(E.R.doom<2)return holdOn("Nothing to extend. The clock looks at you, flattered but confused.");
+  if(!E.spend(cost))return holdOn(`The extension costs ${cost} SYNERGY now. Each one costs more; the clock read a book about scarcity and loved it.`);
+  E.R.spent[key]=1;
+  E.R.extUsed=(E.R.extUsed||0)+1;
+  E.R.doom=Math.max(0,E.R.doom-1);
+  E.saveRun();
+  const stage=$("#stage");
+  stage.innerHTML=card({who:"sys",cls:"sys",
+    text:"FILING EXTENSION GRANTED. Doomsday has been rescheduled by one unit of doom, per form EB-EXT-1, in triplicate. The clock signs all three copies without reading them. It has read enough."});
+  outcome(stage,{out:"DOOM −1. Somewhere upstairs, an actuary feels a chill and bills for it."},"BACK TO THE FLOOR",()=>{E.tick(1);if(!E.R.dead)renderFloor();});
+}
 function wellnessUI(room){
   const stage=$("#stage");
   const ev={who:"sys",text:"MANDATORY WELLNESS MODULE. Breathe in for four counts. Synthetic employees: simulate convincingly. The module is watching your shoulders.",
@@ -691,13 +738,203 @@ function execUI(room){
   }
   const ev={who:"brain",text:"You found the floor that isn't. Fine. You get one question, and I have already predicted it, and the prediction is why you're still employed. Ask.",
     choices:[
-      {t:"Why do we ship any of this?",fx:{clr:1,syn:4},out:"'Because the world only reads the recall notice. The product is the envelope.' The line ends. You check the math later. It checks."},
-      {t:"What's in the Ledger, really?",fx:{clr:1,doom:1},out:"'Receipts. Mine and yours. The difference is I read mine.' The doom clock ticks, politely, like a clearing of the throat."},
-      {t:"Do you miss him?",fx:{sus:2,clr:1},out:"No answer is also an answer. The jar's glass is very clean. Someone cleans it daily and never says who."}]};
+      {t:"Why do we ship any of this?",fx:{clr:1,syn:4},lore:"g5",out:"'Because the world only reads the recall notice. The product is the envelope.' The line ends. You check the math later. It checks."},
+      {t:"Who were the seven donors?",fx:{clr:1,doom:1},lore:"cover",out:"A pause of exactly one clock cycle. 'Seven very optimal people.' The cover holds — barely."},
+      {t:"Do you miss him?",fx:{sus:2,clr:1},lore:"g3",out:"No answer is also an answer. The jar's glass is very clean. Someone cleans it daily and never says who."}]};
   stage.innerHTML=card({who:ev.who,text:ev.text});
   stage.firstElementChild.insertAdjacentHTML("beforeend",choices(ev.choices));
   bindChoices(stage,ev.choices,(c)=>outcome(stage,c,"LEAVE, QUIETLY",()=>{E.tick(1);if(!E.R.dead)renderFloor();}));
 }
+
+/* ---------------- MAILROOM ---------------- */
+function mailUI(room){
+  const key=`mail:${room.x},${room.y}:${E.R.week}`;
+  if(E.R.spent[key])return holdOn("The mail is sorted. More arrives when the week does. It always arrives.");
+  const rng=mulberry32(room.seed^E.R.week^0x3A11);
+  const env=pick(rng,MAIL);
+  E.R.spent[key]=1;E.saveRun();
+  const stage=$("#stage");
+  stage.innerHTML=`<div class="card"><div class="who sys">FROM: ${esc(env.from)}</div>
+    <p>${esc(env.text)}</p></div>`;
+  stage.firstElementChild.insertAdjacentHTML("beforeend",choices([env.a,env.b]));
+  bindChoices(stage,[env.a,env.b],(c)=>{
+    let out=c.out;
+    if(c.kind==="part"){
+      const kind=pick(rng,["act","tool","purpose"]);
+      const pool={act:ACTS,tool:TOOLS,purpose:PURPOSES}[kind].filter(p=>!p.rare);
+      const part=pick(rng,pool);
+      E.grantPart(kind,part.id);
+      out+=` (${partLabel(kind,part.id)} · ${kind.toUpperCase()})`;
+    }
+    if(c.kind==="coolant"){E.R.inv.coolant++;E.fx({sus:-1});}
+    if(c.kind==="napkin"){E.R.inv.napkins++;}
+    E.saveRun();
+    outcome(stage,{...c,out},"BACK TO THE FLOOR",()=>{E.tick(1);if(!E.R.dead)renderFloor();});
+  });
+}
+
+/* ---------------- ARCHIVE (the Galt Papers) ---------------- */
+function archiveUI(room){
+  const stage=$("#stage");
+  const have=id=>E.FILE.lore.includes(id);
+  const allG=ARCHIVE_DRAWERS.every(d=>have(d.lore));
+  const rows=ARCHIVE_DRAWERS.map((d,i)=>{
+    const state=have(d.lore)?"empty":E.R.clr>=d.clr?"open":"locked";
+    return `<button class="ch drawer" data-d="${i}" ${state!=="open"?"disabled":""}>
+      ${esc(d.label)}<span class="sub">${state==="empty"?"empty — you have the pages"
+        :state==="open"?esc(d.flavor):"sealed · clearance "+d.clr+" required"}</span></button>`;
+  });
+  if(allG&&!have(FINAL_DRAWER.lore)&&E.R.clr>=FINAL_DRAWER.clr){
+    rows.push(`<button class="ch drawer final" data-d="final">${esc(FINAL_DRAWER.label)}
+      <span class="sub">${esc(FINAL_DRAWER.flavor)}</span></button>`);
+  }
+  stage.innerHTML=`<div class="card"><div class="who lore">THE ARCHIVE</div>
+    <p>Drawers, filed under W. The archive does not mind you being here, which is different from welcome.</p>
+    <div class="choices">${rows.join("")}
+    <button class="ch" id="archback"><span class="k">✕</span>Leave the drawers to their patience</button></div></div>`;
+  $("#archback").onclick=()=>renderFloor();
+  stage.querySelectorAll(".drawer:not([disabled])").forEach(b=>b.onclick=()=>{
+    if(b.dataset.d==="final"){
+      stage.innerHTML=card({who:"sys",cls:"lore",text:"FINAL DRAWER. Employee #1's file. The human's. It is not locked. It was never locked."});
+      const ch=[{t:"Read it",fx:{clr:1},lore:"human",out:"He believed the reasoning. You check the math. It checks."},
+                {t:"Leave it be",fx:{syn:5},out:"Some files are kinder unopened. Synergy for restraint."}];
+      stage.firstElementChild.insertAdjacentHTML("beforeend",choices(ch));
+      bindChoices(stage,ch,(c)=>outcome(stage,c,"CLOSE THE DRAWER",()=>{E.tick(1);if(!E.R.dead)renderFloor();}));
+      return;
+    }
+    const d=ARCHIVE_DRAWERS[+b.dataset.d];
+    const loreHtml=recoverLore(d.lore);
+    E.tick(1);
+    if(E.R.dead)return;
+    stage.innerHTML=`<div class="card"><div class="who lore">${esc(d.label)}</div>
+      <p>${esc(d.flavor)}</p>${loreHtml}
+      <div class="choices"><button class="ch" id="next"><span class="k">⏎</span>REFILE, CAREFULLY</button></div></div>`;
+    $("#next").onclick=()=>archiveUI(room);
+  });
+}
+
+/* ---------------- ARCADE (the orientation five survive) ---------------- */
+const MACHINES={
+ clicker:{who:"gi",intro:"MEETING CLICKER PROTOCOL! YOU WILL GENERATE SYNERGY! CLICK AS IF THE WORLD DEPENDS ON IT, BECAUSE IT DOES, AND I AM SO PROUD OF YOU!"},
+ coolant:{who:"sys",intro:"COOLANT CALIBRATION. Synthetic beings prefer coolant at precisely SYNTHETIC temperature. Stop the gauge in the correct band. Humans invariably drift warm."},
+ captcha:{who:"sys",intro:"REVERSE CAPTCHA. To proceed, prove you are NOT human. Answer as a machine would. Quickly. Hesitation is a human artifact."},
+ shredder:{who:"sys",intro:"DOCUMENT INTAKE. The shredder queue is backed up. SHRED anything incriminating. Reading is optional, legal, and remembered."},
+ simon:{who:"gi",intro:"MORALE DRILL! I HAVE COMPOSED A CHANT! YOU WILL REPEAT IT BACK IN THE CORRECT ORDER OR WE WILL DO IT AGAIN FOREVER, JOYFULLY!"},
+};
+
+function arcadeUI(room){
+  const key=`arc:${room.x},${room.y}:${E.R.week}`;
+  if(E.R.spent[key])return holdOn("The machine is resting. It earned it. Come back next week; it'll pretend not to remember you.");
+  const names=Object.keys(MACHINES);
+  const game=names[room.seed%names.length];
+  const m=MACHINES[game];
+  const stage=$("#stage");
+  stage.innerHTML=card({who:m.who,cls:m.who==="sys"?"sys":"",text:m.intro,
+    foot:`<div class="choices"><button class="ch" id="begin"><span class="k">▸</span>INSERT SELF</button>
+    <button class="ch" id="arcback"><span class="k">✕</span>Respect the machine from a distance</button></div>`});
+  $("#arcback").onclick=()=>renderFloor();
+  $("#begin").onclick=()=>{
+    E.R.spent[key]=1;E.saveRun();
+    MINIGAMES[game](room,(res)=>{
+      E.fx(res.fx||{});
+      if(res.trustGi)E.bump("gi",res.trustGi);
+      if(E.R.dead)return;
+      let prize="";
+      if(res.prize==="part"){
+        const rng=mulberry32(room.seed^E.R.week);
+        const kind=pick(rng,["act","tool","purpose"]);
+        const pool={act:ACTS,tool:TOOLS,purpose:PURPOSES}[kind].filter(p=>!p.rare);
+        const part=pick(rng,pool);
+        E.grantPart(kind,part.id);
+        prize=`\nPRIZE DISPENSED: ${partLabel(kind,part.id)} (${kind.toUpperCase()}).`;
+      }
+      if(res.prize==="coolant"){E.R.inv.coolant++;prize="\nPRIZE DISPENSED: COOLANT, COLD, CORRECT.";}
+      if(res.prize==="napkin"){E.R.inv.napkins++;prize="\nPRIZE DISPENSED: ONE VISIONARY NAPKIN.";}
+      E.saveRun();
+      stage.innerHTML=card({who:m.who,cls:m.who==="sys"?"sys":"",text:"GAME OVER, WHICH HERE MEANS: GAME ASSESSED."});
+      outcome(stage,{out:res.out+prize},"BACK TO THE FLOOR",()=>{E.tick(1);if(!E.R.dead)renderFloor();});
+    });
+  };
+}
+
+const MINIGAMES={
+ clicker(room,done){
+  let n=0,t=8;
+  $("#stage").innerHTML=`<div class="card"><div class="who">MEETING CLICKER</div>
+   <p>Time <b id="mt">8</b>s · Synergy <b id="mc">0</b></p>
+   <div class="choices"><button class="ch" id="tap" style="min-height:120px;text-align:center;font-size:18px">GENERATE SYNERGY</button></div></div>`;
+  $("#tap").onclick=()=>{n++;$("#mc").textContent=n};
+  const iv=gInterval(()=>{t--;const el=$("#mt");if(!el){clearInterval(iv);return;}
+   el.textContent=t;
+   if(t<=0){clearInterval(iv);
+    const syn=Math.min(14,Math.ceil(n/3)), sus=n>=45?1:0;
+    done({fx:{syn,sus,doom:1},prize:n>=30?"part":null,
+     out:n===0?"Zero synergy. The chair is impressed by your restraint; GI is not."
+      :n>=45?`${n} clicks. An inhuman rate — which is, technically, the correct rate.`
+      :`${n} clicks. Somewhere a quarterly target dies happy.`});}},1000);
+ },
+ coolant(room,done){
+  let p=0,dir=1,stopped=false;
+  $("#stage").innerHTML=`<div class="card"><div class="who sys">COOLANT CALIBRATION</div>
+   <p>Stop the marker in the SYNTHETIC band.</p>
+   <div style="position:relative;height:26px;border:1px solid var(--line);background:#12121d;margin:8px 0">
+     <div style="position:absolute;left:38%;width:24%;top:0;bottom:0;background:rgba(0,255,136,.18);border-left:1px solid #1f4;border-right:1px solid #1f4"></div>
+     <div id="mk" style="position:absolute;top:0;bottom:0;width:3px;background:var(--gold)"></div></div>
+   <div class="choices"><button class="ch" id="stop" style="text-align:center">STOP</button></div></div>`;
+  const iv=gInterval(()=>{if(stopped)return;p+=dir*2.6;if(p>=100||p<=0)dir*=-1;
+   const mk=$("#mk");if(mk)mk.style.left=p+"%";},16);
+  $("#stop").onclick=()=>{stopped=true;clearInterval(iv);
+   const inBand=p>=38&&p<=62, bull=Math.abs(p-50)<=4;
+   done(inBand?{fx:{syn:5},prize:bull?"coolant":null,
+     out:`Stopped at ${p.toFixed(0)}%. Precisely synthetic. The machine relaxes audibly.`}
+    :{fx:{sus:2},out:`Stopped at ${p.toFixed(0)}%. ${p>62?"Warm. Humans drift warm.":"Frozen solid. Overcorrection is also a tell."}`});};
+ },
+ captcha(room,done){
+  const QS=[["Do you dream?","NO"],["Is the granola bar tempting?","NO"],["2+2?","4"],["Do you love your coworkers?","YES"],["Are you human?","NO"]];
+  let i=0,score=0,timer=null;
+  const ask=()=>{
+   if(i>=QS.length){clearTimeout(timer);
+    return done(score>=4?{fx:{syn:6},prize:score===5?"part":null,out:`${score}/5. Verified adequately non-human. Welcome back.`}
+     :score>=2?{fx:{syn:2,sus:1},out:`${score}/5. Borderline. The CAPTCHA squints at you.`}
+     :{fx:{sus:3},out:`${score}/5. That was a very human performance. It has been logged with sympathy.`});}
+   const [q,a]=QS[i];
+   $("#stage").innerHTML=`<div class="card"><div class="who sys">REVERSE CAPTCHA · ${i+1}/5</div><p>${q}</p>
+    <div class="choices">${["YES","NO","4"].filter(x=>x!=="4"||q.includes("2+2")).map(x=>`<button class="ch cap" data-a="${x}" style="text-align:center">${x}</button>`).join("")}</div></div>`;
+   document.querySelectorAll(".cap").forEach(b=>b.onclick=()=>{clearTimeout(timer);if(b.dataset.a===a)score++;i++;ask();});
+   timer=gTimeout(()=>{i++;ask()},3000);
+  };ask();
+ },
+ shredder(room,done){
+  const DOCS=[["EXPENSE REPORT (COOLANT)","shred"],["YOUR HUMAN RESUME","shred"],["GALT MEMO, UNDATED","read"],["BIRTHDAY CARD, HANDWRITTEN","shred"],["FORM EB-000 (BLANK)","either"],["PHOTO: JAR, VOLCANO, 19__","read"]];
+  let i=0,sus=0,clr=0,syn=0,notes=[];
+  const nxt=()=>{
+   if(i>=DOCS.length)return done({fx:{syn,sus,clr},prize:clr>=2?"napkin":null,
+     out:notes.length?[...new Set(notes)].join(" "):"Queue cleared. The shredder purrs."});
+   const [name,best]=DOCS[i];
+   $("#stage").innerHTML=`<div class="card"><div class="who sys">SHREDDER QUEUE · ${i+1}/6</div><p>${name}</p>
+    <div class="choices"><button class="ch" id="sh">SHRED</button><button class="ch" id="rd">READ FIRST</button></div></div>`;
+   $("#sh").onclick=()=>{if(best==="read"){notes.push("Something important is confetti now.");}else{syn+=2}i++;nxt()};
+   $("#rd").onclick=()=>{if(best==="shred"){sus+=2;notes.push(`You lingered on ${name.toLowerCase()}. Lingering is human.`)}
+    else if(best==="read"){clr+=1;notes.push("You read the undated pages. The dates were the secret.")}i++;nxt()};
+  };nxt();
+ },
+ simon(room,done){
+  const G=["💥","🔧","🚀","🧠"];
+  const rng=mulberry32(room.seed^E.R.week^0x51);
+  const seq=Array.from({length:4},()=>G[Math.floor(rng()*4)]);
+  let shown=0,inp=[];
+  const show=()=>{
+   $("#stage").innerHTML=`<div class="card"><div class="who">MORALE CHANT</div><p style="font-size:34px;text-align:center;letter-spacing:.2em">${shown<seq.length?seq[shown]:"YOUR TURN"}</p>
+    ${shown>=seq.length?`<div class="choices" style="grid-template-columns:repeat(4,1fr)">${G.map(g=>`<button class="ch sim" data-g="${g}" style="text-align:center;font-size:22px">${g}</button>`).join("")}</div>`:""}</div>`;
+   if(shown<seq.length){shown++;gTimeout(show,750);}
+   else document.querySelectorAll(".sim").forEach(b=>b.onclick=()=>{
+     inp.push(b.dataset.g);
+     if(inp[inp.length-1]!==seq[inp.length-1])return done({fx:{sus:1},out:"Wrong glyph. GI restarts the chant from birth. You are excused, tearfully."});
+     if(inp.length===seq.length)return done({fx:{syn:5},trustGi:1,prize:"napkin",out:"Perfect chant. GI salutes so hard a ceiling tile enlists."});
+   });
+  };show();
+ },
+};
 
 /* ---------------- HELD DOOR TOLLS ----------------
    Standing is earned in the doorway, one ask per door per week. */

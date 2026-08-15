@@ -192,6 +192,41 @@ const FURN={
     ctx.beginPath();ctx.moveTo(210,170);ctx.lineTo(202,190);ctx.lineTo(218,190);ctx.closePath();ctx.fill();
     R(ctx,205,180,10,3,"#f5f0e6");}
  },
+ mailroom(ctx,rng,P,frame){
+  for(let r=0;r<3;r++)for(let i=0;i<6;i++){                            /* pigeonholes */
+    const x=40+i*24,y=56+r*20;
+    R(ctx,x,y,20,16,"#1c1610");R(ctx,x+2,y+2,16,12,"#0e0b08");
+    if(rng()<.4)R(ctx,x+4,y+6,12,6,["#e8dcc0","#d8b08a","#f5f0e6"][Math.floor(rng()*3)]);}
+  R(ctx,196,110,70,28,"#2a2a3a");R(ctx,196,106,70,6,"#3a3a4e");         /* sorting desk */
+  R(ctx,206,92,22,16,"#d8b08a");R(ctx,232,88,26,20,"#c8a070");          /* parcels */
+  R(ctx,238,94,14,3,"#8a6d4f");
+  R(ctx,60,150,54,22,"#3a2c1c");R(ctx,64,146,10,8,"#d8b08a");           /* THE crate */
+  glowR(ctx,86,156,3,3,"#ffd700");
+  text(ctx,"IT IS TUESDAY",150,182,"#8b8ba0",6);
+ },
+ archive(ctx,rng,P,frame){
+  for(let i=0;i<4;i++){const x=36+i*66;                                  /* drawer stacks */
+    R(ctx,x,54,52,84,"#14201a");
+    for(let r=0;r<6;r++){R(ctx,x+4,60+r*13,44,10,"#0d1611");
+      R(ctx,x+20,63+r*13,12,3,"#2c4638");
+      if(rng()<.2)glowR(ctx,x+40,62+r*13,4,4,"#00ff88");}}
+  text(ctx,"W",160,46,"#00ff88",12);                                     /* the letter */
+  ctx.fillStyle="rgba(0,255,136,.05)";ctx.fillRect(20,18,W-40,120);      /* lore haze */
+  for(let i=0;i<8;i++){ctx.fillStyle="rgba(245,240,230,.12)";            /* dust */
+    ctx.fillRect(30+rng()*(W-60),30+rng()*100,1,1);}
+ },
+ arcade(ctx,rng,P,frame){
+  R(ctx,110,50,100,120,"#1a1030");R(ctx,110,50,100,8,"#2c1a50");         /* cabinet */
+  glowR(ctx,118,62,84,10,"#ff9955");text(ctx,"ORIENTATION",160,70,"#07070b",7); /* marquee */
+  R(ctx,122,78,76,50,"#050510");                                          /* screen */
+  const g=(frame>>2)%4;                                                    /* attract mode */
+  glowR(ctx,132+g*16,92,10,10,["#00ff88","#00ffff","#ff66aa","#ffd700"][g]);
+  text(ctx,"INSERT SELF",160,120,"#00ff88",6);
+  R(ctx,134,136,20,8,"#0a0a12");glowR(ctx,140,132,6,6,"#ff0044");         /* joystick */
+  R(ctx,168,136,10,8,"#0a0a12");R(ctx,182,136,10,8,"#0a0a12");            /* buttons */
+  R(ctx,52,120,40,60,"#181430");glowR(ctx,58,128,28,20,"#0d0a1e");        /* sibling machine, off */
+  text(ctx,"OUT OF ORDER (RESTING)",72,190,"#8b8ba0",5);
+ },
  executive(ctx,rng,P,frame){
   R(ctx,30,40,260,80,"#050510");                                       /* window wall */
   for(let i=0;i<26;i++){const x=36+rng()*246,y=46+rng()*66;
@@ -411,7 +446,8 @@ export function drawNapkin(ctx,w,h,seed){
 /* ================= MINIMAP ================= */
 const TYPE_COLORS={break:"#ffd700",lab:"#00ffff",present:"#ff66aa",closet:"#00ff88",
   vending:"#8b5cf6",conference:"#66aaff",cafeteria:"#ff9955",hr:"#f5f0e6",
-  corridor:"#4a4a5e",executive:"#ff0044"};
+  corridor:"#4a4a5e",mailroom:"#d8b08a",archive:"#00cc70",arcade:"#ff7733",
+  executive:"#ff0044"};
 
 export function drawMap(ctx,w,h,state,roomAtFn,frame=0){
   R(ctx,0,0,w,h,"#07070b");

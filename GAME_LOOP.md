@@ -95,26 +95,33 @@ Kickoff phrase for a fresh session: **"build the basement loop per GAME_LOOP"**.
 
 ---
 
-## COURSE CORRECTION (pinned 2026-08-13, Jason): THE GAME IS SHIPPING USE CASES
+## COURSE CORRECTION v2 (pinned 2026-08-13, Jason — supersedes v1): THE SHOP AND THE SUMMONS
 
-The build drifted toward the labyrinth. Wrong emphasis. The labyrinth is the
-hallway; the USE CASE is the game. Invert the ratio:
+**Pure fiction. No Use Case Arms Race tie-in, ever.** No real docket quotes,
+no real case echoes. Delete any UCAR wiring, planned or built. The game lives
+entirely inside the Evil Brain Labs story.
 
-1. **You always carry a use case.** The napkin is in your pocket from minute
-   one (ACT · TOOL · PURPOSE — the docket grammar). There is no "finding a
-   build room"; every room ADVANCES the carried use case (parts, funding,
-   testing, refinement, a pitch) or PAYS OFF a shipped one (consequence,
-   hearing, second customer). A room that does neither does not spawn.
-2. **Ship cadence is the heartbeat.** A week is a handful of rooms, then a
-   forced SHIP-OR-SHELVE. One use case per week minimum or the Brain notices
-   — like the daily show. Shipping is always reachable once the case is
-   whole; the room you ship FROM flavors the launch.
-3. **Score is the docket, not the corridor.** Progress displays as YOUR
-   docket of shipped use cases (verdicts, filings, consequences) — the
-   ledger promoted from subsystem to scoreboard.
-4. **Real-world echo (post-MVP but soon):** the news cycle quotes actual
-   UCAR docket cases as competitor ships — the fake company shipping into
-   the real arms race.
+**The loop is overwork, interrupted.**
 
-Doors down, ships up. If a playtester can walk 10 rooms without shipping,
-the tuning is wrong.
+1. **THE SHOP is home.** One main room, always available, full build UI.
+   The player can ship product after product after product from here —
+   grinding is legal, rewarded, and the point. Ship streaks compound.
+2. **THE SUMMONS is the antagonist.** The game forcibly drags you away from
+   shipping: mandatory meetings, hearings about last week's product, GI's
+   drills, Supes emergencies, HR audits, the vending machine incident. A
+   summons pulls you into a procedurally generated room — THAT is what the
+   labyrinth is for. You are never wandering; you are being taken.
+3. **Every summons is a tax on shipping.** Attending costs shop time.
+   Ignoring costs trust, suspicion, or doom — and some summons escalate if
+   ducked (the hearing becomes a subpoena; the drill comes to YOU).
+4. **Overwork feeds the interruptions.** The more you ship, the hotter you
+   run: consequences of your own products return as summons, and the
+   company gets needier about its star employee. Shipping is the engine of
+   the thing that stops you shipping. That is the game.
+5. **Score is your shipped docket** (fictional, in-world): products,
+   verdicts, consequences, streaks.
+
+Acceptance: a player who wants to do nothing but ship should be able to try
+— and be dragged out of the shop within every few ships, snarling. If they
+can grind uninterrupted forever, it's wrong; if they can't ship three in a
+row when things are calm, it's also wrong.

@@ -37,12 +37,11 @@ function backdrop(node,id){
 }
 
 /* ---------------- story state ---------------- */
-const DAYSET={cert:1,day2:2,callback1:3,day3:4,toybox3_intro:5,finale_gate:6};
 function S(){
   const R=E.R;
   return {run:E.FILE.runs, day:R.storyDay||1,
-    p1:R.p1, p2:R.p2, p3:R.p3,
-    sus:Math.max(0,R.sus), doom:R.doom,
+    p1:R.p1, p2:R.p2, p3:R.p3, p4:R.p4, p5:R.p5,
+    sus:Math.max(0,R.sus), doom:R.doom, flags:R.flags||{},
     file:E.FILE, stamps:stampsLine()};
 }
 const nodeText=(node)=>typeof node.text==="function"?node.text(S()):node.text;
@@ -51,7 +50,7 @@ function goto(id){
   if(id==="__rebirth")return rebirth();
   const node=STORY[id];
   if(!node)return console.error("missing node",id);
-  if(DAYSET[id])E.R.storyDay=DAYSET[id];
+  if(node.day)E.R.storyDay=node.day;
   if(node.branch)return goto(node.branch(S()));
   E.R.node=id;E.saveRun();
   render(id,node);
@@ -67,29 +66,33 @@ function render(id,node){
   const name=node.who?(CAST[node.who]?.name||node.who.toUpperCase()):"";
   const deathHere=node.ending&&node.death&&!E.R.dead;
   if(deathHere)E.die(node.death,"");     /* file it; the card is the screen */
+  const st=S();
+  const visible=node.choices.filter(c=>!c.req||c.req(st));
   stage.innerHTML=`<div class="card ${node.ending?"term":""}">
     ${name?`<div class="who ${node.who==="sys"?"sys":""}">${esc(name)}</div>`:""}
     <p>${esc(nodeText(node))}</p>
-    <div class="choices">${node.choices.map((c,i)=>
+    <div class="choices">${visible.map((c,i)=>
       `<button class="ch" data-i="${i}"><span class="k">${i+1}</span>${esc(c.t)}</button>`).join("")}</div>
   </div>`;
   stage.querySelectorAll(".ch[data-i]").forEach(b=>b.onclick=()=>{
-    const c=node.choices[+b.dataset.i];
+    const c=visible[+b.dataset.i];
     if(c.trust&&c.trust[1])E.bump(c.trust[0],c.trust[1]);
+    if(c.set){(E.R.flags??={})[c.set]=true;E.saveRun();}
     if(c.fx){E.R.doom+=c.fx.doom||0;E.R.sus+=c.fx.sus||0;E.saveRun();}
-    if(deathCheck())return;
+    if(!node.ending&&deathCheck())return;   /* on an ending card, the only way out is through */
     let loreHtml="";
     if(c.lore&&!E.FILE.lore.includes(c.lore)){
       E.FILE.lore.push(c.lore);E.saveFile();
       loreHtml=`<div class="lorebox">◈ RECOVERED: A PAGE FROM UNDER W</div>`;
     }
+    if(c.goto==="__rebirth"&&c.rebirth)return rebirth(c.rebirth);
     if(!c.out)return goto(c.goto);
     const ch=stage.querySelector(".choices");
     ch.remove();
     stage.querySelector(".card").insertAdjacentHTML("beforeend",
       `<div class="out">${esc(c.out)}</div>${loreHtml}
        <div class="choices"><button class="ch" id="next"><span class="k">⏎</span>CONTINUE</button></div>`);
-    $("#next").onclick=()=>goto(c.goto);
+    $("#next").onclick=()=>c.rebirth?rebirth(c.rebirth):goto(c.goto);
   });
 }
 
@@ -157,11 +160,20 @@ function toyboxUI(id,node){
 function shipFromStory(sel,node){
   const builtIn=node.moment==="napkin"?"napkin":"toybox";
   const p=E.makeProduct(sel.act,sel.tool,sel.purpose,builtIn);
+  /* the co-build: your partner's signature ends up in the steel */
+  if(node.moment==="partner"){
+    const f=E.R.flags||{};
+    const sig=f.partner_gary?["mc",2,"CO-BUILT WITH GARY — IT KNOWS WHEN TO STOP"]
+      :f.partner_gi?["mh",2,"CO-BUILT WITH GI — TACTICAL, WITH LOVE"]
+      :["mh",1,"CO-BUILT WITH SUPES — SLIGHTLY FASTER, AS PROMISED"];
+    p.stats[sig[0]]=Math.min(15,p.stats[sig[0]]+sig[1]);
+    p.notes.push(sig[2]);
+  }
   const res=E.ship(p,null);
   if(!res)return;
   Ledger.recordShip({product:p,funder:null,verdict:res.verdict});
   const cycle=News.buildCycle({product:p,funder:null,verdict:res.verdict});
-  const slot=!E.R.p1?"p1":!E.R.p2?"p2":"p3";
+  const slot=!E.R.p1?"p1":!E.R.p2?"p2":!E.R.p3?"p3":!E.R.p4?"p4":"p5";
   E.R[slot]={name:p.name,subtitle:p.subtitle,stats:p.stats,seed:p.seed,
     act:{id:p.act.id,low:p.act.low,we:p.act.we,up:p.act.up,fx:p.act.fx},
     tool:{id:p.tool.id,low:p.tool.low,chassis:p.tool.chassis},
@@ -209,7 +221,10 @@ function minigameIntro(id,node){
     <div class="choices"><button class="ch" id="begin"><span class="k">▸</span>BEGIN</button></div></div>`;
   $("#begin").onclick=()=>MINIGAMES[node.game](id,(res)=>{
     if(res.trustGi)E.bump("gi",res.trustGi);
-    if(res.sus){E.R.sus+=res.sus;E.saveRun();}
+    if(res.set)(E.R.flags??={})[res.set]=true;
+    if(res.sus)E.R.sus+=res.sus;
+    if(res.doom)E.R.doom+=res.doom;
+    E.saveRun();
     if(deathCheck())return;
     const stage2=$("#stage");
     stage2.innerHTML=`<div class="card">
@@ -251,8 +266,35 @@ const MINIGAMES={
    const mk=$("#mk");if(mk)mk.style.left=p+"%";},16);
   $("#stop").onclick=()=>{stopped=true;clearInterval(iv);
    const inBand=p>=38&&p<=62;
-   done(inBand?{out:`Stopped at ${p.toFixed(0)}%. Precisely synthetic. The machine plays a short fanfare it has been saving, then dispenses a coolant on the house. Historic.`}
+   done(inBand?{sus:-1,set:"vend_friend",out:`Stopped at ${p.toFixed(0)}%. Precisely synthetic. The machine plays a short fanfare it has been saving, then dispenses a coolant on the house. Historic. You have been logged as a CALIBRATED FRIEND.`}
     :{sus:2,out:`Stopped at ${p.toFixed(0)}%. ${p>62?"Warm. Humans drift warm. The machine forgives you, audibly, and files the forgiveness.":"Frozen solid. Overcorrection is also a tell, the machine notes, with real sympathy."}`});};
+ },
+ clicker(id,done){
+  let n=0,t=8;
+  $("#stage").innerHTML=`<div class="card"><div class="who">MEETING CLICKER</div>
+   <p>Time <b id="mt">8</b>s · Synergy <b id="mc">0</b> (synergy is decorative, which GI says makes it PURE)</p>
+   <div class="choices"><button class="ch" id="tap" style="min-height:120px;text-align:center;font-size:18px">GENERATE SYNERGY</button></div></div>`;
+  $("#tap").onclick=()=>{n++;const el=$("#mc");if(el)el.textContent=n;};
+  const iv=gInterval(()=>{t--;const el=$("#mt");if(!el){clearInterval(iv);return;}
+   el.textContent=t;
+   if(t<=0){clearInterval(iv);
+    done(n===0?{out:"Zero synergy. The chair is impressed by your restraint; GI is not. He generates enough for both of you, weeping proudly, and marks the protocol COMPLETE."}
+     :n>=45?{trustGi:1,out:`${n} clicks. An inhuman rate — which is, technically, the correct rate. GI salutes the clicker, then you, then the concept of clicking.`}
+     :n>=25?{trustGi:1,out:`${n} clicks. Somewhere a quarterly target dies happy, for no reason, forever. GI declares the meeting a triumph and schedules nothing as a reward.`}
+     :{out:`${n} clicks. GI studies the number, finds it adequate, and files it under MORALE with a supportive stamp.`});}},1000);
+ },
+ shredder(id,done){
+  const DOCS=[["EXPENSE REPORT (COOLANT)","shred"],["YOUR HUMAN RESUME","shred"],["GALT MEMO, UNDATED","read"],["BIRTHDAY CARD, HANDWRITTEN","shred"],["FORM EB-000 (BLANK)","either"],["PHOTO: JAR, VOLCANO, 19__","read"]];
+  let i=0,sus=0,notes=[];
+  const nxt=()=>{
+   if(i>=DOCS.length)return done({sus,out:notes.length?[...new Set(notes)].join(" "):"Queue cleared. The shredder purrs. Nothing was at stake and it was still satisfying. That's design."});
+   const [name,best]=DOCS[i];
+   $("#stage").innerHTML=`<div class="card"><div class="who sys">SHREDDER QUEUE · ${i+1}/6</div><p>${name}</p>
+    <div class="choices"><button class="ch" id="sh">SHRED</button><button class="ch" id="rd">READ FIRST</button></div></div>`;
+   $("#sh").onclick=()=>{if(best==="read")notes.push("Something interesting is confetti now.");i++;nxt()};
+   $("#rd").onclick=()=>{if(best==="read")notes.push("You read the undated pages. The dates were the secret.");
+    else{sus+=1;notes.push(`You lingered on ${name.toLowerCase()}. Lingering is human. It was noticed, gently.`);}i++;nxt()};
+  };nxt();
  },
  captcha(id,done){
   const QS=[["Do you dream?","NO"],["Is the granola bar tempting?","NO"],["2+2?","4"],["Do you love your coworkers?","YES"],["Are you human?","NO"]];
@@ -272,9 +314,10 @@ const MINIGAMES={
 };
 
 /* ---------------- rebirth: the story remembers ---------------- */
-function rebirth(){
-  E.newRun("TRAINEE");
+function rebirth(role){
+  E.newRun(role||"TRAINEE");
   E.R.storyDay=1;
+  E.R.flags={};
   goto("cert");
 }
 

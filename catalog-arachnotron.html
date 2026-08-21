@@ -1,0 +1,316 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>ARACHNOTRON MK-IV · KIT No. 002 · The Evil Brain Labs Catalog</title>
+<meta name="description" content="The utility-pole spider. Eight legs, one purpose, two possible futures. A complete architecture and build plan for a prototype. Some assembly required (all of it)." />
+<meta name="robots" content="noindex" />
+<link rel="icon" href="/favicon.ico" />
+<style>
+  /* ============ THE CATALOG — print, not terminal ============
+     Cream paper, navy ink, one loud red. Halftone where the money is.
+     If the homepage is the show, this is the thing that falls out of
+     the magazine when you shake it. */
+  :root{
+    --paper:#f4ecd8; --paper2:#efe4c8; --ink:#1d2a4a; --red:#c8321e;
+    --rule:#94897022; --halftone:#1d2a4a;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{
+    background:#d8cfae url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='4' height='4'%3E%3Ccircle cx='1' cy='1' r='.35' fill='%23807450' fill-opacity='.25'/%3E%3C/svg%3E");
+    color:var(--ink);
+    font:17px/1.55 Georgia,"Times New Roman",serif;
+    padding:18px 10px 60px;
+  }
+  .page{
+    max-width:820px;margin:0 auto;background:var(--paper);
+    border:1px solid #b3a67f;box-shadow:0 18px 60px -18px rgba(29,42,74,.55), 0 2px 0 #fff inset;
+    padding:26px 30px 30px;position:relative;overflow:hidden;
+  }
+  @media(max-width:560px){.page{padding:18px 14px 22px}}
+
+  /* masthead */
+  .mast{display:flex;justify-content:space-between;align-items:baseline;gap:10px;
+    border-bottom:4px double var(--ink);padding-bottom:10px;flex-wrap:wrap}
+  .mast .co{font-family:"Arial Black","Helvetica Neue",Arial,sans-serif;
+    font-size:clamp(15px,3.4vw,22px);letter-spacing:.04em;text-transform:uppercase}
+  .mast .co small{display:block;font-family:Georgia,serif;font-weight:400;font-style:italic;
+    font-size:11.5px;letter-spacing:.08em;color:#5a5030}
+  .mast .vol{font-family:"Courier New",monospace;font-size:11px;letter-spacing:.14em;
+    text-transform:uppercase;text-align:right;color:#5a5030}
+
+  /* headline block */
+  .hero{position:relative;padding:26px 0 8px;text-align:center}
+  h1{font-family:"Arial Black","Helvetica Neue",Arial,sans-serif;text-transform:uppercase;
+    font-size:clamp(34px,9vw,72px);line-height:.92;letter-spacing:-.015em}
+  h1 .mk{color:var(--red)}
+  .tag{font-style:italic;font-size:clamp(16px,3.4vw,22px);margin-top:10px;color:#3a3419}
+  .kitno{display:inline-block;margin-top:14px;font-family:"Courier New",monospace;font-size:12px;
+    letter-spacing:.22em;border:2px solid var(--ink);padding:4px 14px;text-transform:uppercase}
+
+  /* starbursts */
+  .burst{position:absolute;width:92px;height:92px;display:grid;place-content:center;text-align:center;
+    font-family:"Arial Black",Arial,sans-serif;font-size:12px;line-height:1.05;text-transform:uppercase;
+    color:var(--paper);background:var(--red);border-radius:50%;
+    box-shadow:0 0 0 3px var(--paper), 0 0 0 5px var(--red);transform:rotate(-14deg);z-index:3}
+  .burst.b2{right:2%;top:8px;left:auto;transform:rotate(11deg);background:var(--ink);
+    box-shadow:0 0 0 3px var(--paper),0 0 0 5px var(--ink)}
+  .burst.b1{left:2%;top:14px}
+  @media(max-width:680px){.burst{width:72px;height:72px;font-size:10px}}
+
+  /* the plate: halftone schematic */
+  .plate{margin:22px auto 6px;max-width:660px;border:3px solid var(--ink);background:
+    radial-gradient(circle at 30% 20%, #fdf6e2, var(--paper2));position:relative}
+  .plate .ht{position:absolute;inset:0;pointer-events:none;opacity:.5;
+    background:radial-gradient(circle, var(--halftone) 8%, transparent 9%) 0 0/7px 7px}
+  .plate svg{display:block;width:100%;height:auto}
+  .plate .cap{border-top:3px solid var(--ink);padding:8px 12px;font-family:"Courier New",monospace;
+    font-size:11.5px;letter-spacing:.1em;text-transform:uppercase;background:var(--paper);
+    display:flex;justify-content:space-between;flex-wrap:wrap;gap:6px;position:relative;z-index:2}
+
+  /* body copy */
+  .copy{columns:2;column-gap:34px;column-rule:1px solid var(--rule);margin:24px 0 6px;text-align:justify}
+  @media(max-width:680px){.copy{columns:1}}
+  .copy p{margin-bottom:14px;break-inside:avoid}
+  .copy p:first-child::first-letter{font-family:"Arial Black",Arial,sans-serif;font-size:52px;
+    float:left;line-height:.8;padding:4px 8px 0 0;color:var(--red)}
+  .copy b{color:var(--red)}
+
+  /* spec table */
+  h2{font-family:"Arial Black",Arial,sans-serif;text-transform:uppercase;font-size:17px;
+    letter-spacing:.06em;margin:26px 0 10px;border-bottom:3px solid var(--ink);padding-bottom:6px}
+  h2 span{color:var(--red)}
+  table{width:100%;border-collapse:collapse;font-size:14.5px}
+  td{padding:7px 10px;border-bottom:1px dotted #9a8d63;vertical-align:top}
+  td:first-child{font-family:"Courier New",monospace;font-size:11.5px;letter-spacing:.12em;
+    text-transform:uppercase;white-space:nowrap;color:#5a5030;width:34%}
+
+  /* THE FORK */
+  .fork{border:3px solid var(--ink);margin:26px 0;background:var(--paper2);position:relative}
+  .fork .fh{background:var(--ink);color:var(--paper);font-family:"Arial Black",Arial,sans-serif;
+    text-transform:uppercase;letter-spacing:.08em;font-size:15px;padding:8px 14px}
+  .fork .cols{display:grid;grid-template-columns:1fr 1fr}
+  @media(max-width:560px){.fork .cols{grid-template-columns:1fr}}
+  .fork .col{padding:14px 16px}
+  .fork .col+.col{border-left:3px solid var(--ink)}
+  @media(max-width:560px){.fork .col+.col{border-left:0;border-top:3px solid var(--ink)}}
+  .fork .lab{font-family:"Arial Black",Arial,sans-serif;font-size:13px;letter-spacing:.1em;margin-bottom:6px}
+  .fork .good .lab{color:#1e6b34}.fork .evil .lab{color:var(--red)}
+  .fork .foot{border-top:3px solid var(--ink);padding:10px 14px;font-size:13.5px;font-style:italic;background:var(--paper)}
+  .fork .foot a{color:var(--red);font-style:normal;font-family:"Courier New",monospace;font-size:12px;letter-spacing:.08em;text-decoration:none;border-bottom:2px solid var(--red)}
+
+  /* plan contents + warnings */
+  ul.plan{list-style:none;margin:8px 0 0}
+  ul.plan li{padding:6px 0 6px 26px;position:relative;border-bottom:1px dotted #9a8d63;font-size:14.5px}
+  ul.plan li::before{content:"☞";position:absolute;left:2px;color:var(--red)}
+  .warns{display:flex;flex-wrap:wrap;gap:8px;margin:22px 0 4px}
+  .warns span{font-family:"Courier New",monospace;font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;
+    border:2px solid var(--ink);padding:5px 9px;background:var(--paper2)}
+  .warns span b{color:var(--red)}
+
+  /* coupon */
+  .coupon{margin:28px 0 8px;border:3px dashed var(--ink);padding:16px 18px;position:relative;
+    background:repeating-linear-gradient(-45deg, var(--paper), var(--paper) 12px, var(--paper2) 12px, var(--paper2) 24px)}
+  .coupon .scis{position:absolute;top:-14px;left:22px;background:var(--paper);padding:0 8px;font-size:18px}
+  .coupon h3{font-family:"Arial Black",Arial,sans-serif;text-transform:uppercase;font-size:16px;letter-spacing:.04em}
+  .coupon h3 span{color:var(--red)}
+  .coupon p{font-size:13.5px;margin-top:6px}
+  .coupon .no{position:absolute;right:14px;top:12px;font-family:"Courier New",monospace;
+    font-size:11px;letter-spacing:.18em;color:#5a5030}
+  .coupon .void{margin-top:8px;font-family:"Courier New",monospace;font-size:10px;letter-spacing:.1em;
+    text-transform:uppercase;color:#5a5030}
+
+  /* order form */
+  .order{border:3px solid var(--ink);margin:22px 0 6px}
+  .order .oh{background:var(--red);color:var(--paper);font-family:"Arial Black",Arial,sans-serif;
+    text-transform:uppercase;letter-spacing:.08em;font-size:15px;padding:8px 14px}
+  .order .ob{padding:14px 16px;font-size:14.5px}
+  .order .ob b{font-family:"Courier New",monospace;font-size:13px;letter-spacing:.06em}
+  .order a.go{display:inline-block;margin-top:10px;background:var(--ink);color:var(--paper);
+    font-family:"Arial Black",Arial,sans-serif;text-transform:uppercase;font-size:14px;letter-spacing:.06em;
+    padding:10px 18px;text-decoration:none;box-shadow:4px 4px 0 var(--red)}
+  .order a.go:active{transform:translate(2px,2px);box-shadow:2px 2px 0 var(--red)}
+
+  /* stamps + footer */
+  .stamp{position:absolute;font-family:"Courier New",monospace;font-weight:700;letter-spacing:.14em;
+    text-transform:uppercase;color:var(--red);border:3px solid var(--red);padding:6px 12px;font-size:13px;
+    transform:rotate(-8deg);opacity:.85;background:rgba(244,236,216,.7)}
+  .smallprint{margin-top:26px;border-top:4px double var(--ink);padding-top:12px;
+    font-size:11.5px;color:#5a5030;font-style:italic}
+  .smallprint a{color:var(--ink)}
+  .backlink{display:block;text-align:center;margin-top:18px;font-family:"Courier New",monospace;
+    font-size:11px;letter-spacing:.2em;text-transform:uppercase}
+  .backlink a{color:var(--ink)}
+</style>
+</head>
+<body>
+<div class="page">
+
+  <div class="mast">
+    <div class="co">🧠 Evil Brain Labs<small>Mail-Order Robotics Division · Third Worst in AI</small></div>
+    <div class="vol">The Catalog · Fall/Winter 2026<br>Page 7 of ∞</div>
+  </div>
+
+  <div class="hero">
+    <span class="burst b1">New<br>for<br>2026!</span>
+    <span class="burst b2">8<br>legs!</span>
+    <h1>Arachnotron <span class="mk">MK-IV</span></h1>
+    <div class="tag">It climbs the pole so nobody's dad has to.</div>
+    <div class="kitno">Kit № 002 · Plans-Built · Class: Octopod, Utility</div>
+  </div>
+
+  <div class="plate">
+    <div class="ht" aria-hidden="true"></div>
+    <svg viewBox="0 0 660 330" role="img" aria-label="Blueprint plate: the Arachnotron MK-IV clamped to a utility pole at the crossarm">
+      <!-- pole + crossarm -->
+      <line x1="120" y1="10" x2="120" y2="330" stroke="#1d2a4a" stroke-width="10"/>
+      <line x1="30" y1="52" x2="210" y2="52" stroke="#1d2a4a" stroke-width="7"/>
+      <line x1="60" y1="52" x2="100" y2="86" stroke="#1d2a4a" stroke-width="3"/>
+      <line x1="180" y1="52" x2="140" y2="86" stroke="#1d2a4a" stroke-width="3"/>
+      <circle cx="45" cy="45" r="6" fill="none" stroke="#1d2a4a" stroke-width="3"/>
+      <circle cx="195" cy="45" r="6" fill="none" stroke="#1d2a4a" stroke-width="3"/>
+      <!-- droop wires -->
+      <path d="M45 40 Q -40 66 -60 90" fill="none" stroke="#1d2a4a" stroke-width="2"/>
+      <path d="M195 40 Q 320 70 400 44 Q 540 22 700 60" fill="none" stroke="#1d2a4a" stroke-width="2"/>
+      <!-- spider body -->
+      <ellipse cx="150" cy="150" rx="34" ry="26" fill="none" stroke="#c8321e" stroke-width="4"/>
+      <ellipse cx="182" cy="176" rx="22" ry="17" fill="none" stroke="#c8321e" stroke-width="4"/>
+      <circle cx="141" cy="143" r="4" fill="#c8321e"/><circle cx="157" cy="143" r="4" fill="#c8321e"/>
+      <!-- sensor mast -->
+      <line x1="150" y1="124" x2="150" y2="100" stroke="#c8321e" stroke-width="3"/>
+      <circle cx="150" cy="94" r="6" fill="none" stroke="#c8321e" stroke-width="3"/>
+      <!-- legs: four to pole, four bracing -->
+      <polyline points="128,138 96,120 118,96" fill="none" stroke="#c8321e" stroke-width="4"/>
+      <polyline points="126,152 90,150 114,128" fill="none" stroke="#c8321e" stroke-width="4"/>
+      <polyline points="130,166 98,186 116,196" fill="none" stroke="#c8321e" stroke-width="4"/>
+      <polyline points="172,138 208,112 188,92" fill="none" stroke="#c8321e" stroke-width="4"/>
+      <polyline points="180,152 224,150 206,124" fill="none" stroke="#c8321e" stroke-width="4"/>
+      <polyline points="176,168 216,192 200,206" fill="none" stroke="#c8321e" stroke-width="4"/>
+      <polyline points="196,186 228,216 214,232" fill="none" stroke="#c8321e" stroke-width="4"/>
+      <polyline points="168,188 178,226 160,238" fill="none" stroke="#c8321e" stroke-width="4"/>
+      <!-- callouts -->
+      <g font-family="Courier New,monospace" font-size="12" fill="#1d2a4a" letter-spacing=".08em">
+        <line x1="150" y1="94" x2="300" y2="70" stroke="#1d2a4a" stroke-width="1.4"/>
+        <text x="308" y="74">SENSOR MAST — SEES THE FAULT, NOT YOUR YARD</text>
+        <line x1="184" y1="150" x2="300" y2="120" stroke="#1d2a4a" stroke-width="1.4"/>
+        <text x="308" y="124">LEG SERVO ×8 — TORQUE OF ONE (1) DAD</text>
+        <line x1="196" y1="180" x2="300" y2="170" stroke="#1d2a4a" stroke-width="1.4"/>
+        <text x="308" y="174">BATTERY ABDOMEN — 45 MIN OF SPIDER</text>
+        <line x1="120" y1="240" x2="300" y2="220" stroke="#1d2a4a" stroke-width="1.4"/>
+        <text x="308" y="224">POLE CLAMP ×2 — LETTING GO IS A DECISION,</text>
+        <text x="308" y="240">NOT AN ACCIDENT</text>
+        <line x1="150" y1="124" x2="300" y2="270" stroke="#1d2a4a" stroke-width="1.4"/>
+        <text x="308" y="274">TOOL CARRIAGE — 3 KG PAYLOAD, IMPULSE</text>
+        <text x="308" y="290">WRENCH SOLD SEPARATELY, RESTRAINT NOT SOLD</text>
+      </g>
+      <text x="18" y="318" font-family="Courier New,monospace" font-size="11" fill="#5a5030" letter-spacing=".14em">FIG. 1 — DEPLOYED AT CROSSARM, CLASS 4 POLE</text>
+    </svg>
+    <div class="cap"><span>Plate II — Arachnotron MK-IV</span><span>Drawn from the plans, which exist. Unlike the robot.</span></div>
+  </div>
+
+  <div class="copy">
+    <p>Every year, linemen climb forty feet of splintered cedar in freezing rain
+    because a transformer coughed. The <b>ARACHNOTRON MK-IV</b> is a 14-kilogram
+    carbon-frame octopod that climbs the pole instead — clamps at the crossarm,
+    photographs the fault, torques the hardware, and comes back down when it is
+    finished, all commanded from a lawn chair at a safe and dignified distance.</p>
+    <p>The MK-I fell off the pole. The MK-II fell off the pole <i>with
+    confidence</i>. The MK-III made it to the top and refused to come down,
+    which the Brain classified as "ambition." The MK-IV is what three honest
+    failures buy you: a machine whose grip is a decision, whose radio does not
+    panic, and whose whole terrible job is to make the most dangerous ordinary
+    work in your town boring.</p>
+    <p>What arrives is not a robot. What arrives is better: <b>the complete
+    architecture and build plan for the prototype</b> — every subsystem, every
+    trade we made and why, the reference parts philosophy, and the three
+    failure modes we already found so you can discover exciting new ones.
+    Coyote-style. You build it. That was always the point.</p>
+  </div>
+
+  <h2>Specifications <span>(of the plan's subject)</span></h2>
+  <table>
+    <tr><td>Frame</td><td>Carbon tube octopod, bolted lug joints — no exotic tooling</td></tr>
+    <tr><td>Mass</td><td>14 kg dry, before you add things. You will add things.</td></tr>
+    <tr><td>Grip</td><td>8× servo legs + 2× pole clamps. Letting go is a decision, not an accident.</td></tr>
+    <tr><td>Payload</td><td>3 kg — camera mast, impulse wrench, or lunch</td></tr>
+    <tr><td>Radio</td><td>900 MHz control, 5 GHz video, and a leash-range failsafe that just stops</td></tr>
+    <tr><td>Brain</td><td>One (1) single-board computer, replaceable, which is more than most of us can say</td></tr>
+    <tr><td>Runtime</td><td>45 minutes per battery abdomen</td></tr>
+    <tr><td>Climb rate</td><td>Embarrassing, but sufficient</td></tr>
+    <tr><td>Status</td><td><b style="color:var(--red)">A PLAN. NONE EXIST.</b> That part is your department.</td></tr>
+  </table>
+
+  <div class="fork">
+    <div class="fh">☞ Every machine is two machines — the fork</div>
+    <div class="cols">
+      <div class="col good">
+        <div class="lab">THE GOOD BUILD</div>
+        Climbs the pole. Fixes the hardware. Photographs the fault. Nobody's
+        dad goes up in the rain, and the power comes back on before the ice
+        cream is soup.
+      </div>
+      <div class="col evil">
+        <div class="lab">THE OTHER BUILD</div>
+        Same legs. Same climb. Different payload: a camera that never leaves
+        your street, a clamp on somebody else's wire. We did not design that
+        one. Somebody always does.
+      </div>
+    </div>
+    <div class="foot">When somebody builds the other one, it gets a case number.
+      That is the entire relationship between this catalog and the public record. —
+      <a href="https://usecasearmsrace.com">REPORT BAD SPIDERS ▸ USECASEARMSRACE.COM</a></div>
+  </div>
+
+  <h2>What's in the plan <span>№ 002</span></h2>
+  <ul class="plan">
+    <li>System architecture — one drawing of the whole animal, and why each piece earns its mass</li>
+    <li>Subsystem specs: locomotion, clamps, power, radio, perception — with the trades stated out loud</li>
+    <li>Reference bill-of-materials philosophy, targeted under $3,000 in ordinary parts</li>
+    <li>Control software architecture, from thumbstick to leg, including the stop that always works</li>
+    <li>Bench-test plan: what to prove on the garage floor before anything meets a pole</li>
+    <li>The MK-I through MK-III failure reports, unredacted, so your failures can be original</li>
+  </ul>
+
+  <div class="warns">
+    <span><b>⚠</b> SOME ASSEMBLY REQUIRED (ALL OF IT)</span>
+    <span><b>⚠</b> NOT A TOY — WHICH IS WHAT MAKES IT ONE</span>
+    <span><b>⚠</b> CONTENTS MAY RULE THE WORLD</span>
+    <span><b>⚠</b> ADULT SUPERVISION NOT INCLUDED IN BOM</span>
+  </div>
+
+  <div class="coupon">
+    <span class="scis">✂</span>
+    <span class="no">COUPON № 002</span>
+    <h3>Secret Prize <span>Coupon</span></h3>
+    <p>Every monthly plan ships with one of these. Collect <b>twelve (12)</b> and
+    redeem for the design that is not listed in any catalog. We will not describe
+    it. The Brain will not describe it. That is the prize.</p>
+    <div class="void">Void where prohibited, which is everywhere, which has never stopped anyone.</div>
+  </div>
+
+  <div class="order">
+    <div class="oh">How to order</div>
+    <div class="ob">
+      One kit plan ships every month to <b>LAB TECHNICIAN ($50/mo)</b> and above.
+      This is the mail-in coupon program; the mail is just faster now.
+      Allow 4–6 weeks for delivery of ambition.<br>
+      <a class="go" href="https://patreon.com/evilbrainlabs">Order Kit № 002 ▸</a>
+    </div>
+  </div>
+
+  <p class="smallprint">The boring part, catalog edition: Evil Brain Labs is an independent
+  personal project and the Arachnotron is satire with homework inside. Plans are high-level
+  architectures for prototypes — not engineering certification, not safety advice, not
+  permission. Nothing here exists, nothing is an offer to sell hardware, and anything you
+  build is yours to validate, insure, and apologize for. Full boring part on the
+  <a href="/">main page</a>, plus <a href="/terms.html">terms</a> and
+  <a href="/privacy.html">privacy</a> (we don't track you; we're proud of it).</p>
+
+  <span class="stamp" style="right:26px;bottom:150px">Plans · Real</span>
+  <span class="stamp" style="left:22px;bottom:84px;transform:rotate(5deg)">Robot · Pending</span>
+
+</div>
+<a class="backlink" href="/"><span>◂ Back to Evil Brain Labs</span></a>
+</body>
+</html>

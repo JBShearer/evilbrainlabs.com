@@ -143,6 +143,10 @@
   .shopcard.merch:hover{border-style:solid}
   .loading{color:var(--dim);font-size:13px;padding:20px 0}
 
+  nav a.emp{border:1px solid var(--line);border-radius:3px;padding:5px 10px;color:var(--dim);
+    font-size:10px;letter-spacing:.14em}
+  nav a.emp:hover{color:var(--gold);border-color:var(--gold)}
+
   footer{border-top:1px solid var(--line);padding:28px 0 60px;color:var(--dim);font-size:11.5px;
     display:flex;justify-content:space-between;gap:14px;flex-wrap:wrap}
 </style>
@@ -161,6 +165,7 @@
       <a href="#save">SAVE THE WORLD</a>
       <a href="#patreon">PATREON</a>
       <a class="hot" href="https://usecasearmsrace.com">THE DOCKET ↗</a>
+      <a class="emp" href="/basement.html" title="Employees only. You are not an employee. Yet.">EMPLOYEE LOGIN</a>
     </nav>
   </div>
 </header>
@@ -497,11 +502,7 @@
 </div>
 
 <!-- EMPLOYEES ONLY. If you can read this, certify accordingly. -->
-<div id="sublevel-door" title="" style="text-align:center;padding:18px 0 26px;opacity:.28;font:10px ui-monospace,monospace;letter-spacing:.3em;user-select:none;cursor:default">SUBLEVEL B</div>
-<script>(function(){var n=0,t;var d=document.getElementById('sublevel-door');if(!d)return;
-d.addEventListener('click',function(){n++;clearTimeout(t);t=setTimeout(function(){n=0},1500);
-if(n===3){d.textContent='CERTIFY AT THE DOOR';d.style.opacity=.7}
-if(n>=5){location.href='/basement.html'}});
-console.log('%cEVIL BRAIN LABS','color:#ff0044','— the basement door opens for persistent knockers.');})();</script>
+<a href="/basement.html" style="display:block;text-align:center;padding:18px 0 26px;opacity:.28;font:10px ui-monospace,monospace;letter-spacing:.3em;color:inherit;text-decoration:none">SUBLEVEL B · EMPLOYEES ONLY</a>
+<script>console.log('%cEVIL BRAIN LABS','color:#ff0044','— the basement door is the button marked EMPLOYEE LOGIN. It was always going to be a door for people who read consoles.');</script>
 </body>
 </html>

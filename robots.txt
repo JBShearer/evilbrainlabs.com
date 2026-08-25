@@ -1,0 +1,5 @@
+# evilbrainlabs.com
+User-agent: *
+Allow: /
+
+Sitemap: https://evilbrainlabs.com/sitemap.xml
